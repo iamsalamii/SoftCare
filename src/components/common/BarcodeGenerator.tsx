@@ -46,7 +46,7 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({ medication, 
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-bold text-gray-900">{medication.name}</h3>
             {medication.isBiotech && (
-              <span className="px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-700 rounded-full border border-purple-200">
+              <span className="px-2 py-0.5 text-xs font-semibold bg-teal-50 text-teal-700 rounded-full border border-teal-200">
                 Biotech / PGx
               </span>
             )}

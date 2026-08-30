@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, X, Brain, CheckCircle2, AlertCircle, Search, Stethoscope, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, X, Brain, CheckCircle2, AlertCircle, Stethoscope, ShieldCheck } from 'lucide-react';
 
 interface MedicalAiAssistantModalProps {
   isOpen: boolean;
@@ -64,29 +64,29 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 max-w-2xl w-full overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white p-6 flex justify-between items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full overflow-hidden">
+        {/* Header - SoftCare Medical Cyan / Teal Header */}
+        <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white p-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
-              <Brain className="w-6 h-6 text-purple-300" />
+            <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+              <Brain className="w-6 h-6 text-cyan-100" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg">Assistant Clinique IA & Diagnostic Différentiel</h3>
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-purple-500/30 border border-purple-400/40 text-purple-200 rounded-full">
-                  CDS Hooks v2.4
+                <h3 className="font-bold text-lg text-white">Assistant Clinique IA & Diagnostic Différentiel</h3>
+                <span className="px-2.5 py-0.5 text-[9px] font-bold bg-white/20 border border-white/30 text-cyan-50 rounded-full">
+                  CDS Hooks
                 </span>
               </div>
-              <p className="text-xs text-purple-200/80 mt-0.5">
+              <p className="text-xs text-cyan-100/90 mt-0.5">
                 Analyse croisée des symptômes, antécédents et pharmacogénomique pour {patientName}.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+            className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -105,12 +105,12 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
                 value={symptomsInput}
                 onChange={(e) => setSymptomsInput(e.target.value)}
                 placeholder="Ex: Douleur thoracique, Essoufflement, Fièvre, Toux..."
-                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
               />
               <button
                 onClick={handleRunAnalysis}
                 disabled={isAnalyzing || !symptomsInput.trim()}
-                className="px-5 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-2xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-600/20 transition-all hover:scale-[1.02]"
+                className="px-5 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 disabled:opacity-50 text-white rounded-2xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-teal-600/20 transition-all hover:scale-[1.02]"
               >
                 {isAnalyzing ? (
                   <>
@@ -134,7 +134,7 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
                   Hypothèses Diagnostiques Différentielles
                 </span>
-                <span className="text-[11px] text-purple-700 font-semibold bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
+                <span className="text-[11px] text-teal-700 font-semibold bg-cyan-50 px-2.5 py-0.5 rounded-full border border-cyan-100">
                   {results.hypotheses.length} Pistes Identifiées
                 </span>
               </div>
@@ -151,10 +151,10 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
-                        <Stethoscope className={`w-4 h-4 ${item.severity === 'critical' ? 'text-rose-600' : 'text-purple-600'}`} />
+                        <Stethoscope className={`w-4 h-4 ${item.severity === 'critical' ? 'text-rose-600' : 'text-teal-600'}`} />
                         <h4 className="font-bold text-sm text-gray-900">{item.condition}</h4>
                       </div>
-                      <span className="px-2.5 py-1 text-[10px] font-mono font-bold bg-white text-purple-900 rounded-lg border border-purple-200 shadow-sm">
+                      <span className="px-2.5 py-1 text-[10px] font-mono font-bold bg-white text-teal-900 rounded-lg border border-teal-200 shadow-sm">
                         Indice de confiance: {item.confidence}%
                       </span>
                     </div>
