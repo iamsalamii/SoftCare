@@ -3,7 +3,8 @@ import { useApp } from '../context/AppContext';
 import {
   Home, Users, FileText, Pill, Calendar, UserCog, BarChart3,
   LogOut, FlaskConical, Heart, AlertTriangle, Dna,
-  Scissors, Clock, CreditCard, BedDouble, Settings, ShoppingCart, ChevronLeft, ChevronRight
+  Scissors, Clock, CreditCard, BedDouble, Settings, ShoppingCart, ChevronLeft, ChevronRight,
+  Video, ShieldCheck
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -14,6 +15,7 @@ const Sidebar: React.FC = () => {
     { id: 'patients', label: 'Patients', icon: Users, roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
     { id: 'medical-records', label: 'Dossiers médicaux', icon: FileText, roles: ['admin', 'doctor', 'nurse'] },
     { id: 'appointments', label: 'Rendez-vous', icon: Calendar, roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
+    { id: 'teleconsultation', label: 'Téléconsultation', icon: Video, roles: ['admin', 'doctor', 'nurse'] },
     { id: 'admissions', label: 'Admissions & Lits', icon: BedDouble, roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
     { id: 'pharmacy', label: 'Pharmacie (Stock)', icon: Pill, roles: ['admin', 'pharmacist', 'doctor'] },
     { id: 'pharmacy-pos', label: 'Pharmacie (Vente)', icon: ShoppingCart, roles: ['admin', 'pharmacist'] },
@@ -24,6 +26,7 @@ const Sidebar: React.FC = () => {
     { id: 'surgery', label: 'Bloc opératoire', icon: Scissors, roles: ['admin', 'surgeon', 'doctor', 'nurse'] },
     { id: 'billing', label: 'Facturation', icon: CreditCard, roles: ['admin', 'receptionist'] },
     { id: 'schedule', label: 'Planning', icon: Clock, roles: ['admin', 'doctor', 'nurse', 'pharmacist', 'lab_tech', 'surgeon', 'receptionist'] },
+    { id: 'audit', label: 'Audit Trail & RGPD', icon: ShieldCheck, roles: ['admin', 'doctor'] },
     { id: 'users', label: 'Utilisateurs', icon: UserCog, roles: ['admin'] },
     { id: 'reports', label: 'Rapports', icon: BarChart3, roles: ['admin', 'doctor'] },
     { id: 'settings', label: 'Paramètres', icon: Settings, roles: ['admin'] },

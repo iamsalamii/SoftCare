@@ -34,6 +34,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ClinicalTrial> ClinicalTrials => Set<ClinicalTrial>();
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<OrganizationSetting> OrganizationSettings => Set<OrganizationSetting>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

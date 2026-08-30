@@ -28,6 +28,7 @@ public interface IApplicationDbContext
     DbSet<ClinicalTrial> ClinicalTrials { get; }
     DbSet<Department> Departments { get; }
     DbSet<OrganizationSetting> OrganizationSettings { get; }
+    DbSet<AuditLog> AuditLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

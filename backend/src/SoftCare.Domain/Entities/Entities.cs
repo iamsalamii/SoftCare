@@ -328,3 +328,19 @@ public class OrganizationSetting : BaseEntity
     public string HeaderColor { get; set; } = "#0e7490";
     public string PrimaryColor { get; set; } = "#0891b2";
 }
+
+public class AuditLog : BaseEntity
+{
+    public string UserId { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string UserRole { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty; // "CONSULTATION", "MODIFICATION", "EXPORT_DPI", "PGX_ACCES", "DELIVRANCE_POS"
+    public string ResourceType { get; set; } = string.Empty; // "Patient", "MedicalRecord", "GenomicProfile", "Medication", "Invoice"
+    public string ResourceId { get; set; } = string.Empty;
+    public string PatientName { get; set; } = string.Empty;
+    public string IpAddress { get; set; } = "192.168.1.50";
+    public string UserAgent { get; set; } = "SoftCare WebApp/2.4";
+    public string SecurityHash { get; set; } = string.Empty; // Empreinte cryptographique HMAC-SHA256 non répudiable
+    public string DetailsJson { get; set; } = "{}";
+}
+

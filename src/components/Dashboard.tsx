@@ -21,6 +21,9 @@ import SurgeryModule from './surgery/SurgeryModule';
 import ScheduleModule from './hr/ScheduleModule';
 import SettingsModule from './settings/SettingsModule';
 import BiotechModule from './biotech/BiotechModule';
+import TeleconsultationModule from './teleconsultation/TeleconsultationModule';
+import AuditTrailModule from './audit/AuditTrailModule';
+import OfflineBanner from './offline/OfflineBanner';
 
 const Dashboard: React.FC = () => {
   const { currentView, setCurrentView } = useApp();
@@ -35,16 +38,18 @@ const Dashboard: React.FC = () => {
         return <PatientForm onClose={() => setCurrentView('patients')} />;
       case 'medical-records':
         return <MedicalRecords />;
-      case 'pharmacy':
-        return <PharmacyManagement />;
-      case 'pharmacy-pos':
-        return <PharmacyPOS />;
       case 'appointments':
         return <AppointmentManagement />;
       case 'appointments-new':
         return <AppointmentForm onClose={() => setCurrentView('appointments')} />;
+      case 'teleconsultation':
+        return <TeleconsultationModule />;
       case 'admissions':
         return <BedManagement />;
+      case 'pharmacy':
+        return <PharmacyManagement />;
+      case 'pharmacy-pos':
+        return <PharmacyPOS />;
       case 'lab':
         return <LabManagement />;
       case 'biotech':
@@ -59,6 +64,8 @@ const Dashboard: React.FC = () => {
         return <InvoiceList />;
       case 'schedule':
         return <ScheduleModule />;
+      case 'audit':
+        return <AuditTrailModule />;
       case 'users':
         return <UserManagement />;
       case 'reports':
@@ -74,8 +81,9 @@ const Dashboard: React.FC = () => {
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
+        <OfflineBanner />
         <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
           {renderContent()}
         </main>
       </div>
