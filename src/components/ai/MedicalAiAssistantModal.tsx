@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Sparkles, X, Brain, CheckCircle2, AlertCircle, Stethoscope, ShieldCheck } from 'lucide-react';
 
 interface MedicalAiAssistantModalProps {
@@ -63,9 +64,9 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
     }, 600);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex justify-center items-start sm:items-center p-3 sm:p-6 animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full my-auto overflow-hidden">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full my-auto overflow-hidden relative z-[10000]">
         {/* Header - SoftCare Medical Cyan / Teal Header */}
         <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white p-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -200,6 +201,8 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default MedicalAiAssistantModal;
