@@ -14,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Add Infrastructure Services (PostgreSQL / EF Core, JWT)
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Add SignalR for real-time alerts
+builder.Services.AddSignalR();
+
 // 2. Add Controllers with JSON configuration
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -123,5 +126,6 @@ app.MapGet("/api/health", () => Results.Ok(new
 }));
 
 app.MapControllers();
+app.MapHub<SoftCare.API.Hubs.HospitalHub>("/hubs/hospital");
 
 app.Run();

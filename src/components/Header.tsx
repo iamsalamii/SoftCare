@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Bell, Search, Settings, User, LogOut, ChevronDown, CheckCircle, AlertTriangle, AlertCircle, Info } from 'lucide-react';
+import { Bell, Search, Settings, User, LogOut, ChevronDown, CheckCircle, AlertTriangle, AlertCircle, Info, Brain, Sparkles } from 'lucide-react';
+import { MedicalAiAssistantModal } from './ai/MedicalAiAssistantModal';
 
 const Header: React.FC = () => {
   const { currentUser, setCurrentUser, signOut, notifications, markNotificationRead, unreadCount, setCurrentView } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -97,6 +99,16 @@ const Header: React.FC = () => {
               className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 w-72 transition-all text-sm"
             />
           </div>
+
+          {/* IA Clinical Assistant Button */}
+          <button
+            onClick={() => setShowAiModal(true)}
+            className="flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-600/20 transition-all hover:scale-105"
+            title="Assistant Clinique & Aide au Diagnostic IA"
+          >
+            <Brain className="w-4 h-4 text-purple-200" />
+            <span className="hidden sm:inline">Assistant IA (CDS)</span>
+          </button>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
@@ -210,6 +222,11 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <MedicalAiAssistantModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+      />
     </header>
   );
 };
