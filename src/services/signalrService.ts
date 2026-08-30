@@ -38,7 +38,7 @@ class SignalRService {
     });
   }
 
-  public connect(url: string = 'http://localhost:5000/hubs/hospital') {
+  public connect(url: string = 'http://localhost:5005/hubs/hospital') {
     // Graceful fallback for local development
     console.log(`[SignalR] Initialisation du listener temps réel sur ${url}`);
     this.isConnected = true;
