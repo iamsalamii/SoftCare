@@ -299,9 +299,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Mock sign in
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
-    const user = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) return { error: 'Email non trouvé' };
-    if (password !== 'demo123') return { error: 'Mot de passe incorrect' };
+    const cleanEmail = email.toLowerCase().trim();
+    const user = mockUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!user) return { error: 'Identifiant ou email non trouvé' };
+    
+    if (cleanEmail === 'admin@hopital.com') {
+      if (password !== 'Admin123!') return { error: 'Mot de passe incorrect' };
+    } else {
+      if (password !== 'demo123' && password !== 'Admin123!') return { error: 'Mot de passe incorrect' };
+    }
+
     setCurrentUser(user);
     localStorage.setItem('softcare_current_user', JSON.stringify(user));
     return { error: null };

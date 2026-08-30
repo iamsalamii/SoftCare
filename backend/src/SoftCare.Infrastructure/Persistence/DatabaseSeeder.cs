@@ -65,6 +65,15 @@ public static class DatabaseSeeder
                 },
                 new User
                 {
+                    Id = "admin-1",
+                    Name = "Administrateur Principal",
+                    Email = "admin@hopital.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    Role = "admin",
+                    Status = "active"
+                },
+                new User
+                {
                     Id = "2",
                     Name = "Sophie Martin",
                     Email = "sophie.martin@hopital.fr",
@@ -118,6 +127,26 @@ public static class DatabaseSeeder
                     Status = "active"
                 }
             );
+        }
+        else
+        {
+            var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "admin@hopital.com");
+            if (adminUser == null)
+            {
+                context.Users.Add(new User
+                {
+                    Id = "admin-1",
+                    Name = "Administrateur Principal",
+                    Email = "admin@hopital.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    Role = "admin",
+                    Status = "active"
+                });
+            }
+            else
+            {
+                adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!");
+            }
         }
 
         // 4. Ensure Patients

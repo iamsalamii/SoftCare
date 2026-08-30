@@ -238,34 +238,6 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
               </div>
             )}
 
-            {/* Quick Demo Fill Buttons */}
-            <div className="mb-5 p-3.5 bg-gradient-to-r from-cyan-50 to-teal-50 border border-cyan-100 rounded-2xl">
-              <span className="text-[11px] font-bold text-teal-900 block mb-2">Comptes de test (Mot de passe: demo123) :</span>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('marie.dubois@hopital.fr')}
-                  className="px-2.5 py-1 text-[10px] font-semibold bg-white border border-teal-200 text-teal-800 rounded-lg hover:bg-teal-600 hover:text-white transition-all shadow-2xs"
-                >
-                  Médecin (Dr. Dubois)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('pierre.leroy@hopital.fr')}
-                  className="px-2.5 py-1 text-[10px] font-semibold bg-white border border-teal-200 text-teal-800 rounded-lg hover:bg-teal-600 hover:text-white transition-all shadow-2xs"
-                >
-                  Pharmacien (P. Leroy)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('admin@hopital.fr')}
-                  className="px-2.5 py-1 text-[10px] font-semibold bg-white border border-teal-200 text-teal-800 rounded-lg hover:bg-teal-600 hover:text-white transition-all shadow-2xs"
-                >
-                  Admin Système
-                </button>
-              </div>
-            </div>
-
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">

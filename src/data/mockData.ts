@@ -46,6 +46,17 @@ export const mockUsers: User[] = [
     permissions: ['manage_medications', 'dispense_prescriptions', 'manage_stock']
   },
   {
+    id: 'admin-1',
+    name: 'Administrateur Principal',
+    email: 'admin@hopital.com',
+    role: 'admin',
+    department: '7',
+    phone: '+33 1 23 45 67 92',
+    active: true,
+    createdAt: '2020-01-01',
+    permissions: ['manage_users', 'system_admin', 'view_all_data', 'manage_permissions']
+  },
+  {
     id: '4',
     name: 'Admin Système',
     email: 'admin@hopital.fr',
