@@ -1,19 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Activity, Shield, Heart, Dna, Brain, QrCode, ArrowRight,
   CheckCircle2, Users, BedDouble, Stethoscope, Clock, Award,
-  Sparkles, Lock, Building2, ChevronRight, Phone, Mail, MapPin
+  Sparkles, Lock, Building2, ChevronRight, Phone, Mail, MapPin,
+  FileText, Download, BookOpen
 } from 'lucide-react';
+import BrochureModal from './BrochureModal';
 
 interface LandingPageProps {
   onGoToLogin: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
+  const [showBrochureModal, setShowBrochureModal] = useState(false);
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-cyan-500 selection:text-white">
       {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-500/25">
@@ -33,7 +37,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             <a href="#features" className="hover:text-cyan-600 transition-colors">Fonctionnalités</a>
             <a href="#biotech" className="hover:text-cyan-600 transition-colors">Biotech & PGx</a>
             <a href="#ai" className="hover:text-cyan-600 transition-colors">Intelligence Clinique</a>
-            <a href="#security" className="hover:text-cyan-600 transition-colors">Sécurité & Normes</a>
+            <button
+              onClick={() => setShowBrochureModal(true)}
+              className="text-teal-700 hover:text-teal-900 font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <BookOpen className="w-4 h-4 text-cyan-600" />
+              <span>Consulter Brochure</span>
+            </button>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -79,12 +89,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               <span>Accéder au Système Hospitalier</span>
               <ArrowRight className="w-5 h-5" />
             </button>
-            <a
-              href="#features"
-              className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 rounded-2xl font-bold text-base shadow-sm transition-all"
+
+            <button
+              onClick={() => setShowBrochureModal(true)}
+              className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-cyan-50 text-teal-900 border border-teal-200 rounded-2xl font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2.5"
             >
-              Découvrir les Modules
-            </a>
+              <BookOpen className="w-5 h-5 text-cyan-600" />
+              <span>Consulter la Brochure (PDF)</span>
+            </button>
           </div>
 
           {/* Quick Metrics */}
@@ -208,14 +220,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             Plateforme médicale conforme aux standards de sécurité sanitaire et de traçabilité biomédicale.
           </p>
 
-          <button
-            onClick={onGoToLogin}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors"
-          >
-            Se Connecter
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowBrochureModal(true)}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+            >
+              <FileText className="w-4 h-4 text-cyan-400" />
+              <span>Brochure</span>
+            </button>
+            <button
+              onClick={onGoToLogin}
+              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold transition-all"
+            >
+              Se Connecter
+            </button>
+          </div>
         </div>
       </footer>
+
+      {/* Interactive Multi-page Brochure Modal */}
+      <BrochureModal
+        isOpen={showBrochureModal}
+        onClose={() => setShowBrochureModal(false)}
+      />
     </div>
   );
 };
