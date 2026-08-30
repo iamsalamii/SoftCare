@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Activity, Shield, Heart, Dna, Brain, QrCode, ArrowRight,
   CheckCircle2, Users, BedDouble, Stethoscope, Clock, Award,
   Sparkles, Lock, Building2, ChevronRight, Phone, Mail, MapPin,
-  FileText, Download, BookOpen
+  FileText, Download, BookOpen, HeartPulse
 } from 'lucide-react';
 import BrochureModal from './BrochureModal';
 
@@ -13,9 +13,85 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
   const [showBrochureModal, setShowBrochureModal] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [initStep, setInitStep] = useState('Connexion au réseau sécurisé hospitalier...');
+  const [initProgress, setInitProgress] = useState(20);
+
+  useEffect(() => {
+    // Hospital style initial loading progression
+    const timer1 = setTimeout(() => {
+      setInitStep('Vérification des protocoles de sécurité sanitaire & HDS...');
+      setInitProgress(60);
+    }, 450);
+
+    const timer2 = setTimeout(() => {
+      setInitStep('Initialisation du Système d\'Information SoftCare...');
+      setInitProgress(100);
+    }, 850);
+
+    const timer3 = setTimeout(() => {
+      setIsInitializing(false);
+    }, 1200);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, []);
+
+  // Hospital Loading Screen
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 flex flex-col items-center justify-center p-6 text-white select-none animate-in fade-in duration-200">
+        <div className="max-w-md w-full text-center space-y-6">
+          {/* Pulsing Medical Icon */}
+          <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
+            <div className="absolute inset-0 bg-cyan-500/20 rounded-3xl blur-xl animate-pulse" />
+            <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-3xl border border-white/20 shadow-2xl flex items-center justify-center relative z-10 animate-bounce duration-1000">
+              <Activity className="w-10 h-10 text-white animate-pulse" />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black tracking-tight text-white">SoftCare Hospital System</h2>
+            <p className="text-xs text-cyan-200/80 font-mono tracking-wider uppercase">Système d'Information Hospitalier (HIS)</p>
+          </div>
+
+          {/* Animated ECG Pulse Line */}
+          <div className="relative h-12 w-full bg-slate-900/60 border border-teal-500/30 rounded-2xl overflow-hidden p-2 flex items-center justify-center shadow-inner">
+            <div className="absolute left-0 right-0 h-0.5 bg-cyan-400/30" />
+            <svg className="w-full h-8 stroke-cyan-400 fill-none" viewBox="0 0 300 40">
+              <path
+                d="M 0 20 L 70 20 L 80 5 L 90 35 L 100 10 L 110 25 L 120 20 L 300 20"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-pulse"
+              />
+            </svg>
+          </div>
+
+          {/* Progress bar */}
+          <div className="space-y-2">
+            <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/10">
+              <div
+                className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${initProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-cyan-200/90 font-medium flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>{initStep}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-cyan-500 selection:text-white animate-in fade-in duration-300">
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -95,7 +171,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-cyan-50 text-teal-900 border border-teal-200 rounded-2xl font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2.5"
             >
               <BookOpen className="w-5 h-5 text-cyan-600" />
-              <span>Consulter la Brochure (PDF)</span>
+              <span>Consulter la Brochure Médicale</span>
             </button>
           </div>
 
@@ -226,7 +302,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
             >
               <FileText className="w-4 h-4 text-cyan-400" />
-              <span>Brochure</span>
+              <span>Brochure Médicale</span>
             </button>
             <button
               onClick={onGoToLogin}

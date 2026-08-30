@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   X, ChevronLeft, ChevronRight, Download, Printer, Activity,
   Shield, Dna, Brain, QrCode, BedDouble, Stethoscope, CheckCircle2,
-  Lock, Server, FileText, Sparkles, Building2
+  Lock, Scissors, FileText, Sparkles, Building2, HeartPulse, AlertTriangle
 } from 'lucide-react';
 import { printDocument, generateDocumentHeader, generateDocumentFooter } from '../../utils/exportUtils';
 import { useApp } from '../../context/AppContext';
@@ -31,11 +31,11 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
             <h1 style="font-size: 28px; margin: 0 0 10px 0; font-weight: 800;">SoftCare Hospital System</h1>
             <p style="font-size: 16px; margin: 0; opacity: 0.9;">Système d'Information Hospitalier (HIS) & Pôle Biotechnologies de Précision</p>
             <div style="margin-top: 15px; display: inline-block; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;">
-              Édition Institutionnelle 2026
+              Édition Médicale & Institutionnelle 2026
             </div>
           </div>
 
-          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">1. Vision Stratégique & Excellence Opérationnelle</h2>
+          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">1. Vision Stratégique & Excellence des Soins</h2>
           <p><strong>SoftCare</strong> est une plateforme hospitalière unifiée de nouvelle génération conçue pour décloisonner les services médicaux, sécuriser la dispensation pharmaceutique et intégrer la médecine génomique personnalisée au lit du patient.</p>
 
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -49,8 +49,8 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
                 <p style="margin: 5px 0 0 0; font-size: 11px; color: #155e75;">Temps de Prise en Charge Urgences</p>
               </td>
               <td style="padding: 15px; border: 1px solid #cffafe; width: 33%; text-align: center;">
-                <h3 style="color: #0e7490; margin: 0; font-size: 22px;">99.9%</h3>
-                <p style="margin: 5px 0 0 0; font-size: 11px; color: #155e75;">Disponibilité Haute Résilience</p>
+                <h3 style="color: #0e7490; margin: 0; font-size: 22px;">H24/7</h3>
+                <p style="margin: 5px 0 0 0; font-size: 11px; color: #155e75;">Continuité du Parcours Patient</p>
               </td>
             </tr>
           </table>
@@ -58,11 +58,11 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
 
         <!-- PAGE 2 -->
         <div style="page-break-after: always; padding: 30px 0;">
-          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">2. Dossier Patient & Traçabilité Pharmaceutique GS1</h2>
-          <p>Le module de pharmacie clinique intègre un moteur vectoriel autonome pour la génération d'étiquetage Code-barres (Code 128) et QR Codes 2D Datamatrix.</p>
+          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">2. Dossier Patient Informatisé & Circuit du Médicament</h2>
+          <p>Le module de pharmacie clinique intègre un étiquetage Code-barres (Code 128) et QR Codes 2D Datamatrix garantissant une dispensation sans faille :</p>
           <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
             <li><strong>Dossier Médical Électronique (DME) :</strong> Constantes hémodynamiques, antécédents, allergies et consultations.</li>
-            <li><strong>Scan Douchette en Temps Réel :</strong> Détection instantanée des médicaments et contrôle automatisé des dates de péremption.</li>
+            <li><strong>Contrôle à la délivrance :</strong> Détection instantanée des médicaments et vérification automatisée des dates de péremption et lots.</li>
             <li><strong>Point de Vente (POS) & Caisse :</strong> Vérification en direct des contre-indications médicamenteuses.</li>
           </ul>
         </div>
@@ -70,36 +70,34 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
         <!-- PAGE 3 -->
         <div style="page-break-after: always; padding: 30px 0;">
           <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">3. Pôle Biotechnologies & Pharmacogénomique (PGx)</h2>
-          <p>SoftCare intègre la médecine de précision au cœur des décisions cliniques conformément aux directives internationales CPIC et DPWG.</p>
+          <p>SoftCare intègre la médecine de précision au cœur des décisions cliniques conformément aux directives internationales CPIC et DPWG :</p>
           <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
             <li><strong>Sécurité PGx :</strong> Blocage automatique des prescriptions à risque toxicologique selon les génotypes (ex: <em>CYP2C19</em> pour le Clopidogrel, <em>DPYD</em> pour le 5-Fluorouracile).</li>
             <li><strong>Biobanque Cryogénique & LIMS :</strong> Gestion cartographique des congélateurs (-80°C et cuves d'azote -196°C) avec traçabilité des puits 2D.</li>
-            <li><strong>Essais Cliniques Translationnels :</strong> Suivi des cohortes de recrutement et des critères d'inclusion.</li>
+            <li><strong>Essais Cliniques Translationnels :</strong> Suivi des cohortes de recherche et des critères d'inclusion.</li>
           </ul>
         </div>
 
         <!-- PAGE 4 -->
         <div style="page-break-after: always; padding: 30px 0;">
           <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">4. Aide à la Décision Clinique par IA (CDS Hooks)</h2>
-          <p>Moteur d'inférence probabiliste analysant les symptômes déclarés et les antécédents pour orienter le praticien :</p>
+          <p>Moteur d'orientation diagnostique analysant les symptômes déclarés et les antécédents pour épauler le praticien :</p>
           <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
-            <li>Calcul des indices de confiance diagnostique (ex: Syndrome Coronarien vs Embolie Pulmonaire).</li>
+            <li>Calcul des indices de confiance diagnostique différentielle.</li>
             <li>Proposition d'examens complémentaires ciblés (ECG, Troponine, Gazométrie).</li>
-            <li>Alertes d'interactions croisées entre génétique et chimiothérapies.</li>
+            <li>Alertes d'interactions croisées entre génétique et protocoles thérapeutiques.</li>
           </ul>
         </div>
 
         <!-- PAGE 5 -->
         <div style="padding: 30px 0;">
-          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">5. Socle Technologique & Sécurité HDS</h2>
-          <p>Une architecture <strong>Clean Architecture</strong> moderne, éprouvée et prête pour le déploiement hospitalier :</p>
-          <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; line-height: 1.6;">
-            <div>• <strong>Backend :</strong> ASP.NET Core 9.0 (C# 13), Entity Framework Core 9, REST API OpenAPI v1.</div>
-            <div>• <strong>Base de Données :</strong> PostgreSQL 16 avec contraintes relationnelles et UUID v4.</div>
-            <div>• <strong>Temps Réel :</strong> WebSockets & Hub SignalR pour alertes urgences et dérives de température.</div>
-            <div>• <strong>Frontend :</strong> React 18, TypeScript, TailwindCSS, Moteur Vectoriel SVG autonome.</div>
-            <div>• <strong>Déploiement :</strong> Conteneurs Docker multi-stages et orchestration Docker Compose.</div>
-          </div>
+          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">5. Pôles Urgences, Bloc Opératoire & Hospitalisation</h2>
+          <p>Coordination en temps réel des flux de soins aigus et des lits hospitaliers :</p>
+          <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
+            <li><strong>Triage des Urgences :</strong> Échelle de criticité Manchester (Niveau 1 à 5) avec priorisation vitale immédiate.</li>
+            <li><strong>Bloc Opératoire :</strong> Planification des vacations chirurgicales, check-lists de sécurité et suivi anesthésique.</li>
+            <li><strong>Gestion Centralisée des Lits :</strong> Cartographie des disponibilités par service, admission directe et transferts fluides.</li>
+          </ul>
         </div>
 
         ${generateDocumentFooter(organizationSettings)}
@@ -120,7 +118,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-white">Brochure Officielle SoftCare</h3>
+                <h3 className="font-bold text-lg text-white">Brochure Médicale SoftCare</h3>
                 <span className="px-2.5 py-0.5 text-[9px] font-bold bg-white/20 border border-white/30 text-cyan-50 rounded-full">
                   Page {currentPage} / {totalPages}
                 </span>
@@ -180,7 +178,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
                 <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
                   <p className="text-3xl font-black text-teal-600">H24/7</p>
                   <p className="text-xs font-semibold text-gray-800 mt-1">Continuité des Soins</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Architecture haute disponibilité</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Parcours patient fluide</p>
                 </div>
               </div>
             </div>
@@ -213,7 +211,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
                 <div className="p-5 bg-slate-50 rounded-2xl border border-gray-200/70 space-y-2">
                   <h4 className="font-bold text-sm text-gray-900 flex items-center gap-2">
                     <QrCode className="w-4 h-4 text-teal-600" />
-                    <span>Moteur d'Étiquetage Vectoriel</span>
+                    <span>Moteur d'Étiquetage Pharmaceutique</span>
                   </h4>
                   <p className="text-xs text-gray-600">
                     Génération autonome de Code 128 et QR Codes 2D pour flacons, poches de perfusion et cryotubes de laboratoire.
@@ -296,35 +294,48 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
             </div>
           )}
 
-          {/* PAGE 5: ARCHITECTURE TECHNIQUE & SÉCURITÉ */}
+          {/* PAGE 5: URGENCES, BLOC & HOSPITALISATION */}
           {currentPage === 5 && (
             <div className="space-y-6 animate-in fade-in">
               <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                  <Server className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
+                  <HeartPulse className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Architecture .NET 9 & Sécurité HDS</h3>
-                  <p className="text-xs text-gray-500">Conception modulaire Clean Architecture pour les infrastructures hospitalières</p>
+                  <h3 className="text-lg font-bold text-gray-900">Urgences, Bloc Opératoire & Lits</h3>
+                  <p className="text-xs text-gray-500">Coordination hospitalière des soins critiques et continus</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100">
-                  <p className="font-bold text-gray-900">Backend ASP.NET Core 9</p>
-                  <p className="text-gray-600 mt-1">Clean Architecture (Domain, Application, Infrastructure, API REST OpenAPI).</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100 space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-gray-900">
+                    <AlertTriangle className="w-4 h-4 text-rose-500" />
+                    <span>Triage Urgences</span>
+                  </div>
+                  <p className="text-gray-600">
+                    Échelle de criticité Manchester (Niveau 1 à 5) pour la prise en charge immédiate des détresses vitales.
+                  </p>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100">
-                  <p className="font-bold text-gray-900">PostgreSQL 16 & EF Core</p>
-                  <p className="text-gray-600 mt-1">Schéma relationnel typé, indexations B-tree, UUID v4 et intégrité référentielle.</p>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100 space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-gray-900">
+                    <Scissors className="w-4 h-4 text-teal-600" />
+                    <span>Bloc Opératoire</span>
+                  </div>
+                  <p className="text-gray-600">
+                    Planification des salles d'opération, check-lists de sécurité de l'OMS et traçabilité anesthésique.
+                  </p>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100">
-                  <p className="font-bold text-gray-900">WebSockets & SignalR</p>
-                  <p className="text-gray-600 mt-1">Notifications temps réel pour les urgences vitales et alertes de biobanque.</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100">
-                  <p className="font-bold text-gray-900">Conteneurisation Docker</p>
-                  <p className="text-gray-600 mt-1">Déploiement reproductible et sécurisé via Docker Compose multi-stage.</p>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100 space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-gray-900">
+                    <BedDouble className="w-4 h-4 text-cyan-600" />
+                    <span>Gestion des Lits</span>
+                  </div>
+                  <p className="text-gray-600">
+                    Vue temps réel du taux d'occupation, régulation des lits de réanimation et transferts fluides.
+                  </p>
                 </div>
               </div>
             </div>
