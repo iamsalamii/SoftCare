@@ -64,8 +64,8 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex justify-center items-start sm:items-center p-3 sm:p-6 animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full my-auto overflow-hidden">
         {/* Header - SoftCare Medical Cyan / Teal Header */}
         <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white p-6 flex justify-between items-center">
           <div className="flex items-center gap-3">

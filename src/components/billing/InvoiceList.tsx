@@ -343,11 +343,16 @@ const InvoiceList: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setSelectedInvoice(invoice)}
-                            className="p-1 text-gray-400 hover:text-blue-600"
+                            className="p-1.5 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
+                            title="Aperçu de la facture"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="p-1 text-gray-400 hover:text-green-600">
+                          <button
+                            onClick={() => printCurrentInvoice(invoice)}
+                            className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                            title="Imprimer la facture"
+                          >
                             <Printer className="w-4 h-4" />
                           </button>
                         </div>
@@ -369,6 +374,7 @@ const InvoiceList: React.FC = () => {
         <InvoiceDetails
           invoice={selectedInvoice}
           onClose={() => setSelectedInvoice(null)}
+          onPrint={() => printCurrentInvoice(selectedInvoice)}
         />
       )}
     </div>
@@ -376,7 +382,7 @@ const InvoiceList: React.FC = () => {
 };
 
 // Composant Détails Facture
-const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void }> = ({ invoice, onClose }) => {
+const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint: () => void }> = ({ invoice, onClose, onPrint }) => {
   const { patients, insurances } = useApp();
   const patient = patients.find(p => p.id === invoice.patientId);
   const paidAmount = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
@@ -516,9 +522,12 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void }> = ({ i
                 Enregistrer un paiement
               </button>
             )}
-            <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+            <button
+              onClick={onPrint}
+              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl shadow-md shadow-teal-600/20 transition-all flex items-center justify-center gap-2 font-medium"
+            >
               <Printer className="w-4 h-4" />
-              Imprimer
+              Imprimer la facture
             </button>
           </div>
         </div>

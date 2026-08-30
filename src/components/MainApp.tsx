@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import SettingsModule from './settings/SettingsModule';
+import LandingPage from './landing/LandingPage';
 
 const MainApp: React.FC = () => {
   const { currentUser, currentView, setCurrentView, dataLoading, dataError, authLoading } = useApp();
+  const [showLogin, setShowLogin] = useState(false);
 
   const handleBackToHome = () => {
     setCurrentView('dashboard');
@@ -16,14 +18,18 @@ const MainApp: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Verification de la session...</p>
+          <p className="text-gray-500 text-sm font-medium">Vérification de la session médicale...</p>
         </div>
       </div>
     );
   }
 
+  // Not logged in: Show Landing Page or Login screen
   if (!currentUser) {
-    return <Login />;
+    if (!showLogin) {
+      return <LandingPage onGoToLogin={() => setShowLogin(true)} />;
+    }
+    return <Login onBackToLanding={() => setShowLogin(false)} />;
   }
 
   if (currentView === 'settings') {
@@ -35,7 +41,7 @@ const MainApp: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Chargement des donnees...</p>
+          <p className="text-gray-500 text-sm font-medium">Chargement des dossiers patients...</p>
         </div>
       </div>
     );
@@ -54,9 +60,9 @@ const MainApp: React.FC = () => {
           <p className="text-gray-500 text-sm">{dataError}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors"
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-colors shadow-md"
           >
-            Reessayer
+            Réessayer
           </button>
         </div>
       </div>
