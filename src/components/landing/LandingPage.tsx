@@ -481,38 +481,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               </button>
             </div>
 
-            {/* Live Interceptor Decision Engine Display */}
-            <div className="lg:col-span-7 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-800 space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-slate-800">
+            {/* Live Interceptor Decision Engine Display (Clean Medical Harmonized Aesthetic) */}
+            <div className="lg:col-span-7 bg-white text-gray-900 rounded-3xl p-6 sm:p-8 shadow-xl border border-cyan-100 space-y-6">
+              <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-base text-white">Intercepteur PGx en Temps Réel</h4>
-                    <p className="text-xs text-slate-400">Règle de décision : Recommandation CPIC Niveau 1A</p>
+                    <h4 className="font-bold text-base text-gray-900">Intercepteur PGx en Temps Réel</h4>
+                    <p className="text-xs text-gray-500">Règle de décision clinique : Consortium CPIC Niveau 1A</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-mono">
-                  ● Moteur Actif
+                <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Moteur Actif</span>
                 </span>
               </div>
 
               {selectedGene === 'CYP2C19' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="p-4 bg-rose-950/60 border border-rose-500/40 rounded-2xl space-y-2">
-                    <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
-                      <AlertTriangle className="w-4 h-4" />
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-rose-700 font-bold text-sm">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       <span>Alerte Bloquante : Inefficacité Thérapeutique du Clopidogrel</span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      Le patient est porteur du génotype <strong>CYP2C19 *2/*2</strong> (absence d'enzyme fonctionnelle). La bioactivation du Clopidogrel est nulle, entraînant un sur-risque majeur de thrombose de stent coronarien.
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      Le patient est porteur du génotype <strong>CYP2C19 *2/*2</strong> (absence d'enzyme fonctionnelle). La bioactivation du Clopidogrel est compromise, entraînant un sur-risque majeur de thrombose de stent coronarien.
                     </p>
                   </div>
 
-                  <div className="p-4 bg-slate-800/80 rounded-2xl border border-slate-700 space-y-2">
-                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Conduite Clinique Recommandée :</span>
-                    <p className="text-xs text-slate-200">
+                  <div className="p-4 bg-gradient-to-r from-teal-50/80 to-cyan-50/80 rounded-2xl border border-teal-200 space-y-2">
+                    <span className="text-xs font-bold text-teal-900 uppercase tracking-wider block">
+                      Conduite Clinique Recommandée :
+                    </span>
+                    <p className="text-xs text-gray-800 leading-relaxed">
                       👉 <strong>Remplacer immédiatement</strong> par le <strong>Prasugrel (10 mg/j)</strong> ou le <strong>Ticagrélor (90 mg x2/j)</strong>, dont l'efficacité antiagrégante ne dépend pas du CYP2C19.
                     </p>
                   </div>
@@ -520,20 +523,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               )}
 
               {selectedGene === 'DPYD' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="p-4 bg-rose-950/60 border border-rose-500/40 rounded-2xl space-y-2">
-                    <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
-                      <AlertTriangle className="w-4 h-4" />
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-rose-700 font-bold text-sm">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       <span>Alerte Majeure : Risque de Toxicité Létale aux Fluoropyrimidines</span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      Déficit en Dihydropyrimidine Déshydrogénase (DPD) génotype <strong>DPYD *2A</strong>. Risque d'aplasie médullaire sévère et de mucite de grade 4 dès la 1ère cure.
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      Déficit en Dihydropyrimidine Déshydrogénase (DPD) génotype <strong>DPYD *2A</strong>. Risque d'aplasie médullaire sévère et de mucite de grade 4 dès la première cure.
                     </p>
                   </div>
 
-                  <div className="p-4 bg-slate-800/80 rounded-2xl border border-slate-700 space-y-2">
-                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Conduite Clinique Recommandée :</span>
-                    <p className="text-xs text-slate-200">
+                  <div className="p-4 bg-gradient-to-r from-teal-50/80 to-cyan-50/80 rounded-2xl border border-teal-200 space-y-2">
+                    <span className="text-xs font-bold text-teal-900 uppercase tracking-wider block">
+                      Conduite Clinique Recommandée :
+                    </span>
+                    <p className="text-xs text-gray-800 leading-relaxed">
                       👉 <strong>Contre-indication absolue</strong> du 5-FU et de la Capécitabine. Réévaluation en Réunion de Concertation Pluridisciplinaire (RCP) Oncologique.
                     </p>
                   </div>
@@ -541,20 +546,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               )}
 
               {selectedGene === 'CYP2D6' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="p-4 bg-amber-950/60 border border-amber-500/40 rounded-2xl space-y-2">
-                    <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                      <AlertTriangle className="w-4 h-4" />
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       <span>Alerte : Métabolisation Ultra-Rapide de la Codéine</span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed">
+                    <p className="text-xs text-gray-700 leading-relaxed">
                       Multiplication génique du CYP2D6 provoquant une transformation massive et ultra-rapide de la codéine en morphine. Risque de surdosage et dépression respiratoire.
                     </p>
                   </div>
 
-                  <div className="p-4 bg-slate-800/80 rounded-2xl border border-slate-700 space-y-2">
-                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Conduite Clinique Recommandée :</span>
-                    <p className="text-xs text-slate-200">
+                  <div className="p-4 bg-gradient-to-r from-teal-50/80 to-cyan-50/80 rounded-2xl border border-teal-200 space-y-2">
+                    <span className="text-xs font-bold text-teal-900 uppercase tracking-wider block">
+                      Conduite Clinique Recommandée :
+                    </span>
+                    <p className="text-xs text-gray-800 leading-relaxed">
                       👉 <strong>Proscrire les prodrogues opioïdes</strong> (Codéine, Tramadol). Privilégier des antalgiques non métabolisés par le CYP2D6 (Morphine titrée ou Paracétamol/AINS).
                     </p>
                   </div>
@@ -562,34 +569,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               )}
 
               {selectedGene === 'SLCO1B1' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="p-4 bg-cyan-950/60 border border-cyan-500/40 rounded-2xl space-y-2">
-                    <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
-                      <AlertTriangle className="w-4 h-4" />
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-cyan-800 font-bold text-sm">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       <span>Alerte Myopathie : Transporteur Hépatique SLCO1B1 Altéré</span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed">
+                    <p className="text-xs text-gray-700 leading-relaxed">
                       Baisse de la clairance hépatique de la Simvastatine avec accumulation plasmatique et risque de rhabdomyolyse x5.
                     </p>
                   </div>
 
-                  <div className="p-4 bg-slate-800/80 rounded-2xl border border-slate-700 space-y-2">
-                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Conduite Clinique Recommandée :</span>
-                    <p className="text-xs text-slate-200">
-                      👉 <strong>Privilégier la Rosuvastatine</strong> à dose modérée ou l'Atorvastatine avec surveillance des CPK.
+                  <div className="p-4 bg-gradient-to-r from-teal-50/80 to-cyan-50/80 rounded-2xl border border-teal-200 space-y-2">
+                    <span className="text-xs font-bold text-teal-900 uppercase tracking-wider block">
+                      Conduite Clinique Recommandée :
+                    </span>
+                    <p className="text-xs text-gray-800 leading-relaxed">
+                      👉 <strong>Privilégier la Rosuvastatine</strong> à dose modérée ou l'Atorvastatine avec surveillance régulière des enzymes musculaires (CPK).
                     </p>
                   </div>
                 </div>
               )}
 
-              <div className="pt-2 flex justify-between items-center text-xs text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   Directives CPIC & PharmGKB 2026
                 </span>
                 <button
                   onClick={onGoToLogin}
-                  className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1"
+                  className="text-teal-700 hover:text-teal-900 font-bold flex items-center gap-1"
                 >
                   Ouvrir le Module Biotech Complet <ArrowRight className="w-3.5 h-3.5" />
                 </button>
