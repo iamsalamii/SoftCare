@@ -4,7 +4,7 @@ import {
   CheckCircle2, Users, BedDouble, Stethoscope, Clock, Award,
   Sparkles, Lock, Building2, ChevronRight, Phone, Mail, MapPin,
   FileText, Download, BookOpen, HeartPulse, AlertTriangle, Check,
-  Thermometer, Search, RefreshCw, Send, Layers, Play
+  Thermometer, Search, RefreshCw, Send, Layers, Play, Menu, X
 } from 'lucide-react';
 import BrochureModal from './BrochureModal';
 
@@ -14,6 +14,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
   const [showBrochureModal, setShowBrochureModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initStep, setInitStep] = useState('Connexion au réseau sécurisé hospitalier...');
   const [initProgress, setInitProgress] = useState(20);
@@ -144,11 +145,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-500/25">
-              <Activity className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-500/25 flex-shrink-0">
+              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
+              <span className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
                 SoftCare
               </span>
               <span className="hidden sm:inline-block ml-2 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-cyan-50 text-cyan-700 rounded-full border border-cyan-100">
@@ -190,16 +191,74 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </button>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onGoToLogin}
-              className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-2"
+              className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-1.5 sm:gap-2"
             >
-              <span>Espace Professionnel</span>
-              <ArrowRight className="w-4 h-4" />
+              <span className="hidden xs:inline">Espace Pro</span>
+              <span className="xs:hidden">Connexion</span>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-100 md:hidden transition-colors"
+              aria-label="Menu principal"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 bg-white/98 backdrop-blur-lg px-4 pt-3 pb-5 space-y-2 animate-in slide-in-from-top-4 duration-200 shadow-xl">
+            <a
+              href="#features"
+              onClick={(e) => {
+                scrollToSection(e, 'features');
+                setIsMobileMenuOpen(false);
+              }}
+              className="block px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors"
+            >
+              Fonctionnalités
+            </a>
+            <a
+              href="#biotech"
+              onClick={(e) => {
+                scrollToSection(e, 'biotech');
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors"
+            >
+              <Dna className="w-4 h-4 text-cyan-600" />
+              <span>Biotech & Pharmacogénomique (PGx)</span>
+            </a>
+            <a
+              href="#ai"
+              onClick={(e) => {
+                scrollToSection(e, 'ai');
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+            >
+              <Brain className="w-4 h-4 text-teal-600" />
+              <span>Intelligence Artificielle Clinique</span>
+            </a>
+            <button
+              onClick={() => {
+                setShowBrochureModal(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-teal-700 hover:bg-teal-50 transition-colors text-left"
+            >
+              <BookOpen className="w-4 h-4 text-cyan-600" />
+              <span>Brochure Médicale Complète</span>
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}

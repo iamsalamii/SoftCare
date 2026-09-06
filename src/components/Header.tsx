@@ -4,7 +4,17 @@ import { Bell, Search, Settings, User, LogOut, ChevronDown, CheckCircle, AlertTr
 import { MedicalAiAssistantModal } from './ai/MedicalAiAssistantModal';
 
 const Header: React.FC = () => {
-  const { currentUser, setCurrentUser, signOut, notifications, markNotificationRead, unreadCount, setCurrentView } = useApp();
+  const {
+    currentUser,
+    setCurrentUser,
+    signOut,
+    notifications,
+    markNotificationRead,
+    unreadCount,
+    setCurrentView,
+    sidebarCollapsed,
+    setSidebarCollapsed
+  } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
