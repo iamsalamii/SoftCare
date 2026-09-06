@@ -7,6 +7,8 @@ import {
   Thermometer, Search, RefreshCw, Send, Layers, Play, Menu, X
 } from 'lucide-react';
 import BrochureModal from './BrochureModal';
+import DemoRequestModal from './DemoRequestModal';
+import HeroVideoDemo from './HeroVideoDemo';
 
 interface LandingPageProps {
   onGoToLogin: () => void;
@@ -14,6 +16,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
   const [showBrochureModal, setShowBrochureModal] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initStep, setInitStep] = useState('Connexion au réseau sécurisé hospitalier...');
@@ -189,9 +192,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               <BookOpen className="w-4 h-4 text-cyan-600" />
               <span>Brochure Médicale</span>
             </button>
+            <button
+              onClick={() => setShowDemoModal(true)}
+              className="text-cyan-700 hover:text-cyan-900 font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Sparkles className="w-4 h-4 text-cyan-600" />
+              <span>Demander une Démo</span>
+            </button>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setShowDemoModal(true)}
+              className="hidden lg:flex px-4 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 rounded-xl text-xs sm:text-sm font-bold transition-all items-center gap-1.5"
+            >
+              <Play className="w-3.5 h-3.5 text-cyan-600" />
+              <span>Démo Live</span>
+            </button>
             <button
               onClick={onGoToLogin}
               className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-1.5 sm:gap-2"
@@ -257,6 +274,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               <BookOpen className="w-4 h-4 text-cyan-600" />
               <span>Brochure Médicale Complète</span>
             </button>
+            <button
+              onClick={() => {
+                setShowDemoModal(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-cyan-700 hover:bg-cyan-50 transition-colors text-left"
+            >
+              <Sparkles className="w-4 h-4 text-cyan-600" />
+              <span>Demander une Démo Personnalisée</span>
+            </button>
           </div>
         )}
       </header>
@@ -286,24 +313,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
-              onClick={onGoToLogin}
+              onClick={() => setShowDemoModal(true)}
               className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-2xl font-bold text-base shadow-xl shadow-teal-600/30 transition-all hover:scale-[1.02] flex items-center justify-center gap-3"
             >
-              <span>Accéder au Système Hospitalier</span>
+              <Sparkles className="w-5 h-5" />
+              <span>Demander une Démo Live</span>
               <ArrowRight className="w-5 h-5" />
             </button>
 
             <button
-              onClick={() => setShowBrochureModal(true)}
+              onClick={onGoToLogin}
               className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-cyan-50 text-teal-900 border border-teal-200 rounded-2xl font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2.5"
             >
-              <BookOpen className="w-5 h-5 text-cyan-600" />
-              <span>Consulter la Brochure Médicale</span>
+              <Stethoscope className="w-5 h-5 text-cyan-600" />
+              <span>Accéder à l'Espace Pro</span>
+            </button>
+
+            <button
+              onClick={() => setShowBrochureModal(true)}
+              className="w-full sm:w-auto px-6 py-4 bg-white/80 hover:bg-white text-gray-700 border border-gray-200 rounded-2xl font-semibold text-sm shadow-2xs transition-all flex items-center justify-center gap-2"
+            >
+              <BookOpen className="w-4 h-4 text-teal-600" />
+              <span>Brochure PDF</span>
             </button>
           </div>
 
+          {/* Video Demo Player in Hero */}
+          <div className="pt-8 pb-4">
+            <HeroVideoDemo
+              onRequestDemo={() => setShowDemoModal(true)}
+              onGoToLogin={onGoToLogin}
+            />
+          </div>
+
           {/* Quick Metrics */}
-          <div className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
               <p className="text-2xl sm:text-3xl font-extrabold text-teal-600">100%</p>
               <p className="text-xs text-gray-500 mt-1">Traçabilité GS1 / CIP</p>
@@ -817,6 +861,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setShowDemoModal(true)}
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Demander une Démo</span>
+            </button>
+            <button
               onClick={() => setShowBrochureModal(true)}
               className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
             >
@@ -837,6 +888,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
       <BrochureModal
         isOpen={showBrochureModal}
         onClose={() => setShowBrochureModal(false)}
+      />
+
+      {/* Interactive Demo Request Modal */}
+      <DemoRequestModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
       />
     </div>
   );
