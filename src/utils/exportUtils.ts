@@ -358,79 +358,155 @@ export const generateReceiptHTML = (
     amountReceived: number;
     change: number;
   },
-  organization: OrganizationSettings
+  organization: OrganizationSettings,
+  format: 'thermal' | 'a4' = 'thermal'
 ): string => {
+  const currency = organization.currencySymbol || '€';
   const rows = receipt.items.map(item => `
     <tr>
-      <td>${item.name}</td>
-      <td style="text-align: center;">${item.quantity}</td>
-      <td style="text-align: right;">${formatCurrency(item.price)}</td>
-      <td style="text-align: right;">${formatCurrency(item.total)}</td>
+      <td style="padding: 4px 0; text-align: left; font-size: ${format === 'thermal' ? '11px' : '13px'};">${item.name}</td>
+      <td style="padding: 4px 0; text-align: center; font-size: ${format === 'thermal' ? '11px' : '13px'};">${item.quantity}</td>
+      <td style="padding: 4px 0; text-align: right; font-size: ${format === 'thermal' ? '11px' : '13px'};">${item.price.toFixed(2)} ${currency}</td>
+      <td style="padding: 4px 0; text-align: right; font-weight: bold; font-size: ${format === 'thermal' ? '11px' : '13px'};">${item.total.toFixed(2)} ${currency}</td>
     </tr>
   `).join('');
 
+  if (format === 'thermal') {
+    return `
+      <div style="width: 76mm; max-width: 76mm; margin: 0 auto; font-family: 'Courier New', Courier, monospace; font-size: 11px; line-height: 1.3; color: #000; padding: 4px;">
+        <div style="text-align: center; margin-bottom: 12px;">
+          ${organization.logo ? `<img src="${organization.logo}" alt="Logo" style="max-height: 35px; margin-bottom: 6px;">` : ''}
+          <h2 style="margin: 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">${organization.name}</h2>
+          <p style="margin: 2px 0;">${organization.address}, ${organization.city}</p>
+          <p style="margin: 2px 0;">Tel: ${organization.phone}</p>
+        </div>
+
+        <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 6px 0; margin: 8px 0; text-align: center;">
+          <div style="font-weight: bold; font-size: 12px;">TICKET DE CAISSE PHARMACIE</div>
+          <div>Ticket N° : <strong>${receipt.number}</strong></div>
+          <div>Date : ${formatDate(receipt.date)} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+          <div>Client : ${receipt.customerName || 'Client Comptoir'}</div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 8px 0;">
+          <thead>
+            <tr style="border-bottom: 1px solid #000; font-size: 11px; text-align: left;">
+              <th style="padding-bottom: 4px;">Article</th>
+              <th style="text-align: center; padding-bottom: 4px;">Qté</th>
+              <th style="text-align: right; padding-bottom: 4px;">P.U</th>
+              <th style="text-align: right; padding-bottom: 4px;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+
+        <div style="border-top: 1px dashed #000; padding-top: 6px; margin-top: 6px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Sous-total HT :</span>
+            <span>${receipt.subtotal.toFixed(2)} ${currency}</span>
+          </div>
+          ${receipt.tax > 0 ? `
+          <div style="display: flex; justify-content: space-between;">
+            <span>TVA :</span>
+            <span>${receipt.tax.toFixed(2)} ${currency}</span>
+          </div>
+          ` : ''}
+          <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin: 6px 0; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 0;">
+            <span>TOTAL TTC :</span>
+            <span>${receipt.total.toFixed(2)} ${currency}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Règlement (${receipt.paymentMethod}) :</span>
+            <span>${receipt.amountReceived.toFixed(2)} ${currency}</span>
+          </div>
+          ${receipt.change > 0 ? `
+          <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span>Monnaie rendue :</span>
+            <span>${receipt.change.toFixed(2)} ${currency}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div style="text-align: center; margin-top: 14px; border-top: 1px dashed #000; padding-top: 8px; font-size: 10px;">
+          <p style="margin: 0; font-weight: bold;">Merci de votre confiance !</p>
+          <p style="margin: 2px 0;">Conservez ce ticket pour tout échange sous 48h.</p>
+          ${organization.taxId ? `<p style="margin: 2px 0;">NIF / TVA : ${organization.taxId}</p>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // Standard A4 Layout
   return `
-    <div style="text-align: center; margin-bottom: 20px;">
-      ${organization.logo ? `<img src="${organization.logo}" alt="Logo" style="max-height: 50px; margin-bottom: 10px;">` : ''}
-      <h1 style="margin: 0; font-size: 20px; color: ${organization.primaryColor};">${organization.name}</h1>
-      <p style="margin: 5px 0; font-size: 12px; color: #666;">${organization.address}, ${organization.city}</p>
-      <p style="margin: 0; font-size: 12px; color: #666;">Tel: ${organization.phone}</p>
-    </div>
-
-    <div style="text-align: center; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 10px 0; margin: 15px 0;">
-      <h2 style="margin: 0; font-size: 16px;">RECU DE PAIEMENT</h2>
-      <p style="margin: 5px 0; font-size: 12px;">N: ${receipt.number}</p>
-      <p style="margin: 0; font-size: 12px;">${formatDate(receipt.date)}</p>
-    </div>
-
-    <div style="margin: 15px 0;">
-      <p style="margin: 0; font-size: 12px;"><strong>Client:</strong> ${receipt.customerName || 'Client'}</p>
-    </div>
-
-    <table style="font-size: 11px; width: 100%;">
-      <thead>
-        <tr>
-          <th style="padding: 5px;">Article</th>
-          <th style="padding: 5px; width: 40px;">Qte</th>
-          <th style="padding: 5px; width: 60px;">Prix</th>
-          <th style="padding: 5px; width: 60px;">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>
-
-    <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
-      <div style="display: flex; justify-content: space-between; font-size: 12px;">
-        <span>Sous-total</span>
-        <span>${formatCurrency(receipt.subtotal)}</span>
+    <div style="max-width: 210mm; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid ${organization.primaryColor}; padding-bottom: 15px; margin-bottom: 20px;">
+        <div>
+          ${organization.logo ? `<img src="${organization.logo}" alt="Logo" style="max-height: 50px; margin-bottom: 8px;">` : ''}
+          <h1 style="margin: 0; font-size: 22px; color: ${organization.primaryColor};">${organization.name}</h1>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">${organization.address}, ${organization.city}</p>
+          <p style="margin: 0; font-size: 12px; color: #666;">Tél : ${organization.phone} | Email : ${organization.email || 'contact@hopital.com'}</p>
+        </div>
+        <div style="text-align: right;">
+          <div style="display: inline-block; background-color: ${organization.primaryColor}15; padding: 8px 16px; border-radius: 8px; border: 1px solid ${organization.primaryColor}40;">
+            <h2 style="margin: 0; font-size: 16px; color: ${organization.primaryColor};">FACTURE DE PHARMACIE</h2>
+            <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: bold;">N° ${receipt.number}</p>
+          </div>
+          <p style="margin: 6px 0 0 0; font-size: 12px; color: #666;">Date : ${formatDate(receipt.date)}</p>
+        </div>
       </div>
-      ${receipt.tax > 0 ? `
-      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px;">
-        <span>TVA</span>
-        <span>${formatCurrency(receipt.tax)}</span>
-      </div>
-      ` : ''}
-      <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd;">
-        <span>TOTAL</span>
-        <span>${formatCurrency(receipt.total)}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 5px;">
-        <span>Reglement: ${receipt.paymentMethod}</span>
-        <span>Recu: ${formatCurrency(receipt.amountReceived)}</span>
-      </div>
-      ${receipt.change > 0 ? `
-      <div style="display: flex; justify-content: space-between; font-size: 11px;">
-        <span>Monnaie</span>
-        <span>${formatCurrency(receipt.change)}</span>
-      </div>
-      ` : ''}
-    </div>
 
-    <div style="text-align: center; margin-top: 20px; font-size: 10px; color: #666;">
-      <p>Merci de votre visite!</p>
-      <p style="margin-top: 15px; font-size: 9px;">${organization.taxId ? `NIF: ${organization.taxId}` : ''}</p>
+      <div style="background-color: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+        <p style="margin: 0; font-size: 13px;"><strong>Patient / Acheteur :</strong> ${receipt.customerName || 'Client Comptoir'}</p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead>
+          <tr style="background-color: ${organization.primaryColor}; color: white;">
+            <th style="padding: 10px; text-align: left;">Désignation du Médicament</th>
+            <th style="padding: 10px; width: 60px; text-align: center;">Qté</th>
+            <th style="padding: 10px; width: 120px; text-align: right;">Prix Unitaire</th>
+            <th style="padding: 10px; width: 120px; text-align: right;">Montant Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <div style="width: 320px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+            <span>Sous-total HT :</span>
+            <span>${receipt.subtotal.toFixed(2)} ${currency}</span>
+          </div>
+          ${receipt.tax > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+            <span>TVA (${organization.taxRate}%) :</span>
+            <span>${receipt.tax.toFixed(2)} ${currency}</span>
+          </div>
+          ` : ''}
+          <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; border-top: 2px solid #cbd5e1; padding-top: 8px; color: ${organization.primaryColor};">
+            <span>TOTAL TTC :</span>
+            <span>${receipt.total.toFixed(2)} ${currency}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-top: 8px;">
+            <span>Mode : ${receipt.paymentMethod}</span>
+            <span>Reçu : ${receipt.amountReceived.toFixed(2)} ${currency}</span>
+          </div>
+          ${receipt.change > 0 ? `
+          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: #059669; margin-top: 4px;">
+            <span>Rendu :</span>
+            <span>${receipt.change.toFixed(2)} ${currency}</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 11px; color: #94a3b8;">
+        <p style="margin: 0;">${organization.name} — Délivrance pharmaceutique sécurisée</p>
+      </div>
     </div>
   `;
 };

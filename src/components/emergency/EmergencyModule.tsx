@@ -1,469 +1,503 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Plus, Search, AlertTriangle, Clock, User, Truck, ArrowRight, Download, FileSpreadsheet, Printer } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import {
+  AlertTriangle, Clock, User, Truck, ArrowRight, Download, FileSpreadsheet,
+  Printer, Plus, Search, CheckCircle2, Bed, Stethoscope, Edit3, X, Sparkles
+} from 'lucide-react';
 import { EmergencyVisit } from '../../types';
-import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel } from '../../utils/exportUtils';
+import CustomSelect from '../common/CustomSelect';
+import FormField from '../common/FormField';
+import { printDocument, generateDocumentHeader, generateDocumentFooter } from '../../utils/exportUtils';
 
-const EmergencyModule: React.FC = () => {
-  const { emergencyVisits, patients, users, beds, addEmergencyVisit, updateEmergencyVisit, organizationSettings } = useApp();
+export const EmergencyModule: React.FC = () => {
+  const {
+    emergencyVisits,
+    patients,
+    users,
+    beds,
+    addEmergencyVisit,
+    updateEmergencyVisit,
+    currentUser,
+    organizationSettings
+  } = useApp();
+
+  const toast = useToast();
   const [filterTriage, setFilterTriage] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showNewVisit, setShowNewVisit] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<EmergencyVisit | null>(null);
-  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const getPatientName = (patientId: string) => {
     const patient = patients.find(p => p.id === patientId);
-    return patient ? `${patient.firstName} ${patient.lastName}` : 'Inconnu';
+    return patient ? `${patient.firstName} ${patient.lastName}` : 'Patient non répertorié';
   };
 
-  const getDoctorName = (doctorId: string) => {
+  const getDoctorName = (doctorId?: string) => {
+    if (!doctorId) return 'Non assigné';
     const doctor = users.find(u => u.id === doctorId);
-    return doctor?.name || 'Non assigne';
+    return doctor ? doctor.name : 'Médecin de garde';
   };
 
   const getTriageColor = (level: number) => {
-    const colors = [
-      'bg-red-500 text-white',
-      'bg-orange-500 text-white',
-      'bg-yellow-500 text-white',
-      'bg-green-500 text-white',
-      'bg-blue-500 text-white'
-    ];
-    return colors[level - 1] || 'bg-gray-500';
+    switch (level) {
+      case 1: return 'bg-rose-600 text-white border-rose-700 shadow-rose-500/25';
+      case 2: return 'bg-orange-500 text-white border-orange-600 shadow-orange-500/25';
+      case 3: return 'bg-amber-400 text-slate-900 border-amber-500 shadow-amber-500/25';
+      case 4: return 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/25';
+      case 5: return 'bg-cyan-500 text-white border-cyan-600 shadow-cyan-500/25';
+      default: return 'bg-gray-400 text-white';
+    }
   };
 
   const getTriageLabel = (level: number) => {
-    const labels = ['Critique', 'Emergent', 'Urgent', 'Moins urgent', 'Non urgent'];
+    const labels = [
+      'Niveau 1 : Réanimation Immédiate',
+      'Niveau 2 : Très Urgent (<15 min)',
+      'Niveau 3 : Urgent (<60 min)',
+      'Niveau 4 : Moins Urgent (<120 min)',
+      'Niveau 5 : Non Urgent (<240 min)'
+    ];
     return labels[level - 1] || 'N/A';
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      waiting: 'bg-yellow-100 text-yellow-800',
-      'in-treatment': 'bg-blue-100 text-blue-800',
-      admitted: 'bg-purple-100 text-purple-800',
-      discharged: 'bg-green-100 text-green-800',
-      transferred: 'bg-gray-100 text-gray-800',
-      'left-ama': 'bg-red-100 text-red-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getStatusText = (status: string) => {
-    const texts: Record<string, string> = {
-      waiting: 'En attente',
-      'in-treatment': 'En traitement',
-      admitted: 'Hospitalise',
-      discharged: 'Sorti',
-      transferred: 'Transfere',
-      'left-ama': 'Parti'
-    };
-    return texts[status] || status;
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'waiting':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">En attente</span>;
+      case 'in-treatment':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 animate-pulse">En cours de soins</span>;
+      case 'admitted':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Hospitalisé en service</span>;
+      case 'discharged':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Sortie autorisée</span>;
+      case 'transferred':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">Transféré</span>;
+      default:
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">{status}</span>;
+    }
   };
 
   const filteredVisits = emergencyVisits.filter(visit => {
+    const pName = getPatientName(visit.patientId).toLowerCase();
+    const matchesSearch = pName.includes(searchTerm.toLowerCase()) || visit.chiefComplaint.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTriage = filterTriage === 'all' || visit.triageLevel.toString() === filterTriage;
     const matchesStatus = filterStatus === 'all' || visit.status === filterStatus;
-    return matchesTriage && matchesStatus;
+    return matchesSearch && matchesTriage && matchesStatus;
   });
 
-  const stats = {
-    total: emergencyVisits.length,
-    waiting: emergencyVisits.filter(v => v.status === 'waiting').length,
-    critical: emergencyVisits.filter(v => v.triageLevel <= 2).length,
-    avgWaitTime: '45 min'
+  const handleTakeCharge = async (visit: EmergencyVisit, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const assignedDoc = currentUser?.id || users.find(u => u.role === 'doctor')?.id || '1';
+    const updated: EmergencyVisit = {
+      ...visit,
+      status: 'in-treatment',
+      assignedDoctorId: assignedDoc
+    };
+
+    await updateEmergencyVisit(visit.id, updated);
+    toast.success('Patient pris en charge !', `${getPatientName(visit.patientId)} est maintenant en cours de soins.`);
   };
 
-  const generateEmergencyHTML = () => {
+  const handlePrintEmergencyRegister = async () => {
     const rows = filteredVisits.map(v => `
-      <tr>
-        <td style="padding: 10px; border: 1px solid #ddd;">${getPatientName(v.patientId)}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${getTriageLabel(v.triageLevel)} (${v.triageLevel})</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${new Date(v.arrivalTime).toLocaleString('fr-FR')}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${v.chiefComplaint}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${getStatusText(v.status)}</td>
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 8px; font-weight: bold;">${getPatientName(v.patientId)}</td>
+        <td style="padding: 8px; text-align: center;">Niveau ${v.triageLevel}</td>
+        <td style="padding: 8px; text-align: center;">${new Date(v.arrivalTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</td>
+        <td style="padding: 8px;">${v.chiefComplaint}</td>
+        <td style="padding: 8px; text-align: center;">${v.status}</td>
+        <td style="padding: 8px;">Dr. ${getDoctorName(v.assignedDoctorId)}</td>
       </tr>
     `).join('');
 
-    return `
-      ${generateDocumentHeader(organizationSettings, 'report', `URG-${Date.now().toString().slice(-8)}`)}
-      <h2 style="margin: 20px 0; color: #333;">Passages aux Urgences</h2>
-      <p style="color: #666; margin-bottom: 20px;">Total: ${stats.total} | En attente: ${stats.waiting} | Critiques: ${stats.critical}</p>
-      <table style="width: 100%; border-collapse: collapse;">
+    const html = `
+      ${generateDocumentHeader(organizationSettings, 'report', `URG-${Date.now().toString().slice(-6)}`)}
+      <h2 style="margin: 20px 0 10px 0; color: ${organizationSettings.primaryColor};">REGISTRE DES ADMISSIONS D'URGENCE</h2>
+      <p style="color: #64748b; font-size: 13px; margin-bottom: 20px;">Date : ${new Date().toLocaleString('fr-FR')} | Total : ${filteredVisits.length} passages</p>
+
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
         <thead>
-          <tr style="background-color: ${organizationSettings.primaryColor};">
-            <th style="padding: 10px; color: white; text-align: left;">Patient</th>
-            <th style="padding: 10px; color: white; text-align: left;">Triage</th>
-            <th style="padding: 10px; color: white; text-align: left;">Arrivee</th>
-            <th style="padding: 10px; color: white; text-align: left;">Motif</th>
-            <th style="padding: 10px; color: white; text-align: left;">Statut</th>
+          <tr style="background: ${organizationSettings.primaryColor}; color: white;">
+            <th style="padding: 8px; text-align: left;">Patient</th>
+            <th style="padding: 8px; text-align: center;">Triage</th>
+            <th style="padding: 8px; text-align: center;">Arrivée</th>
+            <th style="padding: 8px; text-align: left;">Motif d'Urgence</th>
+            <th style="padding: 8px; text-align: center;">Statut</th>
+            <th style="padding: 8px; text-align: left;">Praticien</th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
+        <tbody>
+          ${rows}
+        </tbody>
       </table>
+
       ${generateDocumentFooter(organizationSettings)}
     `;
-  };
 
-  const handleExportPDF = async () => {
-    await printDocument(generateEmergencyHTML(), organizationSettings, 'Urgences');
-    setShowExportMenu(false);
-  };
-
-  const handleExportExcel = () => {
-    const data = filteredVisits.map(v => ({
-      patient: getPatientName(v.patientId),
-      triage: `${getTriageLabel(v.triageLevel)} (${v.triageLevel})`,
-      arrivee: new Date(v.arrivalTime).toLocaleString('fr-FR'),
-      motif: v.chiefComplaint,
-      statut: getStatusText(v.status)
-    }));
-    exportToExcel(data, 'Urgences', ['Patient', 'Triage', 'Arrivee', 'Motif', 'Statut']);
-    setShowExportMenu(false);
-  };
-
-  const handlePrint = async () => {
-    await printDocument(generateEmergencyHTML(), organizationSettings, 'Urgences');
-    setShowExportMenu(false);
+    await printDocument(html, organizationSettings, 'Registre-Urgences');
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Service des Urgences</h1>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Exporter
-            </button>
-
-            {showExportMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                  <button
-                    onClick={handleExportPDF}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <Download className="w-4 h-4 text-red-500" />
-                    <span>Exporter PDF</span>
-                  </button>
-                  <button
-                    onClick={handleExportExcel}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <FileSpreadsheet className="w-4 h-4 text-green-500" />
-                    <span>Exporter Excel</span>
-                  </button>
-                  <button
-                    onClick={handlePrint}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <Printer className="w-4 h-4 text-blue-500" />
-                    <span>Imprimer</span>
-                  </button>
-                </div>
-              </>
-            )}
+          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+            <AlertTriangle className="w-6 h-6" />
           </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Urgences & Triage Hospitalier</h1>
+            <p className="text-xs text-gray-500">
+              Échelle de triage Manchester/Manchot, régulation et orientation des urgences.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePrintEmergencyRegister}
+            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Imprimer Registre</span>
+          </button>
 
           <button
             onClick={() => setShowNewVisit(true)}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
+            className="px-5 py-2.5 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-600/25 transition-all flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
-            Nouvelle admission
+            <span>Nouvelle Admission Urgence</span>
           </button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">En cours aujourd'hui</p>
-          <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+      {/* Triage Interactive Scale */}
+      <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-3">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+            File d'Attente par Niveau de Triage
+          </h2>
+          {filterTriage !== 'all' && (
+            <button
+              onClick={() => setFilterTriage('all')}
+              className="text-xs text-cyan-700 font-bold hover:underline"
+            >
+              Afficher tous les niveaux
+            </button>
+          )}
         </div>
-        <div className="bg-yellow-50 rounded-lg shadow-sm border border-yellow-200 p-4">
-          <p className="text-sm text-yellow-600">En attente</p>
-          <p className="text-3xl font-bold text-yellow-700">{stats.waiting}</p>
-        </div>
-        <div className="bg-red-50 rounded-lg shadow-sm border border-red-200 p-4">
-          <p className="text-sm text-red-600">Cas critiques</p>
-          <p className="text-3xl font-bold text-red-700">{stats.critical}</p>
-        </div>
-        <div className="bg-blue-50 rounded-lg shadow-sm border border-blue-200 p-4">
-          <p className="text-sm text-blue-600">Temps moyen attente</p>
-          <p className="text-3xl font-bold text-blue-700">{stats.avgWaitTime}</p>
-        </div>
-      </div>
 
-      {/* Triage Board */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Échelle de triage (Manchot)</h2>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[1, 2, 3, 4, 5].map(level => {
-            const count = emergencyVisits.filter(v => v.triageLevel === level && v.status === 'waiting').length;
+            const count = emergencyVisits.filter(v => v.triageLevel === level && v.status !== 'discharged').length;
+            const isSelected = filterTriage === level.toString();
             return (
-              <div
+              <button
                 key={level}
-                className={`${getTriageColor(level)} rounded-lg p-4 text-center cursor-pointer hover:opacity-80 transition-opacity`}
-                onClick={() => setFilterTriage(filterTriage === level.toString() ? 'all' : level.toString())}
+                type="button"
+                onClick={() => setFilterTriage(isSelected ? 'all' : level.toString())}
+                className={`p-4 rounded-2xl border text-center transition-all ${getTriageColor(level)} ${
+                  isSelected ? 'ring-4 ring-offset-2 ring-slate-900 scale-105' : 'hover:opacity-90'
+                }`}
               >
-                <p className="text-4xl font-bold">{level}</p>
-                <p className="text-sm">{getTriageLabel(level)}</p>
-                <p className="mt-2 text-lg">{count} patient(s)</p>
-              </div>
+                <p className="text-2xl font-black">{level}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider opacity-90 mt-0.5">
+                  {level === 1 ? 'Réa / STAT' : level === 2 ? 'Très Urgent' : level === 3 ? 'Urgent' : level === 4 ? 'Relatif' : 'Non Urgent'}
+                </p>
+                <p className="text-xs font-black mt-2 bg-black/20 rounded-full py-0.5 px-2 w-fit mx-auto">
+                  {count} en cours
+                </p>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-4">
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Tous les statuts</option>
-          <option value="waiting">En attente</option>
-          <option value="in-treatment">En traitement</option>
-          <option value="admitted">Hospitalisé</option>
-          <option value="discharged">Sorti</option>
-        </select>
+      {/* Filters & Search */}
+      <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Rechercher patient ou motif..."
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium"
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="waiting">En attente</option>
+            <option value="in-treatment">En cours de soins</option>
+            <option value="admitted">Hospitalisé</option>
+            <option value="discharged">Sortie autorisée</option>
+          </select>
+        </div>
       </div>
 
-      {/* Patient List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      {/* Emergency Visits Cards */}
+      <div className="space-y-3">
         {filteredVisits.length === 0 ? (
-          <div className="text-center py-12">
-            <AlertTriangle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Aucune visite aux urgences</p>
+          <div className="bg-white rounded-3xl p-12 text-center text-gray-400 border border-gray-100 space-y-2">
+            <AlertTriangle className="w-12 h-12 mx-auto text-gray-300" />
+            <p className="text-xs font-semibold">Aucun passage aux urgences correspondant</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {filteredVisits
-              .sort((a, b) => a.triageLevel - b.triageLevel)
-              .map((visit) => {
-                const patient = patients.find(p => p.id === visit.patientId);
-                return (
-                  <div
-                    key={visit.id}
-                    className={`p-6 hover:bg-gray-50 cursor-pointer border-l-4 ${
-                      visit.triageLevel === 1 ? 'border-red-500' :
-                      visit.triageLevel === 2 ? 'border-orange-500' :
-                      visit.triageLevel === 3 ? 'border-yellow-500' :
-                      visit.triageLevel === 4 ? 'border-green-500' : 'border-blue-500'
-                    }`}
-                    onClick={() => setSelectedVisit(visit)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${getTriageColor(visit.triageLevel)}`}>
-                            {visit.triageLevel}
-                          </span>
-                          <span className="font-medium text-gray-900">{getPatientName(visit.patientId)}</span>
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(visit.status)}`}>
-                            {getStatusText(visit.status)}
-                          </span>
-                        </div>
+          filteredVisits
+            .sort((a, b) => a.triageLevel - b.triageLevel)
+            .map((visit) => (
+              <div
+                key={visit.id}
+                onClick={() => setSelectedVisit(visit)}
+                className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs"
+              >
+                <div className="flex items-start gap-4 min-w-0">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg flex-shrink-0 shadow-md ${getTriageColor(visit.triageLevel)}`}>
+                    {visit.triageLevel}
+                  </div>
 
-                        <p className="text-gray-700 mb-2">{visit.chiefComplaint}</p>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-black text-sm text-gray-900">
+                        {getPatientName(visit.patientId)}
+                      </span>
+                      {getStatusBadge(visit.status)}
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-500 font-medium flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        Arrivée : {new Date(visit.arrivalTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
 
-                        <div className="flex items-center gap-6 text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{new Date(visit.arrivalTime).toLocaleString('fr-FR')}</span>
-                          </div>
-                          {visit.assignedDoctorId && (
-                            <div className="flex items-center gap-1">
-                              <User className="w-4 h-4" />
-                              <span>Dr. {getDoctorName(visit.assignedDoctorId)}</span>
-                            </div>
-                          )}
-                          {visit.arrivalMode !== 'walking' && (
-                            <div className="flex items-center gap-1">
-                              <Truck className="w-4 h-4" />
-                              <span>{visit.arrivalMode}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <p className="text-xs font-medium text-gray-700 leading-snug">
+                      Motif : <span className="font-bold text-gray-900">{visit.chiefComplaint}</span>
+                    </p>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 flex items-center gap-1"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                          Prendre en charge
-                        </button>
-                      </div>
+                    <div className="flex items-center gap-4 text-gray-500 text-[11px] pt-0.5">
+                      <span>Praticien : <strong className="text-gray-700">Dr. {getDoctorName(visit.assignedDoctorId)}</strong></span>
+                      {visit.arrivalMode && (
+                        <span>Mode : <strong className="capitalize text-gray-700">{visit.arrivalMode}</strong></span>
+                      )}
                     </div>
                   </div>
-                );
-              })}
-          </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  {visit.status === 'waiting' && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleTakeCharge(visit, e)}
+                      className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl font-bold text-xs shadow-md shadow-teal-600/20 flex items-center gap-1.5 transition-all"
+                    >
+                      <Stethoscope className="w-4 h-4" />
+                      <span>Prendre en charge</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVisit(visit)}
+                    className="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Modifier / Gérer</span>
+                  </button>
+                </div>
+              </div>
+            ))
         )}
       </div>
 
-      {/* New Visit Modal */}
-      {showNewVisit && <NewEmergencyVisit onClose={() => setShowNewVisit(false)} />}
+      {/* Modal 1: Nouvelle Admission */}
+      {showNewVisit && (
+        <NewEmergencyVisitModal
+          patients={patients}
+          onClose={() => setShowNewVisit(false)}
+          onSave={async (visit) => {
+            await addEmergencyVisit(visit);
+            toast.success('Patient admis aux urgences', `Triage Niveau ${visit.triageLevel}`);
+            setShowNewVisit(false);
+          }}
+        />
+      )}
 
-      {/* Visit Details Modal */}
+      {/* Modal 2: Détails & Modification de l'Admission */}
       {selectedVisit && (
-        <EmergencyVisitDetails
+        <EmergencyVisitDetailsModal
           visit={selectedVisit}
+          patients={patients}
+          users={users}
           onClose={() => setSelectedVisit(null)}
+          onUpdate={async (updated) => {
+            await updateEmergencyVisit(updated.id, updated);
+            toast.success('Dossier d\'urgence mis à jour', `Statut : ${updated.status}`);
+            setSelectedVisit(null);
+          }}
         />
       )}
     </div>
   );
 };
 
-// Nouvelle visite
-const NewEmergencyVisit: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { patients, users, addEmergencyVisit } = useApp();
-  const [isNewPatient, setIsNewPatient] = useState(true);
-  const [selectedPatient, setSelectedPatient] = useState('');
-  const [formData, setFormData] = useState({
-    arrivalMode: 'walking',
-    chiefComplaint: '',
-    triageLevel: 3
-  });
+// Sub-Modal : Nouvelle Admission
+const NewEmergencyVisitModal: React.FC<{
+  patients: any[];
+  onClose: () => void;
+  onSave: (visit: EmergencyVisit) => void;
+}> = ({ patients, onClose, onSave }) => {
+  const { currentUser, users } = useApp();
+  const [patientId, setPatientId] = useState(patients[0]?.id || '');
+  const [chiefComplaint, setChiefComplaint] = useState('');
+  const [triageLevel, setTriageLevel] = useState<number>(3);
+  const [arrivalMode, setArrivalMode] = useState<string>('walking');
+  const [assignedDoctorId, setAssignedDoctorId] = useState<string>(
+    currentUser?.id || users.find(u => u.role === 'doctor')?.id || ''
+  );
+
+  const patientOptions = patients.map(p => ({
+    value: p.id,
+    label: `${p.firstName} ${p.lastName} (${p.phone || 'Sans tél'})`
+  }));
+
+  const doctorOptions = [
+    { value: '', label: 'Non assigné (File d\'attente)' },
+    ...users.filter(u => u.role === 'doctor' || u.role === 'surgeon').map(u => ({
+      value: u.id,
+      label: u.name
+    }))
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!patientId || !chiefComplaint.trim()) return;
 
-    const visit: EmergencyVisit = {
-      id: Date.now().toString(),
-      patientId: selectedPatient || Date.now().toString(),
+    onSave({
+      id: `URG-${Date.now()}`,
+      patientId,
       arrivalTime: new Date().toISOString(),
-      arrivalMode: formData.arrivalMode as any,
-      chiefComplaint: formData.chiefComplaint,
-      triageLevel: formData.triageLevel as 1 | 2 | 3 | 4 | 5,
-      triageTime: new Date().toISOString(),
-      triageBy: '2',
-      status: 'waiting'
-    };
-
-    addEmergencyVisit(visit);
-    onClose();
+      arrivalMode: arrivalMode as any,
+      chiefComplaint: chiefComplaint.trim(),
+      triageLevel: triageLevel as any,
+      status: assignedDoctorId ? 'in-treatment' : 'waiting',
+      assignedDoctorId: assignedDoctorId || undefined
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Nouvelle admission urgences</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <Plus className="w-6 h-6 rotate-45" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+      <div className="bg-white rounded-3xl shadow-2xl border border-rose-100 max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-gray-900">Nouvelle Admission aux Urgences</h3>
+              <p className="text-xs text-gray-500">Triage immédiat et enregistrement du motif</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-xl">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Patient</label>
-            {isNewPatient ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">Nouveau patient non enregistré</p>
-                <button
-                  type="button"
-                  onClick={() => setIsNewPatient(false)}
-                  className="text-sm text-blue-600 hover:underline mt-1"
-                >
-                  Rechercher un patient existant
-                </button>
-              </div>
-            ) : (
-              <select
-                value={selectedPatient}
-                onChange={(e) => setSelectedPatient(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Sélectionner un patient</option>
-                {patients.map(p => (
-                  <option key={p.id} value={p.id}>{p.firstName} {p.lastName}</option>
-                ))}
-              </select>
-            )}
-          </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 modal-scroll max-h-[80vh]">
+          <FormField label="Dossier Patient" required={true}>
+            <CustomSelect
+              options={patientOptions}
+              value={patientId}
+              onChange={(val) => setPatientId(val)}
+              searchable={true}
+            />
+          </FormField>
 
+          <FormField label="Motif d'Urgence / Plaintes Principales" required={true} value={chiefComplaint} showWordCount={true}>
+            <textarea
+              rows={3}
+              required
+              value={chiefComplaint}
+              onChange={(e) => setChiefComplaint(e.target.value)}
+              placeholder="Ex: Douleur thoracique irradiant dans le bras gauche, dyspnée aiguë..."
+              className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-semibold"
+            />
+          </FormField>
+
+          {/* Triage Level Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Mode d'arrivée</label>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { value: 'walking', label: 'Marche' },
-                { value: 'ambulance', label: 'Ambulance' },
-                { value: 'helicopter', label: 'Hélicoptère' },
-                { value: 'other', label: 'Autre' }
-              ].map(mode => (
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Niveau de Gravité (Triage Manchot) <span className="text-rose-500">*</span>
+            </label>
+            <div className="grid grid-cols-5 gap-1.5">
+              {[1, 2, 3, 4, 5].map((lvl) => (
                 <button
-                  key={mode.value}
+                  key={lvl}
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, arrivalMode: mode.value }))}
-                  className={`px-3 py-2 rounded-lg border ${
-                    formData.arrivalMode === mode.value
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
-                      : 'border-gray-300'
+                  onClick={() => setTriageLevel(lvl)}
+                  className={`py-3 px-1 rounded-xl text-center font-black transition-all ${
+                    triageLevel === lvl
+                      ? 'ring-2 ring-slate-900 scale-105 shadow-md ' + (
+                          lvl === 1 ? 'bg-rose-600 text-white' :
+                          lvl === 2 ? 'bg-orange-500 text-white' :
+                          lvl === 3 ? 'bg-amber-400 text-slate-900' :
+                          lvl === 4 ? 'bg-emerald-500 text-white' : 'bg-cyan-500 text-white'
+                        )
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {mode.label}
+                  <span className="text-lg block">{lvl}</span>
+                  <span className="text-[9px] block font-semibold">{lvl === 1 ? 'STAT' : `Niv.${lvl}`}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Motif de recours</label>
-            <textarea
-              value={formData.chiefComplaint}
-              onChange={(e) => setFormData(prev => ({ ...prev, chiefComplaint: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Décrivez le motif de la visite..."
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Mode d'Arrivée">
+              <select
+                value={arrivalMode}
+                onChange={(e) => setArrivalMode(e.target.value)}
+                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold"
+              >
+                <option value="walking">Consultation spontanée (À pied)</option>
+                <option value="ambulance">Ambulance privée</option>
+                <option value="samu">SAMU / SMUR (15)</option>
+                <option value="firefighters">Sapeurs-Pompiers (18)</option>
+                <option value="police">Police / Gendarmerie</option>
+              </select>
+            </FormField>
+
+            <FormField label="Médecin Praticien Assigné">
+              <CustomSelect
+                options={doctorOptions}
+                value={assignedDoctorId}
+                onChange={(val) => setAssignedDoctorId(val)}
+                searchable={true}
+              />
+            </FormField>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Niveau de triage</label>
-            <div className="grid grid-cols-5 gap-2">
-              {[1, 2, 3, 4, 5].map(level => {
-                const colors = ['bg-red-500 text-white', 'bg-orange-500 text-white', 'bg-yellow-500 text-white', 'bg-green-500 text-white', 'bg-blue-500 text-white'];
-                const labels = ['Critique', 'Émergent', 'Urgent', 'Moins urgent', 'Non urgent'];
-                return (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, triageLevel: level as any }))}
-                    className={`p-3 rounded-lg text-center ${
-                      formData.triageLevel === level ? colors[level - 1] + ' ring-2 ring-offset-2 ring-blue-500' : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
-                  >
-                    <p className="text-xl font-bold">{level}</p>
-                    <p className="text-xs">{labels[level - 1]}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-4 border-t">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200"
+            >
               Annuler
             </button>
-            <button type="submit" className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-              Admettre aux urgences
+            <button
+              type="submit"
+              className="px-5 py-2 bg-gradient-to-r from-rose-600 to-red-700 text-white rounded-xl text-xs font-bold shadow-md"
+            >
+              Admettre aux Urgences
             </button>
           </div>
         </form>
@@ -472,49 +506,105 @@ const NewEmergencyVisit: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   );
 };
 
-// Détails visite
-const EmergencyVisitDetails: React.FC<{ visit: EmergencyVisit; onClose: () => void }> = ({ visit, onClose }) => {
-  const { patients, users } = useApp();
+// Sub-Modal : Détails et Modification de l'Admission
+const EmergencyVisitDetailsModal: React.FC<{
+  visit: EmergencyVisit;
+  patients: any[];
+  users: any[];
+  onClose: () => void;
+  onUpdate: (updated: EmergencyVisit) => void;
+}> = ({ visit, patients, users, onClose, onUpdate }) => {
   const patient = patients.find(p => p.id === visit.patientId);
 
+  const [status, setStatus] = useState(visit.status);
+  const [triageLevel, setTriageLevel] = useState<number>(visit.triageLevel);
+  const [chiefComplaint, setChiefComplaint] = useState(visit.chiefComplaint);
+  const [assignedDoctorId, setAssignedDoctorId] = useState(visit.assignedDoctorId || '');
+
+  const doctorOptions = [
+    { value: '', label: 'Non assigné' },
+    ...users.filter(u => u.role === 'doctor' || u.role === 'surgeon').map(u => ({
+      value: u.id,
+      label: u.name
+    }))
+  ];
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdate({
+      ...visit,
+      status: status as any,
+      triageLevel: triageLevel as any,
+      chiefComplaint,
+      assignedDoctorId: assignedDoctorId || undefined
+    });
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Détails du passage</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <Plus className="w-6 h-6 rotate-45" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+      <div className="bg-white rounded-3xl shadow-2xl border border-rose-100 max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+          <div>
+            <h3 className="font-bold text-base text-gray-900">Dossier d'Urgence #{visit.id}</h3>
+            <p className="text-xs text-gray-500">
+              Patient : <span className="font-bold text-gray-900">{patient?.firstName} {patient?.lastName}</span>
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-xl">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Patient</p>
-            <p className="font-medium">{patient?.firstName} {patient?.lastName}</p>
-          </div>
+        <form onSubmit={handleSave} className="p-6 space-y-4 modal-scroll max-h-[80vh]">
+          <FormField label="Statut de la Prise en Charge" required={true}>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as any)}
+              className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold"
+            >
+              <option value="waiting">En attente</option>
+              <option value="in-treatment">En cours de soins / Traitement</option>
+              <option value="admitted">Hospitalisé en service de soins</option>
+              <option value="discharged">Sortie autorisée (Domicile)</option>
+              <option value="transferred">Transféré vers autre établissement</option>
+            </select>
+          </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Arrivée</p>
-              <p className="font-medium">{new Date(visit.arrivalTime).toLocaleString('fr-FR')}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Mode</p>
-              <p className="font-medium capitalize">{visit.arrivalMode}</p>
-            </div>
-          </div>
+          <FormField label="Motif d'Urgence" required={true} value={chiefComplaint} showWordCount={true}>
+            <textarea
+              rows={3}
+              required
+              value={chiefComplaint}
+              onChange={(e) => setChiefComplaint(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold"
+            />
+          </FormField>
 
-          <div>
-            <p className="text-sm text-gray-500">Motif</p>
-            <p className="font-medium">{visit.chiefComplaint}</p>
-          </div>
+          <FormField label="Médecin Praticien Assigné">
+            <CustomSelect
+              options={doctorOptions}
+              value={assignedDoctorId}
+              onChange={(val) => setAssignedDoctorId(val)}
+              searchable={true}
+            />
+          </FormField>
 
-          <div className="flex gap-3 pt-4 border-t">
-            <button onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200"
+            >
               Fermer
             </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-gradient-to-r from-rose-600 to-red-700 text-white rounded-xl text-xs font-bold shadow-md"
+            >
+              Enregistrer Modifications
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

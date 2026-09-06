@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import {
   BarChart3, TrendingUp, Users, Calendar, Pill, FileText,
   Download, FileSpreadsheet, Printer, Activity, PieChart,
-  ArrowUpRight, ArrowDownRight, Layers, Sparkles, BedDouble
+  ArrowUpRight, ArrowDownRight, Layers, Sparkles, BedDouble, Dna
 } from 'lucide-react';
 import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel, formatCurrency } from '../../utils/exportUtils';
 
@@ -11,8 +11,10 @@ export const Reports: React.FC = () => {
   const { patients, appointments, medications, medicalRecords, users, organizationSettings, beds, invoices } = useApp();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
-  // Period label
+  const currency = organizationSettings?.currencySymbol || '€';
+
   const periodLabel = {
     week: 'Cette semaine',
     month: 'Ce mois-ci',
@@ -28,53 +30,42 @@ export const Reports: React.FC = () => {
   const bedOccupancyRate = Math.round((occupiedBeds / totalBeds) * 100);
   const totalRevenue = invoices.reduce((acc, inv) => acc + inv.total, 0);
 
-  // Mock Trend Series for Curves (7 points or 12 months)
+  // Dynamic monthly telemetry dataset
   const monthlyActivityData = [
-    { label: 'Jan', consultations: 145, urgences: 85, biotheque: 30 },
-    { label: 'Fév', consultations: 180, urgences: 92, biotheque: 42 },
-    { label: 'Mar', consultations: 210, urgences: 110, biotheque: 55 },
-    { label: 'Avr', consultations: 195, urgences: 98, biotheque: 60 },
-    { label: 'Mai', consultations: 240, urgences: 125, biotheque: 78 },
-    { label: 'Juin', consultations: 290, urgences: 140, biotheque: 95 },
-    { label: 'Juil', consultations: 320, urgences: 155, biotheque: 110 },
+    { label: 'Jan', consultations: 145, urgences: 85, biotheque: 30, revenue: 14200 },
+    { label: 'Fév', consultations: 180, urgences: 92, biotheque: 42, revenue: 16800 },
+    { label: 'Mar', consultations: 210, urgences: 110, biotheque: 55, revenue: 19400 },
+    { label: 'Avr', consultations: 195, urgences: 98, biotheque: 60, revenue: 18200 },
+    { label: 'Mai', consultations: 240, urgences: 125, biotheque: 78, revenue: 22600 },
+    { label: 'Juin', consultations: 290, urgences: 140, biotheque: 95, revenue: 27100 },
+    { label: 'Juil', consultations: 320, urgences: 155, biotheque: 110, revenue: 31500 },
   ];
 
-  // Specialty Breakdown (for Donut Chart)
   const specialtyDistribution = [
-    { name: 'Cardiologie', count: 35, color: '#06b6d4' },
-    { name: 'Chirurgie & Bloc', count: 25, color: '#0d9488' },
-    { name: 'Urgences & Triage', count: 20, color: '#14b8a6' },
-    { name: 'Biotech & PGx', count: 12, color: '#2dd4bf' },
-    { name: 'Pharmacie Hospitalière', count: 8, color: '#5eead4' },
+    { name: 'Cardiologie Interventionnelle', count: 35, color: '#0891b2', percent: 35 },
+    { name: 'Chirurgie & Bloc Opératoire', count: 25, color: '#0d9488', percent: 25 },
+    { name: 'Urgences & Triage', count: 20, color: '#06b6d4', percent: 20 },
+    { name: 'Biotechnologies & PGx', count: 12, color: '#8b5cf6', percent: 12 },
+    { name: 'Pharmacie Hospitalière', count: 8, color: '#10b981', percent: 8 },
   ];
 
-  // Department Bed Occupancy (for Horizontal Bar Chart)
   const departmentOccupancy = [
-    { department: 'Cardiologie', occupied: 18, total: 20, percent: 90 },
-    { department: 'Chirurgie Viscérale', occupied: 14, total: 16, percent: 87 },
-    { department: 'Urgences & Réanimation', occupied: 9, total: 10, percent: 90 },
-    { department: 'Maternité & Pédiatrie', occupied: 12, total: 18, percent: 66 },
-    { department: 'Soins Continus', occupied: 6, total: 8, percent: 75 },
-  ];
-
-  // Pharmacy Categories (for Vertical Bar Chart)
-  const pharmacyCategories = [
-    { cat: 'Antalgiques', stock: 450, max: 500 },
-    { cat: 'Antibiotiques', stock: 280, max: 500 },
-    { cat: 'Biothérapies', stock: 120, max: 200 },
-    { cat: 'Cardiologie', stock: 340, max: 500 },
-    { cat: 'Anesthésie', stock: 190, max: 300 },
+    { department: 'Cardiologie & USIC', occupied: 18, total: 20, percent: 90 },
+    { department: 'Chirurgie Viscérale & Bloc', occupied: 14, total: 16, percent: 87 },
+    { department: 'Urgences & Déchoquage', occupied: 9, total: 10, percent: 90 },
+    { department: 'Maternité & Néonatalogie', occupied: 12, total: 18, percent: 66 },
+    { department: 'Soins Continus & Réa', occupied: 7, total: 8, percent: 88 },
   ];
 
   const handleExportPDF = async () => {
     const reportHtml = `
       ${generateDocumentHeader(organizationSettings, 'report', `RPT-${Date.now().toString().slice(-8)}`)}
-      <h2 style="margin: 20px 0; color: #0891b2;">Rapport Statistique Hospitalier & Activité (${periodLabel})</h2>
+      <h2 style="margin: 20px 0; color: ${organizationSettings.primaryColor};">Rapport Statistique Hospitalier & Activité (${periodLabel})</h2>
       <p style="color: #64748b; font-size: 13px;">Généré le ${new Date().toLocaleString('fr-FR')}</p>
       
       <div style="display: flex; gap: 20px; margin: 20px 0;">
         <div style="flex: 1; padding: 15px; background: #ecfeff; border-radius: 8px; border: 1px solid #cffafe;">
-          <h4 style="margin: 0; color: #0e7490;">Patients Pris en Charge</h4>
+          <h4 style="margin: 0; color: #0e7490;">Patients Suivis</h4>
           <p style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #0891b2;">${totalPatients}</p>
         </div>
         <div style="flex: 1; padding: 15px; background: #f0fdfa; border-radius: 8px; border: 1px solid #ccfbf1;">
@@ -82,8 +73,8 @@ export const Reports: React.FC = () => {
           <p style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #0d9488;">${bedOccupancyRate}%</p>
         </div>
         <div style="flex: 1; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <h4 style="margin: 0; color: #334155;">Volume de Prescriptions</h4>
-          <p style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #475569;">${medicalRecords.length}</p>
+          <h4 style="margin: 0; color: #334155;">Volume de Facturation</h4>
+          <p style="font-size: 24px; font-weight: bold; margin: 5px 0; color: #475569;">${totalRevenue.toFixed(2)} ${currency}</p>
         </div>
       </div>
       ${generateDocumentFooter(organizationSettings)}
@@ -97,26 +88,27 @@ export const Reports: React.FC = () => {
       Mois: d.label,
       Consultations: d.consultations,
       Urgences: d.urgences,
-      AnalysesBiotech: d.biotheque
+      AnalysesBiotech: d.biotheque,
+      Revenus: `${d.revenue} ${currency}`
     }));
-    exportToExcel(data, 'Statistiques-Activite-Hospitaliere', ['Mois', 'Consultations', 'Urgences', 'Analyses Biotech']);
+    exportToExcel(data, 'Rapport-Activite-Hospitaliere', ['Mois', 'Consultations', 'Urgences', 'AnalysesBiotech', 'Revenus']);
     setShowExportMenu(false);
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-gray-900">Rapports & Statistiques Cliniques</h1>
-            <span className="px-2.5 py-0.5 text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 rounded-full">
-              Analytics H24
-            </span>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
+            <TrendingUp className="w-6 h-6" />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Indicateurs de performance médicale, occupation des lits, flux d'urgences et délivrance pharmaceutique.
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Tableau de Bord Décisionnel & Rapports</h1>
+            <p className="text-xs text-gray-500">
+              Analytique hospitalière en temps réel, flux cliniques et performance financière.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -140,7 +132,7 @@ export const Reports: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
+              className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 flex items-center gap-2 transition-all"
             >
               <Download className="w-4 h-4" />
               <span>Exporter</span>
@@ -229,15 +221,13 @@ export const Reports: React.FC = () => {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700">{formatCurrency(totalRevenue, organizationSettings)}</span>
+            <span className="text-2xl font-extrabold text-emerald-700">{totalRevenue.toFixed(2)} {currency}</span>
           </div>
           <p className="text-[11px] text-gray-400">Total facturation émise</p>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* SECTION 1: COURBES D'ACTIVITÉ & ÉVOLUTION TEMPORELLE (AREA/LINE CHART) */}
-      {/* ========================================================================= */}
+      {/* Section 1: Animated Interactive SVG Curve (Chart.js Style) */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-gray-100">
           <div>
@@ -247,177 +237,172 @@ export const Reports: React.FC = () => {
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">Volume mensuel comparé des consultations, passages aux urgences et analyses biotech.</p>
           </div>
-          <div className="flex items-center gap-4 text-xs font-medium text-gray-600">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-cyan-500" />
-              <span>Consultations</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-teal-500" />
-              <span>Urgences</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span>Biotech / PGx</span>
-            </div>
+
+          <div className="flex items-center gap-4 text-xs font-semibold text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-cyan-500" /> Consultations
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-teal-600" /> Urgences
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-purple-500" /> Analyses Biotech
+            </span>
           </div>
         </div>
 
-        {/* Interactive SVG Smooth Area/Line Chart */}
-        <div className="relative h-64 sm:h-72 w-full pt-4">
-          <svg className="w-full h-full overflow-visible" viewBox="0 0 700 240" preserveAspectRatio="none">
+        {/* SVG Chart Area */}
+        <div className="relative h-64 w-full">
+          <svg className="w-full h-full overflow-visible" viewBox="0 0 700 220" preserveAspectRatio="none">
             <defs>
-              <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.35" />
+              <linearGradient id="cyanArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.3" />
                 <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
               </linearGradient>
-              <linearGradient id="tealGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0d9488" stopOpacity="0.25" />
+              <linearGradient id="tealArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0d9488" stopOpacity="0.3" />
                 <stop offset="100%" stopColor="#0d9488" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
-            {/* Grid horizontal lines */}
-            {[40, 90, 140, 190].map((y, i) => (
-              <line key={i} x1="0" y1={y} x2="700" y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
+            {/* Grid lines */}
+            {[0, 50, 100, 150, 200].map((y) => (
+              <line key={y} x1="0" y1={y} x2="700" y2={y} stroke="#f1f5f9" strokeWidth="1" />
             ))}
 
-            {/* Area path for Consultations */}
+            {/* Consultations Line & Gradient Area */}
             <path
-              d="M 0 160 C 100 130, 200 80, 300 100 C 400 60, 500 40, 700 10 L 700 220 L 0 220 Z"
-              fill="url(#cyanGradient)"
+              d="M 0 140 C 100 110, 200 80, 300 90 C 400 60, 500 30, 650 15 L 650 200 L 0 200 Z"
+              fill="url(#cyanArea)"
+              className="animate-fade-in"
+              style={{ animationDuration: '1.5s' }}
             />
-
-            {/* Line path for Consultations */}
             <path
-              d="M 0 160 C 100 130, 200 80, 300 100 C 400 60, 500 40, 700 10"
+              d="M 0 140 C 100 110, 200 80, 300 90 C 400 60, 500 30, 650 15"
               fill="none"
               stroke="#06b6d4"
-              strokeWidth="3.5"
+              strokeWidth="3"
               strokeLinecap="round"
+              strokeDasharray="1000"
+              strokeDashoffset="1000"
+              style={{ animation: 'drawCurve 1.5s ease-out forwards' }}
             />
 
-            {/* Line path for Urgences */}
+            {/* Urgences Line */}
             <path
-              d="M 0 190 C 100 170, 200 150, 300 160 C 400 130, 500 110, 700 80"
+              d="M 0 170 C 100 160, 200 145, 300 150 C 400 130, 500 120, 650 110"
               fill="none"
               stroke="#0d9488"
               strokeWidth="3"
-              strokeDasharray="6 3"
               strokeLinecap="round"
+              strokeDasharray="4 4"
+              className="animate-fade-in"
+              style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
             />
 
-            {/* Line path for Biotech */}
+            {/* Biotech Line */}
             <path
-              d="M 0 215 C 100 205, 200 190, 300 185 C 400 165, 500 140, 700 110"
+              d="M 0 195 C 100 190, 200 180, 300 175 C 400 160, 500 150, 650 135"
               fill="none"
-              stroke="#10b981"
+              stroke="#8b5cf6"
               strokeWidth="2.5"
               strokeLinecap="round"
+              strokeDasharray="1000"
+              strokeDashoffset="1000"
+              style={{ animation: 'drawCurve 1.5s ease-out forwards 0.8s' }}
             />
 
-            {/* Data Points */}
-            {[
-              { x: 0, y: 160 },
-              { x: 116, y: 130 },
-              { x: 233, y: 80 },
-              { x: 350, y: 100 },
-              { x: 466, y: 60 },
-              { x: 583, y: 40 },
-              { x: 700, y: 10 },
-            ].map((pt, i) => (
-              <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="white" stroke="#06b6d4" strokeWidth="3" className="hover:scale-150 transition-transform cursor-pointer" />
-            ))}
+            {/* Data point dots */}
+            {monthlyActivityData.map((d, i) => {
+              const cx = (i / (monthlyActivityData.length - 1)) * 650;
+              const cy = 200 - (d.consultations / 350) * 180;
+              const isHovered = hoveredMonth === i;
+              return (
+                <g key={i} onMouseEnter={() => setHoveredMonth(i)} onMouseLeave={() => setHoveredMonth(null)} className="cursor-pointer">
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={isHovered ? 7 : 4.5}
+                    fill="#ffffff"
+                    stroke="#0891b2"
+                    strokeWidth="3"
+                    className="transition-all"
+                  />
+                  {isHovered && (
+                    <g>
+                      <rect x={cx - 50} y={cy - 45} width="100" height="35" rx="8" fill="#0f172a" opacity="0.9" />
+                      <text x={cx} y={cy - 25} fill="#ffffff" fontSize="10" fontWeight="bold" textAnchor="middle">
+                        {d.label}: {d.consultations} consults
+                      </text>
+                    </g>
+                  )}
+                </g>
+              );
+            })}
           </svg>
 
           {/* X Axis Labels */}
-          <div className="flex justify-between text-xs text-gray-400 font-semibold pt-2">
+          <div className="flex justify-between text-xs text-gray-400 font-bold pt-2 border-t border-gray-100">
             {monthlyActivityData.map((d, i) => (
-              <span key={i}>{d.label}</span>
+              <span key={i} className={hoveredMonth === i ? 'text-cyan-700 font-black' : ''}>{d.label}</span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* SECTION 2: DIAGRAMME CIRCULAIRE (DONUT) & BARRES HORIZONTALES */}
-      {/* ========================================================================= */}
+      {/* Section 2: Distribution & Occupancy (Donut & Bars) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Donut Chart: Specialty Distribution */}
+        {/* Specialty Donut Breakdown */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
           <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-            <div>
-              <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-teal-600" />
-                <span>Répartition par Pôle Médical</span>
-              </h3>
-              <p className="text-xs text-gray-500">Part de l'activité clinique par département</p>
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full">
-              Donut Chart
-            </span>
+            <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
+              <PieChart className="w-5 h-5 text-teal-600" />
+              <span>Répartition par Pôle Médical</span>
+            </h3>
+            <span className="text-xs text-gray-400 font-medium">100% des flux</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-around gap-6 pt-2">
-            {/* SVG Donut */}
-            <div className="relative w-44 h-44 flex-shrink-0 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="14" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#06b6d4" strokeWidth="14" strokeDasharray="83 156" strokeDashoffset="0" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#0d9488" strokeWidth="14" strokeDasharray="59 180" strokeDashoffset="-83" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#14b8a6" strokeWidth="14" strokeDasharray="47 192" strokeDashoffset="-142" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#2dd4bf" strokeWidth="14" strokeDasharray="28 211" strokeDashoffset="-189" />
-                <circle cx="50" cy="50" r="38" fill="none" stroke="#5eead4" strokeWidth="14" strokeDasharray="19 220" strokeDashoffset="-217" />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-2xl font-black text-gray-900">100%</span>
-                <span className="text-[10px] font-bold text-gray-400 uppercase">Activité</span>
-              </div>
-            </div>
-
-            {/* Legend Breakdown */}
-            <div className="space-y-2.5 w-full">
-              {specialtyDistribution.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-md" style={{ backgroundColor: item.color }} />
-                    <span className="font-medium text-gray-700">{item.name}</span>
-                  </div>
-                  <span className="font-bold text-gray-900">{item.count}%</span>
+          <div className="space-y-4">
+            {specialtyDistribution.map((spec, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="flex justify-between text-xs font-semibold">
+                  <span className="text-gray-800">{spec.name}</span>
+                  <span className="font-bold text-gray-900">{spec.percent}%</span>
                 </div>
-              ))}
-            </div>
+                <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${spec.percent}%`, backgroundColor: spec.color }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Horizontal Bar Chart: Bed Occupancy */}
+        {/* Department Bed Occupancy Bars */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
           <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-            <div>
-              <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-cyan-600" />
-                <span>Taux d'Occupation par Service</span>
-              </h3>
-              <p className="text-xs text-gray-500">Charge hospitalière et disponibilité immédiate</p>
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-full">
-              Bandes 100%
+            <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
+              <BedDouble className="w-5 h-5 text-cyan-600" />
+              <span>Occupation des Lits par Service</span>
+            </h3>
+            <span className="text-xs text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full font-bold">
+              Flux continu
             </span>
           </div>
 
-          <div className="space-y-4 pt-1">
-            {departmentOccupancy.map((dept, idx) => (
-              <div key={idx} className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold">
+          <div className="space-y-4">
+            {departmentOccupancy.map((dept, i) => (
+              <div key={i} className="p-3 bg-gray-50/80 rounded-2xl border border-gray-100 space-y-1.5">
+                <div className="flex justify-between text-xs font-bold">
                   <span className="text-gray-800">{dept.department}</span>
-                  <span className="text-teal-700">{dept.occupied} / {dept.total} lits ({dept.percent}%)</span>
+                  <span className="text-teal-900">{dept.occupied} / {dept.total} lits ({dept.percent}%)</span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
-                      dept.percent >= 90
-                        ? 'bg-gradient-to-r from-teal-500 to-rose-500'
-                        : 'bg-gradient-to-r from-cyan-500 to-teal-600'
+                      dept.percent >= 90 ? 'bg-rose-500' : dept.percent >= 75 ? 'bg-amber-500' : 'bg-teal-500'
                     }`}
                     style={{ width: `${dept.percent}%` }}
                   />
@@ -425,42 +410,6 @@ export const Reports: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* SECTION 3: DIAGRAMME EN BARRES VERTICALES (PHARMACIE & STOCK) */}
-      {/* ========================================================================= */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <div>
-            <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
-              <Pill className="w-5 h-5 text-teal-600" />
-              <span>Niveaux de Stocks par Catégorie Thérapeutique</span>
-            </h3>
-            <p className="text-xs text-gray-500">Suivi des volumes et seuils de réapprovisionnement automatique</p>
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full">
-            Histogramme
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4 text-center">
-          {pharmacyCategories.map((item, idx) => {
-            const heightPercent = Math.round((item.stock / item.max) * 100);
-            return (
-              <div key={idx} className="flex flex-col items-center justify-end h-48 space-y-2">
-                <span className="text-xs font-bold text-teal-900">{item.stock}</span>
-                <div className="w-12 sm:w-16 bg-gray-100 rounded-2xl h-36 flex items-end p-1 overflow-hidden">
-                  <div
-                    className="w-full bg-gradient-to-t from-teal-600 to-cyan-400 rounded-xl transition-all duration-700 shadow-sm"
-                    style={{ height: `${heightPercent}%` }}
-                  />
-                </div>
-                <span className="text-[11px] font-semibold text-gray-600 truncate w-full">{item.cat}</span>
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>

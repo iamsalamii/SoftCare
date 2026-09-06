@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { X, Save, Loader2, Barcode, QrCode, Sparkles, Snowflake, Dna } from 'lucide-react';
 import { generateBarcode128Svg, generateQrCodeSvg } from '../../utils/barcodeUtils';
 import { Medication } from '../../types';
+import CustomSelect from '../common/CustomSelect';
 
 interface MedicationFormProps {
   medicationId?: string | null;
@@ -10,8 +11,19 @@ interface MedicationFormProps {
 }
 
 const MedicationForm: React.FC<MedicationFormProps> = ({ medicationId, onClose }) => {
-  const { medications, addMedication, updateMedication } = useApp();
+  const { medications, addMedication, updateMedication, dropdownOptions, organizationSettings } = useApp();
   const [loading, setLoading] = useState(false);
+
+  const locationOptions = (dropdownOptions?.['locations'] || [
+    'Armoire A - Étagère 1',
+    'Armoire B - Tiroir 2',
+    'Armoire C - Tiroir 3',
+    'Réfrigérateur Pharmacie R1 (+4°C)',
+    'Cryo-Conservateur Biotech (-80°C)',
+    'Coffre Sécurisé Stupéfiants',
+    'Rayon Vente Comptoir POS'
+  ]).map(loc => ({ value: loc, label: loc }));
+
   const [formData, setFormData] = useState({
     name: '',
     genericName: '',
@@ -378,7 +390,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({ medicationId, onClose }
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                    Prix unitaire (€) *
+                    Prix unitaire ({organizationSettings?.currencySymbol || '€'}) *
                   </label>
                   <input
                     type="number"
@@ -393,15 +405,19 @@ const MedicationForm: React.FC<MedicationFormProps> = ({ medicationId, onClose }
 
                 <div className="md:col-span-3">
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                    Emplacement physique
+                    Emplacement physique (Rayon / Armoire / Frigo)
                   </label>
-                  <input
-                    type="text"
+                  <CustomSelect
+                    options={locationOptions}
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Ex: Armoire B, Tiroir 3, Réfrigérateur R1"
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all"
+                    onChange={(val) => setFormData({ ...formData, location: val })}
+                    searchable={true}
+                    allowCustom={true}
+                    placeholder="Sélectionner ou saisir un emplacement..."
                   />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Sélectionnez un rayon prédéfini ou saisissez directement un nouvel emplacement.
+                  </p>
                 </div>
               </div>
             </div>

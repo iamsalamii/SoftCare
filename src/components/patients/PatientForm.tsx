@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Save, Loader2 } from 'lucide-react';
+import { X, Save, User, Phone, MapPin, Heart, Shield, AlertTriangle, Building2, Calendar } from 'lucide-react';
+import CustomSelect from '../common/CustomSelect';
+import FormField from '../common/FormField';
 
 interface PatientFormProps {
   patientId?: string | null;
   onClose: () => void;
 }
 
-const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) => {
-  const { patients, addPatient, updatePatient } = useApp();
+export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) => {
+  const { patients, addPatient, updatePatient, insurances, dropdownOptions } = useApp();
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -18,34 +21,71 @@ const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) => {
     phone: '',
     email: '',
     address: '',
+    city: 'Paris',
     emergencyContactName: '',
     emergencyContactPhone: '',
-    bloodType: '',
-    insuranceId: '',
-    insuranceName: '',
+    emergencyContactRelationship: 'Conjoint(e)',
+    bloodType: 'A+',
+    socialSecurityNumber: '',
+    insuranceName: 'CPAM / Sécurité Sociale',
+    insurancePolicyNumber: '',
     allergies: '',
-    city: ''
+    notes: ''
   });
+
+  // Insurance Options from Settings or presets with custom support
+  const insuranceOptions = insurances && insurances.length > 0
+    ? insurances.map(ins => ({ value: ins.name, label: ins.name, badge: `${ins.coverageRate || 80}%` }))
+    : [
+        { value: 'CPAM / Sécurité Sociale', label: 'CPAM / Sécurité Sociale', badge: 'Régime Général' },
+        { value: 'MGEN', label: 'MGEN (Mutuelle Générale)', badge: 'Mutuelle' },
+        { value: 'Harmonie Mutuelle', label: 'Harmonie Mutuelle', badge: 'Complémentaire' },
+        { value: 'Alan Santé', label: 'Alan Santé Pro', badge: '100% Santé' },
+        { value: 'AXA Santé & Prévoyance', label: 'AXA Santé & Prévoyance', badge: 'Tiers Payant' },
+        { value: 'Malakoff Humanis', label: 'Malakoff Humanis', badge: 'Complémentaire' },
+        { value: 'SwissLife Santé', label: 'SwissLife Santé', badge: 'Privé' },
+        { value: 'Sans Mutuelle / Aide Médicale État (AME)', label: 'Sans Mutuelle / AME', badge: 'Aide d\'État' }
+      ];
+
+  const bloodTypeOptions = [
+    { value: 'A+', label: 'A Positif (A+)', badge: 'Rhésus +' },
+    { value: 'A-', label: 'A Négatif (A-)', badge: 'Rhésus -' },
+    { value: 'B+', label: 'B Positif (B+)', badge: 'Rhésus +' },
+    { value: 'B-', label: 'B Négatif (B-)', badge: 'Rhésus -' },
+    { value: 'AB+', label: 'AB Positif (AB+)', badge: 'Receveur Universel' },
+    { value: 'AB-', label: 'AB Négatif (AB-)', badge: 'Rhésus -' },
+    { value: 'O+', label: 'O Positif (O+)', badge: 'Fréquent' },
+    { value: 'O-', label: 'O Négatif (O-)', badge: 'Donneur Universel' }
+  ];
+
+  const genderOptions = [
+    { value: 'male', label: 'Masculin (Homme)' },
+    { value: 'female', label: 'Féminin (Femme)' },
+    { value: 'other', label: 'Autre / Non spécifié' }
+  ];
 
   useEffect(() => {
     if (patientId) {
       const patient = patients.find(p => p.id === patientId);
       if (patient) {
         setFormData({
-          firstName: patient.firstName,
-          lastName: patient.lastName,
-          dateOfBirth: patient.dateOfBirth,
-          gender: patient.gender,
-          phone: patient.phone,
+          firstName: patient.firstName || '',
+          lastName: patient.lastName || '',
+          dateOfBirth: patient.dateOfBirth ? patient.dateOfBirth.slice(0, 10) : '',
+          gender: (patient.gender as any) || 'male',
+          phone: patient.phone || '',
           email: patient.email || '',
-          address: patient.address,
-          emergencyContactName: patient.emergencyContactName || '',
-          emergencyContactPhone: patient.emergencyContactPhone || '',
-          bloodType: patient.bloodType,
-          insuranceId: patient.insuranceId || '',
-          insuranceName: patient.insuranceName || '',
-          allergies: patient.allergies?.join(', ') || '',
-          city: patient.city || ''
+          address: patient.address || '',
+          city: patient.city || 'Paris',
+          emergencyContactName: patient.emergencyContactName || (typeof patient.emergencyContact === 'object' ? patient.emergencyContact?.name : '') || '',
+          emergencyContactPhone: patient.emergencyContactPhone || (typeof patient.emergencyContact === 'object' ? patient.emergencyContact?.phone : '') || '',
+          emergencyContactRelationship: patient.emergencyContactRelationship || 'Proche',
+          bloodType: patient.bloodType || (patient as any).bloodGroup || 'A+',
+          socialSecurityNumber: patient.socialSecurityNumber || '',
+          insuranceName: patient.insuranceName || patient.insuranceId || 'CPAM / Sécurité Sociale',
+          insurancePolicyNumber: patient.insurancePolicyNumber || '',
+          allergies: Array.isArray(patient.allergies) ? patient.allergies.join(', ') : '',
+          notes: (patient as any).notes || ''
         });
       }
     }
@@ -56,27 +96,32 @@ const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) => {
     setLoading(true);
 
     try {
-      const patientData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+      const patientPayload = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         dateOfBirth: formData.dateOfBirth,
         gender: formData.gender,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-        city: formData.city,
-        emergencyContactName: formData.emergencyContactName,
-        emergencyContactPhone: formData.emergencyContactPhone,
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        emergencyContactName: formData.emergencyContactName.trim(),
+        emergencyContactPhone: formData.emergencyContactPhone.trim(),
+        emergencyContactRelationship: formData.emergencyContactRelationship,
         bloodType: formData.bloodType,
-        insuranceId: formData.insuranceId,
+        socialSecurityNumber: formData.socialSecurityNumber.trim(),
+        insuranceId: formData.insuranceName,
         insuranceName: formData.insuranceName,
-        allergies: formData.allergies.split(',').map(a => a.trim()).filter(a => a)
+        insurancePolicyNumber: formData.insurancePolicyNumber.trim(),
+        allergies: formData.allergies
+          ? formData.allergies.split(',').map(a => a.trim()).filter(Boolean)
+          : []
       };
 
       if (patientId) {
-        await updatePatient(patientId, patientData);
+        await updatePatient(patientId, patientPayload);
       } else {
-        await addPatient(patientData);
+        await addPatient(patientPayload);
       }
 
       onClose();
@@ -88,223 +133,266 @@ const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {patientId ? 'Modifier Patient' : 'Nouveau Patient'}
-        </h1>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Top bar */}
+      <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
+            <User className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {patientId ? 'Modifier le Dossier Patient' : 'Création d\'un Nouveau Dossier Patient'}
+            </h1>
+            <p className="text-xs text-gray-500">
+              Les champs marqués d'une étoile rouge (<span className="text-rose-500 font-bold">*</span>) sont requis pour l'immatriculation sanitaire.
+            </p>
+          </div>
+        </div>
+
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600"
+          className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prénom *
-              </label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Section 1: État Civil & Identité */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 flex items-center gap-2 pb-3 border-b border-gray-100">
+            <User className="w-4 h-4 text-cyan-600" />
+            <span>1. État Civil & Identification Sécurité Sociale</span>
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <FormField label="Prénom" required={true}>
               <input
                 type="text"
                 required
                 value={formData.firstName}
-                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                placeholder="Ex: Jean"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nom *
-              </label>
+            <FormField label="Nom de Famille" required={true}>
               <input
                 type="text"
                 required
                 value={formData.lastName}
-                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                placeholder="Ex: Dupont"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date de naissance *
-              </label>
+            <FormField label="Date de Naissance" required={true}>
               <input
                 type="date"
                 required
                 value={formData.dateOfBirth}
-                onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sexe *
-              </label>
-              <select
-                required
+            <FormField label="Sexe / Genre" required={true}>
+              <CustomSelect
+                options={genderOptions}
                 value={formData.gender}
-                onChange={(e) => setFormData({...formData, gender: e.target.value as 'male' | 'female' | 'other'})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="male">Masculin</option>
-                <option value="female">Féminin</option>
-                <option value="other">Autre</option>
-              </select>
-            </div>
+                onChange={(val) => setFormData({ ...formData, gender: val as any })}
+              />
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Téléphone *
-              </label>
+            <FormField label="Numéro de Sécurité Sociale (NIR)" required={true} hint="13 ou 15 chiffres avec clé">
+              <input
+                type="text"
+                required
+                value={formData.socialSecurityNumber}
+                onChange={(e) => setFormData({ ...formData, socialSecurityNumber: e.target.value })}
+                placeholder="1 80 05 75 001 123 45"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono font-bold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              />
+            </FormField>
+
+            <FormField label="Groupe Sanguin" required={true}>
+              <CustomSelect
+                options={bloodTypeOptions}
+                value={formData.bloodType}
+                onChange={(val) => setFormData({ ...formData, bloodType: val })}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* Section 2: Contact & Adresse */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 flex items-center gap-2 pb-3 border-b border-gray-100">
+            <Phone className="w-4 h-4 text-teal-600" />
+            <span>2. Coordonnées & Adresse de Résidence</span>
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <FormField label="Téléphone Mobile" required={true}>
               <input
                 type="tel"
                 required
                 value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="+33 6 12 34 56 78"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
+            <FormField label="Email">
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="jean.dupont@email.fr"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Groupe sanguin
-              </label>
-              <select
-                value={formData.bloodType}
-                onChange={(e) => setFormData({...formData, bloodType: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Sélectionner</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Assurance (Nom)
-              </label>
+            <FormField label="Ville">
               <input
                 type="text"
-                value={formData.insuranceName}
-                onChange={(e) => setFormData({...formData, insuranceName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                placeholder="Paris"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Numero Assurance
-              </label>
-              <input
-                type="text"
-                value={formData.insuranceId}
-                onChange={(e) => setFormData({...formData, insuranceId: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adresse *
-            </label>
-            <textarea
-              required
-              value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Allergies (séparées par des virgules)
-            </label>
-            <input
-              type="text"
-              value={formData.allergies}
-              onChange={(e) => setFormData({...formData, allergies: e.target.value})}
-              placeholder="Pénicilline, Aspirine, ..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Contact d'urgence</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nom
-                </label>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <FormField label="Adresse Complète">
                 <input
                   type="text"
-                  value={formData.emergencyContactName}
-                  onChange={(e) => setFormData({...formData, emergencyContactName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="123 Rue de la République"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Telephone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.emergencyContactPhone}
-                  onChange={(e) => setFormData({...formData, emergencyContactPhone: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              </FormField>
             </div>
           </div>
+        </div>
 
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{loading ? 'Enregistrement...' : (patientId ? 'Modifier' : 'Creer')}</span>
-            </button>
+        {/* Section 3: Assurance & Tiers Payant (Combo Box Paramétrable) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-cyan-600" />
+              <span>3. Couverture Santé & Organisme d'Assurance</span>
+            </h2>
+            <span className="text-[10px] text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full font-bold border border-teal-200">
+              Paramétrable dans Réglages
+            </span>
           </div>
-        </form>
-      </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Organisme d'Assurance / Mutuelle" required={true} hint="Sélectionner ou saisir une nouvelle mutuelle">
+              <CustomSelect
+                options={insuranceOptions}
+                value={formData.insuranceName}
+                onChange={(val) => setFormData({ ...formData, insuranceName: val })}
+                searchable={true}
+                allowCustom={true}
+                placeholder="Choisir l'organisme d'assurance..."
+              />
+            </FormField>
+
+            <FormField label="Numéro d'Adhérent / Police Mutuelle">
+              <input
+                type="text"
+                value={formData.insurancePolicyNumber}
+                onChange={(e) => setFormData({ ...formData, insurancePolicyNumber: e.target.value })}
+                placeholder="MUT-88492-X"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* Section 4: Contact d'Urgence & Allergies */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 flex items-center gap-2 pb-3 border-b border-gray-100">
+            <Heart className="w-4 h-4 text-rose-500" />
+            <span>4. Personne de Confiance & Allergies Médicamenteuses</span>
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormField label="Nom Personne de Confiance">
+              <input
+                type="text"
+                value={formData.emergencyContactName}
+                onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
+                placeholder="Marie Dupont"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium"
+              />
+            </FormField>
+
+            <FormField label="Lien de Parenté">
+              <input
+                type="text"
+                value={formData.emergencyContactRelationship}
+                onChange={(e) => setFormData({ ...formData, emergencyContactRelationship: e.target.value })}
+                placeholder="Épouse / Frère / Parent..."
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium"
+              />
+            </FormField>
+
+            <FormField label="Téléphone d'Urgence">
+              <input
+                type="tel"
+                value={formData.emergencyContactPhone}
+                onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                placeholder="+33 6 98 76 54 32"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium"
+              />
+            </FormField>
+
+            <div className="sm:col-span-3">
+              <FormField
+                label="Allergies et Contre-indications Notifiées"
+                hint="Séparer les substances par des virgules (ex: Pénicilline, Aspirine, Latex)"
+                value={formData.allergies}
+                showWordCount={true}
+              >
+                <input
+                  type="text"
+                  value={formData.allergies}
+                  onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                  placeholder="Pénicilline, Sulfamides, Latex, Arachide..."
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium"
+                />
+              </FormField>
+            </div>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-2xl text-xs font-bold hover:bg-gray-200 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-teal-600/25 transition-all flex items-center gap-2 disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            <span>{loading ? 'Enregistrement...' : (patientId ? 'Mettre à Jour le Dossier' : 'Enregistrer le Patient')}</span>
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

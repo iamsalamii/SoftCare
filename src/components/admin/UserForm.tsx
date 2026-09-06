@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Save, Shield, Loader2 } from 'lucide-react';
+import { X, Save, Shield, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface UserFormProps {
   userId?: string | null;
   onClose: () => void;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
+export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
   const { users, addUser, updateUser } = useApp();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -244,14 +245,26 @@ const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Mot de passe par défaut *
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Mot de passe initial"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Le mot de passe est masqué par défaut pour protéger la confidentialité.
+                </p>
               </div>
             )}
           </div>

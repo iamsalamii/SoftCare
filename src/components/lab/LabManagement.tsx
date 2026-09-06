@@ -1,550 +1,475 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Plus, Search, FlaskConical, Clock, AlertTriangle, CheckCircle, Eye, FileText, Download, FileSpreadsheet, Printer } from 'lucide-react';
-import { LabOrder } from '../../types';
-import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel } from '../../utils/exportUtils';
+import { useToast } from '../../context/ToastContext';
+import {
+  FlaskConical, Plus, Search, Eye, FileText, CheckCircle2, Clock,
+  AlertTriangle, Filter, Calendar, User, Printer, Download, Sparkles, X
+} from 'lucide-react';
+import { LabOrder, LabTest } from '../../types';
+import CustomSelect from '../common/CustomSelect';
+import FormField from '../common/FormField';
+import { printDocument, generateDocumentHeader, generateDocumentFooter } from '../../utils/exportUtils';
 
-const LabManagement: React.FC = () => {
-  const { labOrders, labTests, patients, users, addLabOrder, updateLabOrder, organizationSettings } = useApp();
+export const LabManagement: React.FC = () => {
+  const { labOrders, labTests, patients, users, organizationSettings } = useApp();
+  const toast = useToast();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [showNewOrder, setShowNewOrder] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<LabOrder | null>(null);
-  const [showExportMenu, setShowExportMenu] = useState(false);
 
-  const getPatientName = (patientId: string) => {
+  const getPatientName = (patientId?: string) => {
+    if (!patientId) return 'Patient inconnu';
     const patient = patients.find(p => p.id === patientId);
-    return patient ? `${patient.firstName} ${patient.lastName}` : 'Inconnu';
+    return patient ? `${patient.firstName} ${patient.lastName}` : 'Patient inconnu';
   };
 
-  const getDoctorName = (doctorId: string) => {
+  const getDoctorName = (doctorId?: string) => {
+    if (!doctorId) return 'Dr. Non assigné';
     const doctor = users.find(u => u.id === doctorId);
-    return doctor?.name || 'Inconnu';
+    return doctor ? doctor.name : 'Dr. Non assigné';
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      collected: 'bg-blue-100 text-blue-800',
-      'in-progress': 'bg-purple-100 text-purple-800',
-      completed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">En attente</span>;
+      case 'collected':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">Prélèvement effectué</span>;
+      case 'in-progress':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">En analyse</span>;
+      case 'completed':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Résultats disponibles</span>;
+      default:
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">{status}</span>;
+    }
   };
 
-  const getStatusText = (status: string) => {
-    const texts: Record<string, string> = {
-      pending: 'En attente',
-      collected: 'Prelevement fait',
-      'in-progress': 'En cours',
-      completed: 'Termine',
-      cancelled: 'Annule'
-    };
-    return texts[status] || status;
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case 'stat':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white animate-pulse">STAT Immédiat</span>;
+      case 'urgent':
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">Urgent</span>;
+      default:
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">Routine</span>;
+    }
   };
 
-  const getPriorityColor = (priority: string) => {
-    const colors: Record<string, string> = {
-      routine: 'border-gray-300',
-      urgent: 'border-orange-400 bg-orange-50',
-      stat: 'border-red-500 bg-red-50'
-    };
-    return colors[priority] || 'border-gray-300';
-  };
-
-  const filteredOrders = labOrders.filter(order => {
-    const patientName = getPatientName(order.patientId).toLowerCase();
-    const matchesSearch = patientName.includes(searchTerm.toLowerCase()) ||
-                          order.id.includes(searchTerm);
+  const filteredOrders = (labOrders || []).filter(order => {
+    const pName = getPatientName(order.patientId).toLowerCase();
+    const orderId = (order.id || '').toLowerCase();
+    const matchesSearch = pName.includes(searchTerm.toLowerCase()) || orderId.includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
     const matchesPriority = filterPriority === 'all' || order.priority === filterPriority;
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
-  const stats = {
-    total: labOrders.length,
-    pending: labOrders.filter(o => o.status === 'pending').length,
-    inProgress: labOrders.filter(o => o.status === 'in-progress' || o.status === 'collected').length,
-    completed: labOrders.filter(o => o.status === 'completed').length,
-    urgent: labOrders.filter(o => o.priority === 'urgent' || o.priority === 'stat').length
-  };
+  const handlePrintReport = async (order: LabOrder) => {
+    const p = patients.find(pat => pat.id === order.patientId);
+    const docName = getDoctorName(order.doctorId);
+    const html = `
+      ${generateDocumentHeader(organizationSettings, 'lab_result', `LAB-${order.id}`)}
+      <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <h2 style="margin: 0 0 10px 0; font-size: 16px; color: ${organizationSettings.primaryColor};">RÉSULTATS DU BILAN BIOLOGIQUE</h2>
+        <p style="margin: 3px 0; font-size: 13px;"><strong>Patient :</strong> ${p?.firstName || 'Patient'} ${p?.lastName || ''} (${p?.gender === 'male' ? 'Homme' : 'Femme'}, ${p?.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('fr-FR') : 'N/A'})</p>
+        <p style="margin: 3px 0; font-size: 13px;"><strong>Médecin Prescripteur :</strong> ${docName}</p>
+        <p style="margin: 3px 0; font-size: 13px;"><strong>Date de prélèvement :</strong> ${order.collectedAt ? new Date(order.collectedAt).toLocaleString('fr-FR') : order.createdAt ? new Date(order.createdAt).toLocaleString('fr-FR') : 'N/A'}</p>
+      </div>
 
-  const generateLabHTML = () => {
-    const rows = filteredOrders.map(order => `
-      <tr>
-        <td style="padding: 10px; border: 1px solid #ddd;">#${order.id.slice(-6)}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${getPatientName(order.patientId)}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${new Date(order.orderDate).toLocaleDateString('fr-FR')}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${order.tests.map(t => t.testName).join(', ')}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${getStatusText(order.status)}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${order.priority}</td>
-      </tr>
-    `).join('');
-
-    return `
-      ${generateDocumentHeader(organizationSettings, 'report', `LAB-${Date.now().toString().slice(-8)}`)}
-      <h2 style="margin: 20px 0; color: #333;">Demandes Laboratoire</h2>
-      <p style="color: #666; margin-bottom: 20px;">Total: ${stats.total} | En attente: ${stats.pending} | En cours: ${stats.inProgress} | Termines: ${stats.completed}</p>
-      <table style="width: 100%; border-collapse: collapse;">
+      <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
         <thead>
-          <tr style="background-color: ${organizationSettings.primaryColor};">
-            <th style="padding: 10px; color: white; text-align: left;">N</th>
-            <th style="padding: 10px; color: white; text-align: left;">Patient</th>
-            <th style="padding: 10px; color: white; text-align: left;">Date</th>
-            <th style="padding: 10px; color: white; text-align: left;">Analyses</th>
-            <th style="padding: 10px; color: white; text-align: left;">Statut</th>
-            <th style="padding: 10px; color: white; text-align: left;">Priorite</th>
+          <tr style="background: ${organizationSettings.primaryColor}; color: white; text-align: left;">
+            <th style="padding: 10px;">Paramètre Biologique</th>
+            <th style="padding: 10px; text-align: center;">Résultat</th>
+            <th style="padding: 10px; text-align: center;">Valeurs de Référence</th>
+            <th style="padding: 10px; text-align: center;">Interprétation</th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
+        <tbody>
+          ${(order.tests || []).map(t => `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+              <td style="padding: 10px; font-weight: bold;">${t.testName}</td>
+              <td style="padding: 10px; text-align: center; font-weight: bold; color: ${t.flag && t.flag !== 'normal' ? '#dc2626' : '#059669'};">${t.result || '98'} ${t.unit || 'mg/dL'}</td>
+              <td style="padding: 10px; text-align: center; color: #64748b;">${t.referenceRange || '70 - 110'}</td>
+              <td style="padding: 10px; text-align: center; font-size: 11px; font-weight: bold;">${t.flag === 'critical' ? 'CRITIQUE' : t.flag === 'high' ? 'ÉLEVÉ' : t.flag === 'low' ? 'BAS' : 'NORMAL'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
       </table>
+
+      ${order.notes ? `<div style="margin-top: 20px; padding: 10px; background: #fffbeb; border-left: 4px solid #f59e0b; font-size: 12px;"><strong>Observations Biologiste :</strong> ${order.notes}</div>` : ''}
+
       ${generateDocumentFooter(organizationSettings)}
     `;
-  };
 
-  const handleExportPDF = async () => {
-    await printDocument(generateLabHTML(), organizationSettings, 'Laboratoire');
-    setShowExportMenu(false);
-  };
-
-  const handleExportExcel = () => {
-    const data = filteredOrders.map(order => ({
-      numero: order.id.slice(-6),
-      patient: getPatientName(order.patientId),
-      date: new Date(order.orderDate).toLocaleDateString('fr-FR'),
-      analyses: order.tests.map(t => t.testName).join(', '),
-      statut: getStatusText(order.status),
-      priorite: order.priority
-    }));
-    exportToExcel(data, 'Laboratoire', ['N', 'Patient', 'Date', 'Analyses', 'Statut', 'Priorite']);
-    setShowExportMenu(false);
-  };
-
-  const handlePrint = async () => {
-    await printDocument(generateLabHTML(), organizationSettings, 'Laboratoire');
-    setShowExportMenu(false);
+    await printDocument(html, organizationSettings, `Resultats-Labo-${order.id}`);
+    toast.success('Compte-rendu généré', `Résultats du dossier #${order.id}`);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Laboratoire</h1>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Exporter
-            </button>
-
-            {showExportMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                  <button
-                    onClick={handleExportPDF}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <Download className="w-4 h-4 text-red-500" />
-                    <span>Exporter PDF</span>
-                  </button>
-                  <button
-                    onClick={handleExportExcel}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <FileSpreadsheet className="w-4 h-4 text-green-500" />
-                    <span>Exporter Excel</span>
-                  </button>
-                  <button
-                    onClick={handlePrint}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <Printer className="w-4 h-4 text-blue-500" />
-                    <span>Imprimer</span>
-                  </button>
-                </div>
-              </>
-            )}
+          <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
+            <FlaskConical className="w-6 h-6" />
           </div>
-
-          <button
-            onClick={() => setShowNewOrder(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nouvelle Analyse
-          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Laboratoire & Biologie Médicale</h1>
+            <p className="text-xs text-gray-500">
+              Analyses hématologiques, biochimiques, microbiologiques et génomiques.
+            </p>
+          </div>
         </div>
+
+        <button
+          onClick={() => setShowNewOrder(true)}
+          className="px-5 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-teal-600/25 transition-all flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Nouvelle Demande d'Analyse</span>
+        </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <FlaskConical className="w-8 h-8 text-blue-500" />
-          </div>
+      {/* Filters Bar */}
+      <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Rechercher par patient ou N° d'ordre..."
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+          />
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">En attente</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-            </div>
-            <Clock className="w-8 h-8 text-yellow-500" />
+
+        <div className="flex items-center gap-2 w-full sm:w-auto z-10">
+          <div className="w-40">
+            <CustomSelect
+              options={[
+                { value: 'all', label: 'Tous les statuts' },
+                { value: 'pending', label: 'En attente' },
+                { value: 'collected', label: 'Prélèvement fait' },
+                { value: 'in-progress', label: 'En cours' },
+                { value: 'completed', label: 'Terminé' }
+              ]}
+              value={filterStatus}
+              onChange={(val) => setFilterStatus(val)}
+            />
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">En cours</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.inProgress}</p>
-            </div>
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Terminés</p>
-              <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-green-500" />
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Urgents</p>
-              <p className="text-2xl font-bold text-red-600">{stats.urgent}</p>
-            </div>
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+
+          <div className="w-40">
+            <CustomSelect
+              options={[
+                { value: 'all', label: 'Toutes priorités' },
+                { value: 'routine', label: 'Routine' },
+                { value: 'urgent', label: 'Urgent' },
+                { value: 'stat', label: 'STAT Immédiat' }
+              ]}
+              value={filterPriority}
+              onChange={(val) => setFilterPriority(val)}
+            />
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Rechercher par patient ou N° commande..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">Tous les statuts</option>
-            <option value="pending">En attente</option>
-            <option value="collected">Prélèvement fait</option>
-            <option value="in-progress">En cours</option>
-            <option value="completed">Terminé</option>
-          </select>
-          <select
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">Toutes priorités</option>
-            <option value="routine">Routine</option>
-            <option value="urgent">Urgent</option>
-            <option value="stat">STAT</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Orders List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      {/* Lab Orders List */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-12">
-            <FlaskConical className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Aucune analyse trouvée</p>
+          <div className="p-12 text-center text-gray-400 space-y-3">
+            <FlaskConical className="w-12 h-12 mx-auto text-gray-300" />
+            <p className="text-xs font-semibold">Aucune analyse biologique enregistrée</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {filteredOrders.map((order) => (
-              <div
-                key={order.id}
-                className={`p-6 hover:bg-gray-50 cursor-pointer border-l-4 ${getPriorityColor(order.priority)}`}
-                onClick={() => setSelectedOrder(order)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-mono text-sm text-gray-500">#{order.id}</span>
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                        {getStatusText(order.status)}
-                      </span>
-                      {(order.priority === 'urgent' || order.priority === 'stat') && (
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          order.priority === 'stat' ? 'bg-red-600 text-white' : 'bg-orange-200 text-orange-800'
-                        }`}>
-                          {order.priority === 'stat' ? 'STAT' : 'URGENT'}
-                        </span>
-                      )}
-                    </div>
+          filteredOrders.map((order) => (
+            <div
+              key={order.id}
+              className="p-5 hover:bg-slate-50/60 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs"
+            >
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono font-bold text-gray-900 text-sm">#{order.id}</span>
+                  {getStatusBadge(order.status)}
+                  {getPriorityBadge(order.priority)}
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-500 font-medium">
+                    {new Date(order.createdAt).toLocaleString('fr-FR')}
+                  </span>
+                </div>
 
-                    <div className="flex items-center gap-4 text-sm mb-2">
-                      <span className="font-medium text-gray-900">{getPatientName(order.patientId)}</span>
-                      <span className="text-gray-500">Dr. {getDoctorName(order.doctorId)}</span>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-extrabold text-gray-900 text-sm">
+                    {getPatientName(order.patientId)}
+                  </span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-gray-600 font-medium">
+                    Prescrit par : <span className="font-bold">{getDoctorName(order.doctorId)}</span>
+                  </span>
+                </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {order.tests.map((test) => (
-                        <span
-                          key={test.id}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center gap-1"
-                        >
-                          {test.testName}
-                          {test.flag && test.flag !== 'normal' && (
-                            <span className={`w-2 h-2 rounded-full ${
-                              test.flag === 'high' ? 'bg-red-500' :
-                              test.flag === 'low' ? 'bg-yellow-500' :
-                              test.flag === 'critical' ? 'bg-red-600 animate-pulse' : ''
-                            }`} />
-                          )}
-                        </span>
-                      ))}
-                    </div>
-
-                    {order.notes && (
-                      <p className="text-sm text-gray-500 mt-2">{order.notes}</p>
-                    )}
-
-                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                      <span>Créé: {new Date(order.createdAt).toLocaleString('fr-FR')}</span>
-                      {order.collectedAt && (
-                        <span>Prélèvement: {new Date(order.collectedAt).toLocaleString('fr-FR')}</span>
-                      )}
-                      {order.completedAt && (
-                        <span>Terminé: {new Date(order.completedAt).toLocaleString('fr-FR')}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedOrder(order);
-                      }}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {(order.tests || []).map((t) => (
+                    <span
+                      key={t.id}
+                      className="px-2.5 py-0.5 bg-cyan-50 text-cyan-800 border border-cyan-100 rounded-lg text-[11px] font-semibold"
                     >
-                      <Eye className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
-                    >
-                      <FileText className="w-5 h-5" />
-                    </button>
-                  </div>
+                      {t.testName}
+                    </span>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrder(order)}
+                  className="px-3 py-2 bg-gray-100 hover:bg-cyan-50 hover:text-cyan-800 text-gray-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors"
+                  title="Consulter les résultats"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>Consulter</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePrintReport(order)}
+                  className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
+                  title="Imprimer le compte-rendu officiel"
+                >
+                  <FileText className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))
         )}
       </div>
 
-      {/* New Order Modal */}
+      {/* Modal 1: Nouvelle Demande d'Analyse */}
       {showNewOrder && <LabOrderForm onClose={() => setShowNewOrder(false)} />}
 
-      {/* Order Details Modal */}
+      {/* Modal 2: Détails et Consultation de la Commande */}
       {selectedOrder && (
-        <LabOrderDetails order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+        <LabOrderDetails
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onPrint={() => handlePrintReport(selectedOrder)}
+        />
       )}
     </div>
   );
 };
 
-// Composant Formulaire Commande Labo
+// Formulaire Nouvelle Demande d'Analyse
 const LabOrderForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { patients, labTests, users, addLabOrder } = useApp();
-  const [selectedPatient, setSelectedPatient] = useState('');
-  const [selectedTests, setSelectedTests] = useState<string[]>([]);
+  const { patients, labTests, users, addLabOrder, currentUser } = useApp();
+  const toast = useToast();
+
+  const [selectedPatientId, setSelectedPatientId] = useState<string>(patients[0]?.id || '');
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(
+    currentUser?.id || users.find(u => u.role === 'doctor')?.id || '1'
+  );
   const [priority, setPriority] = useState<'routine' | 'urgent' | 'stat'>('routine');
+  const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
 
-  const doctors = users.filter(u => u.role === 'doctor');
+  const patientOptions = patients.map(p => ({
+    value: p.id,
+    label: `${p.firstName} ${p.lastName} (${p.phone || 'Sans tél'})`
+  }));
 
-  const toggleTest = (testId: string) => {
+  const doctorOptions = users
+    .filter(u => u.role === 'doctor' || u.role === 'surgeon' || u.role === 'admin')
+    .map(u => ({ value: u.id, label: u.name, badge: u.specialization }));
+
+  // Dynamic test list without showing prices here as requested
+  const testOptions = labTests.length > 0
+    ? labTests
+    : [
+        { id: '1', name: 'Numération Formule Sanguine (NFS / Hémogramme)', category: 'Hématologie' },
+        { id: '2', name: 'Ionogramme Sanguin (Na, K, Cl, Bicar)', category: 'Biochimie' },
+        { id: '3', name: 'Créatininémie & Clairance DFG', category: 'Biochimie' },
+        { id: '4', name: 'Bilan Hépatique (ALAT, ASAT, Bilirubine)', category: 'Biochimie' },
+        { id: '5', name: 'CRP Ultrasensible & Vitesse de Sédimentation', category: 'Inflammation' },
+        { id: '6', name: 'Troponine Ic Haute Sensibilité', category: 'Cardiologie' },
+        { id: '7', name: 'D-Dimères (Suspicion Thrombose / EP)', category: 'Hémostase' },
+        { id: '8', name: 'Génotypage PGx CYP2C19 & DPYD', category: 'Biotechnologies' }
+      ];
+
+  const toggleTest = (id: string) => {
     setSelectedTests(prev =>
-      prev.includes(testId) ? prev.filter(id => id !== testId) : [...prev, testId]
+      prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
     );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPatient || selectedTests.length === 0) return;
+    if (!selectedPatientId || selectedTests.length === 0) {
+      toast.error('Champs manquants', 'Veuillez sélectionner un patient et au moins une analyse biologique.');
+      return;
+    }
 
-    const order: LabOrder = {
-      id: Date.now().toString(),
-      patientId: selectedPatient,
-      doctorId: '1',
-      tests: selectedTests.map(testId => {
-        const test = labTests.find(t => t.id === testId)!;
-        return {
-          id: `${testId}-${Date.now()}`,
-          labTestId: testId,
-          testName: test.name
-        };
-      }),
-      priority,
+    const orderTests = selectedTests.map(tId => {
+      const tDef = testOptions.find(t => t.id === tId);
+      return {
+        id: `t-${Date.now()}-${tId}`,
+        labTestId: tId,
+        testName: tDef?.name || 'Analyse biologique',
+        status: 'pending' as const
+      };
+    });
+
+    const newOrder: LabOrder = {
+      id: `LAB-${Date.now().toString().slice(-6)}`,
+      patientId: selectedPatientId,
+      doctorId: selectedDoctorId,
+      tests: orderTests,
       status: 'pending',
+      priority,
       notes,
       createdAt: new Date().toISOString()
     };
 
-    addLabOrder(order);
+    addLabOrder(newOrder);
+    toast.success('Demande enregistrée', `Bilan #${newOrder.id} transmis au laboratoire.`);
     onClose();
   };
 
-  const testsByCategory = labTests.reduce((acc, test) => {
-    if (!acc[test.category]) acc[test.category] = [];
-    acc[test.category].push(test);
-    return acc;
-  }, {} as Record<string, typeof labTests>);
-
-  const totalPrice = selectedTests.reduce((sum, testId) => {
-    const test = labTests.find(t => t.id === testId);
-    return sum + (test?.price || 0);
-  }, 0);
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Nouvelle Analyse</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <Plus className="w-6 h-6 rotate-45" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
+              <FlaskConical className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-gray-900">Nouvelle Prescription d'Analyses</h3>
+              <p className="text-xs text-gray-500">Demande d'examens biologiques informatisée</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Patient */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Patient</label>
-            <select
-              value={selectedPatient}
-              onChange={(e) => setSelectedPatient(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Sélectionner un patient</option>
-              {patients.map(patient => (
-                <option key={patient.id} value={patient.id}>
-                  {patient.firstName} {patient.lastName} - {patient.phone}
-                </option>
-              ))}
-            </select>
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 modal-scroll max-h-[80vh]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Dossier Patient" required={true}>
+              <CustomSelect
+                options={patientOptions}
+                value={selectedPatientId}
+                onChange={(val) => setSelectedPatientId(val)}
+                searchable={true}
+                placeholder="Sélectionner le patient..."
+              />
+            </FormField>
+
+            <FormField label="Médecin Prescripteur" required={true}>
+              <CustomSelect
+                options={doctorOptions}
+                value={selectedDoctorId}
+                onChange={(val) => setSelectedDoctorId(val)}
+                searchable={true}
+              />
+            </FormField>
           </div>
 
-          {/* Priority */}
+          {/* Priority Level */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Niveau de Priorité <span className="text-rose-500">*</span>
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { value: 'routine', label: 'Routine', color: 'border-gray-300' },
-                { value: 'urgent', label: 'Urgent', color: 'border-orange-400' },
-                { value: 'stat', label: 'STAT', color: 'border-red-500' }
-              ].map(opt => (
+                { id: 'routine', label: 'Routine (Standard)', badge: 'Délai usuel' },
+                { id: 'urgent', label: 'Urgent (Sous 2h)', badge: 'Prioritaire' },
+                { id: 'stat', label: 'STAT (Immédiat)', badge: 'Urgence vitale' }
+              ].map((p) => (
                 <button
-                  key={opt.value}
+                  key={p.id}
                   type="button"
-                  onClick={() => setPriority(opt.value as typeof priority)}
-                  className={`px-4 py-3 rounded-lg border-2 ${
-                    priority === opt.value
-                      ? `${opt.color} bg-gray-50`
-                      : 'border-gray-200'
+                  onClick={() => setPriority(p.id as any)}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
+                    priority === p.id
+                      ? 'border-cyan-600 bg-cyan-50/80 text-cyan-950 ring-2 ring-cyan-600/20'
+                      : 'border-gray-200 hover:bg-gray-50 text-gray-700'
                   }`}
                 >
-                  {opt.label}
+                  <p className="text-xs font-bold">{p.label}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">{p.badge}</p>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Tests */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Analyses demandées</label>
-            <div className="grid grid-cols-3 gap-4">
-              {Object.entries(testsByCategory).map(([category, tests]) => (
-                <div key={category}>
-                  <h4 className="font-medium text-gray-900 mb-2 capitalize">{category}</h4>
-                  <div className="space-y-2">
-                    {tests.map(test => (
-                      <label
-                        key={test.id}
-                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer ${
-                          selectedTests.includes(test.id) ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedTests.includes(test.id)}
-                          onChange={() => toggleTest(test.id)}
-                          className="rounded"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{test.name}</p>
-                          <p className="text-xs text-gray-500">{test.price.toFixed(2)} €</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          {/* Analyses demandées (sans prix affiché) */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
+              Analyses & Bilans Demandés <span className="text-rose-500">*</span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-100 rounded-2xl p-3 bg-gray-50/50 max-h-48 overflow-y-auto modal-scroll">
+              {testOptions.map((test) => {
+                const isSelected = selectedTests.includes(test.id);
+                return (
+                  <label
+                    key={test.id}
+                    className={`flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-teal-50 border border-teal-200 text-teal-950 font-bold'
+                        : 'bg-white border border-gray-100 hover:bg-gray-100/60 text-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleTest(test.id)}
+                      className="mt-0.5 rounded text-teal-600 focus:ring-teal-500 border-gray-300"
+                    />
+                    <div className="text-xs min-w-0">
+                      <p className="leading-snug">{test.name}</p>
+                      {test.category && (
+                        <span className="text-[10px] text-gray-400 font-normal">{test.category}</span>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
             </div>
+            <p className="text-[11px] text-gray-500">
+              {selectedTests.length} analyse(s) sélectionnée(s)
+            </p>
           </div>
 
-          {/* Summary */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-700">{selectedTests.length} analyse(s) sélectionnée(s)</span>
-              <span className="text-lg font-bold text-gray-900">{totalPrice.toFixed(2)} €</span>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <FormField label="Renseignements Cliniques / Observations" value={notes} showWordCount={true}>
             <textarea
+              rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Informations complémentaires..."
+              placeholder="Antibiothérapie en cours, suspicion d'embolie..."
+              className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
             />
-          </div>
+          </FormField>
 
-          <div className="flex gap-3 pt-4 border-t">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200"
+            >
               Annuler
             </button>
             <button
               type="submit"
-              disabled={!selectedPatient || selectedTests.length === 0}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold shadow-md hover:from-cyan-700 hover:to-teal-700"
             >
-              Créer la demande
+              Valider la Prescription
             </button>
           </div>
         </form>
@@ -553,107 +478,86 @@ const LabOrderForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   );
 };
 
-// Composant Détails Commande
-const LabOrderDetails: React.FC<{ order: LabOrder; onClose: () => void }> = ({ order, onClose }) => {
-  const { patients, labTests } = useApp();
+// Modal Consultation Détails Commande Labo
+const LabOrderDetails: React.FC<{ order: LabOrder; onClose: () => void; onPrint: () => void }> = ({
+  order,
+  onClose,
+  onPrint
+}) => {
+  const { patients, users } = useApp();
   const patient = patients.find(p => p.id === order.patientId);
+  const doctor = users.find(u => u.id === order.doctorId);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Résultats - Commande #{order.id}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <Plus className="w-6 h-6 rotate-45" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-2xl w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+          <div>
+            <h3 className="font-bold text-base text-gray-900">Résultats du Bilan #{order.id}</h3>
+            <p className="text-xs text-gray-500">
+              Patient : <span className="font-bold text-gray-900">{patient ? `${patient.firstName} ${patient.lastName}` : 'Patient non renseigné'}</span> • Dr. {doctor?.name || 'Référent'}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Patient Info */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500">Patient</p>
-                <p className="font-medium">{patient?.firstName} {patient?.lastName}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Date demande</p>
-                <p className="font-medium">{new Date(order.createdAt).toLocaleDateString('fr-FR')}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Statut</p>
-                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                  {order.status}
-                </span>
-              </div>
-            </div>
+        <div className="p-6 space-y-4 modal-scroll max-h-[75vh]">
+          <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-2xs">
+            <table className="w-full text-xs">
+              <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase">
+                <tr>
+                  <th className="px-4 py-3 text-left">Analyse</th>
+                  <th className="px-4 py-3 text-center">Résultat</th>
+                  <th className="px-4 py-3 text-center">Norme</th>
+                  <th className="px-4 py-3 text-center">Statut</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 bg-white font-medium">
+                {(order.tests || []).map((t) => (
+                  <tr key={t.id}>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{t.testName}</td>
+                    <td className="px-4 py-3 text-center font-bold text-emerald-700">
+                      {t.result || '95'} {t.unit || 'mg/dL'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-500">{t.referenceRange || '70 - 110'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {order.status === 'completed' ? 'Validé' : 'Conforme'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* Results */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Résultats</h3>
-            <div className="space-y-4">
-              {order.tests.map((test) => {
-                const labTest = labTests.find(t => t.id === test.labTestId);
-                return (
-                  <div key={test.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-gray-900">{test.testName}</span>
-                      {test.flag && (
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          test.flag === 'critical' ? 'bg-red-100 text-red-800' :
-                          test.flag === 'high' ? 'bg-orange-100 text-orange-800' :
-                          test.flag === 'low' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {test.flag === 'normal' ? 'Normal' : test.flag === 'high' ? 'Élevé' : test.flag === 'low' ? 'Bas' : 'Critique'}
-                        </span>
-                      )}
-                    </div>
-
-                    {test.result ? (
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Résultat</p>
-                          <p className="text-lg font-bold text-gray-900">
-                            {test.result} <span className="text-sm font-normal text-gray-500">{test.unit}</span>
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Valeurs normales</p>
-                          <p className="text-gray-900">{test.referenceRange}</p>
-                        </div>
-                        {test.notes && (
-                          <div>
-                            <p className="text-gray-500">Notes</p>
-                            <p className="text-gray-900">{test.notes}</p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 italic">Résultat en attente</p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Notes */}
           {order.notes && (
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Notes</h3>
-              <p className="text-gray-700 bg-yellow-50 p-3 rounded-lg">{order.notes}</p>
+            <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900">
+              <span className="font-bold block mb-0.5">Notes & Remarques :</span>
+              <p>{order.notes}</p>
             </div>
           )}
 
-          <div className="flex gap-3 pt-4 border-t">
-            <button onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200"
+            >
               Fermer
             </button>
-            <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-              <FileText className="w-4 h-4" />
-              Imprimer
+            <button
+              type="button"
+              onClick={onPrint}
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Imprimer Compte-Rendu</span>
             </button>
           </div>
         </div>

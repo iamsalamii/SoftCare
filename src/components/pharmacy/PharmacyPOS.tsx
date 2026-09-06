@@ -217,7 +217,7 @@ const PharmacyPOS: React.FC = () => {
     setAmountReceived(0);
   };
 
-  const handlePrintReceipt = async (sale: PharmacySale) => {
+  const handlePrintReceipt = async (sale: PharmacySale, format: 'thermal' | 'a4' = 'thermal') => {
     const content = generateReceiptHTML(
       {
         number: sale.receiptNumber,
@@ -231,29 +231,30 @@ const PharmacyPOS: React.FC = () => {
         amountReceived: sale.amountReceived || sale.total,
         change: sale.change || 0
       },
-      organizationSettings
+      organizationSettings,
+      format
     );
 
-    await printDocument(content, organizationSettings, `Recu-${sale.receiptNumber}`);
+    await printDocument(content, organizationSettings, `Recu-${sale.receiptNumber}-${format}`);
   };
 
   if (completed) {
     return (
-      <div className="min-h-screen bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border border-gray-100 animate-in zoom-in-95 duration-200">
-          <div className="w-20 h-20 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-600 shadow-lg shadow-emerald-500/20">
-            <CheckCircle className="w-10 h-10" />
+      <div className="min-h-screen bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 text-center border border-gray-100 animate-in zoom-in-95 duration-200">
+          <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-emerald-600 shadow-lg shadow-emerald-500/20">
+            <CheckCircle className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Délivrance Enregistrée !</h2>
-          <p className="text-xs text-gray-500 mb-6 font-mono">Ticket N° : {completed.receiptNumber}</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-0.5">Délivrance Enregistrée avec Succès !</h2>
+          <p className="text-xs text-gray-500 mb-5 font-mono">Ticket N° : {completed.receiptNumber}</p>
 
-          <div className="bg-gray-50 rounded-2xl p-4 mb-6 text-left border border-gray-100 space-y-2 text-xs">
+          <div className="bg-gray-50 rounded-2xl p-4 mb-5 text-left border border-gray-100 space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-gray-500">Client / Patient :</span>
               <span className="font-bold text-gray-900">{completed.customerName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Mode de paiement :</span>
+              <span className="text-gray-500">Mode de règlement :</span>
               <span className="font-semibold capitalize text-gray-800">{completed.paymentMethod}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-200 text-sm">
@@ -268,19 +269,29 @@ const PharmacyPOS: React.FC = () => {
             )}
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => handlePrintReceipt(completed)}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-teal-500/25 transition-all"
-            >
-              <Printer className="w-4 h-4" />
-              Imprimer Reçu
-            </button>
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                onClick={() => handlePrintReceipt(completed, 'thermal')}
+                className="py-3 px-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/20 transition-all"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Ticket Caisse (80mm)</span>
+              </button>
+              <button
+                onClick={() => handlePrintReceipt(completed, 'a4')}
+                className="py-3 px-3 bg-gradient-to-r from-slate-800 to-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-all"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Facture A4 (Grand Format)</span>
+              </button>
+            </div>
+
             <button
               onClick={handleNewSale}
-              className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs rounded-xl transition-colors"
+              className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors"
             >
-              Nouvelle Vente
+              Nouvelle Vente Comptoir
             </button>
           </div>
         </div>
@@ -563,7 +574,9 @@ const PharmacyPOS: React.FC = () => {
             {/* Cash Input */}
             {paymentMethod === 'cash' && (
               <div className="space-y-3 mb-5">
-                <label className="block text-xs font-semibold text-gray-700">Espèces reçues (€)</label>
+                <label className="block text-xs font-semibold text-gray-700">
+                  Espèces reçues ({organizationSettings.currencySymbol || '€'})
+                </label>
                 <input
                   type="number"
                   value={amountReceived || ''}
