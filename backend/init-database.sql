@@ -213,3 +213,27 @@ CREATE TABLE IF NOT EXISTS "ClinicalTrials" (
     "CreatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "UpdatedAt" TIMESTAMPTZ
 );
+
+-- ==========================================================
+-- 8. POSTGRESQL 16 NATIVE ROW LEVEL SECURITY (RLS) & AUDIT
+-- ==========================================================
+ALTER TABLE IF EXISTS "Users" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "Patients" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "MedicalRecords" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "Prescriptions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "Medications" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "MedicationMovements" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "GenomicProfiles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "BioSamples" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS "ClinicalTrials" ENABLE ROW LEVEL SECURITY;
+
+-- Security & Audit Indexes
+CREATE INDEX IF NOT EXISTS "IX_Users_Email" ON "Users" ("Email");
+CREATE INDEX IF NOT EXISTS "IX_Patients_Email" ON "Patients" ("Email");
+CREATE INDEX IF NOT EXISTS "IX_Patients_Phone" ON "Patients" ("Phone");
+CREATE INDEX IF NOT EXISTS "IX_MedicalRecords_PatientId" ON "MedicalRecords" ("PatientId");
+CREATE INDEX IF NOT EXISTS "IX_MedicalRecords_DoctorId" ON "MedicalRecords" ("DoctorId");
+CREATE INDEX IF NOT EXISTS "IX_Prescriptions_MedicalRecordId" ON "Prescriptions" ("MedicalRecordId");
+CREATE INDEX IF NOT EXISTS "IX_GenomicProfiles_PatientId" ON "GenomicProfiles" ("PatientId");
+CREATE INDEX IF NOT EXISTS "IX_BioSamples_FreezerId" ON "BioSamples" ("FreezerId");
+
