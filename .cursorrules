@@ -1,0 +1,11 @@
+# SoftCare - Development & Security Rules
+
+Consultez impérativement les règles de sécurité et de conception du projet :
+- Règles de sécurité détaillées : `.agents/rules/security-rules.md`
+- Règles métier et d'intégrité : `.antigravity/project-rules.md`
+
+### Directives de Sécurité Non Négociables :
+1. **Zéro secret hardcodé** : Aucun mot de passe, clé d'API, token JWT ou identifiant admin en clair dans le code ou les tests. Utiliser les variables d'environnement (`IConfiguration`, `.env`).
+2. **Protection systématique des routes** : Tous les endpoints sont privés par défaut (`[Authorize]` / RBAC). Valider l'identité et les permissions pour prévenir toute faille IDOR / BOLA.
+3. **Données de santé (HDS / RGPD)** : Le NIR/SSN ne doit jamais figurer dans les logs ou URL. Mots de passe hachés avec BCrypt.
+4. **Requêtes paramétrées** : Pas de concaténation SQL, utiliser EF Core avec requêtes paramétrées.
