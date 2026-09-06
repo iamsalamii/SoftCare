@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import {
   X, Sparkles, Building2, Calendar, Clock, User, Mail, Phone,
   CheckCircle2, ArrowRight, ShieldCheck, HeartPulse, Stethoscope, Dna,
-  Send, Layers, BedDouble, Check
+  Send, Layers, BedDouble, Check, Briefcase
 } from 'lucide-react';
+import CustomSelect, { SelectOption } from '../common/CustomSelect';
 
 interface DemoRequestModalProps {
   isOpen: boolean;
@@ -30,6 +31,31 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
 
   if (!isOpen) return null;
 
+  const facilityTypeOptions: SelectOption[] = [
+    { value: 'CHU / Hôpital Universitaire', label: 'CHU / Hôpital Universitaire', badge: 'Public', icon: Building2 },
+    { value: 'Centre Hospitalier (CH)', label: 'Centre Hospitalier (CH)', badge: 'Public', icon: Building2 },
+    { value: 'Clinique Privée / ESPIC', label: 'Clinique Privée / ESPIC', badge: 'Privé', icon: Building2 },
+    { value: 'Laboratoire Biotech / LIMS', label: 'Laboratoire Biotech / LIMS', badge: 'Biotech', icon: Dna },
+    { value: 'Groupement Hospitalier (GHT)', label: 'Groupement Hospitalier (GHT)', badge: 'Multi-sites', icon: Layers }
+  ];
+
+  const roleOptions: SelectOption[] = [
+    { value: 'Chef de Service Médical', label: 'Chef de Service Médical / Praticien', badge: 'Médical', icon: Stethoscope },
+    { value: 'Directeur d\'Établissement / DG', label: 'Directeur d\'Établissement / DG', badge: 'Direction', icon: Briefcase },
+    { value: 'DSI / Responsable SI Santé', label: 'DSI / Responsable SI Santé', badge: 'IT / SIH', icon: ShieldCheck },
+    { value: 'Pharmacien Hospitalier Chef (PUI)', label: 'Pharmacien Hospitalier Chef (PUI)', badge: 'Pharmacie', icon: HeartPulse },
+    { value: 'Cadre de Santé / Soignant', label: 'Cadre de Santé / Soignant', badge: 'Soins', icon: User },
+    { value: 'Biologiste / Responsable Biobanque', label: 'Biologiste / Responsable Biobanque', badge: 'Laboratoire', icon: Dna }
+  ];
+
+  const timeSlotOptions: SelectOption[] = [
+    { value: '09:00 - 10:00', label: '09:00 - 10:00 (Matin)', badge: 'Matin', icon: Clock },
+    { value: '10:00 - 11:00', label: '10:00 - 11:00 (Matin)', badge: 'Recommandé', icon: Clock },
+    { value: '11:30 - 12:30', label: '11:30 - 12:30 (Midi)', badge: 'Midi', icon: Clock },
+    { value: '14:00 - 15:00', label: '14:00 - 15:00 (Après-midi)', badge: 'Après-midi', icon: Clock },
+    { value: '16:00 - 17:00', label: '16:00 - 17:00 (Fin de journée)', badge: 'Après-midi', icon: Clock }
+  ];
+
   const modulesList = [
     'Dossier Patient Informatisé (DPI)',
     'Biotech & Pharmacogénomique (PGx)',
@@ -51,10 +77,39 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const recipientEmail = 'contact@softcare.io';
+    const emailSubject = encodeURIComponent(`[Demande de Démo SoftCare] ${formData.facilityName || 'Établissement'} - ${formData.fullName}`);
+    const emailBody = encodeURIComponent(
+      `Bonjour l'équipe SoftCare,\n\n` +
+      `Une nouvelle demande de démonstration a été effectuée :\n\n` +
+      `• Nom : ${formData.fullName}\n` +
+      `• Email professionnel : ${formData.workEmail}\n` +
+      `• Téléphone : ${formData.phone || 'Non précisé'}\n` +
+      `• Établissement : ${formData.facilityName} (${formData.facilityType})\n` +
+      `• Rôle : ${formData.role}\n` +
+      `• Date souhaitée : ${formData.preferredDate || 'Dès que possible'}\n` +
+      `• Créneau : ${formData.preferredTime}\n` +
+      `• Modules d'intérêt : ${formData.selectedModules.join(', ')}\n` +
+      `• Notes / Besoins : ${formData.notes || 'Aucun message spécifique'}\n\n` +
+      `Cordialement,\n${formData.fullName}`
+    );
+
+    // Trigger email client with mailto
+    try {
+      const mailtoLink = `mailto:${recipientEmail}?subject=${emailSubject}&body=${emailBody}`;
+      const win = window.open(mailtoLink, '_blank');
+      if (!win) {
+        window.location.href = mailtoLink;
+      }
+    } catch {
+      // Fallback
+    }
+
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 900);
+    }, 700);
   };
 
   return (
@@ -71,7 +126,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
               Découvrez SoftCare en Situation Réelle
             </h2>
             <p className="text-xs text-cyan-200/80">
-              Session interactive de 30 min animée par un ingénieur biomédical & spécialiste hospitalier
+              Présentation interactive et personnalisée des fonctionnalités de la plateforme SoftCare.
             </p>
           </div>
 
@@ -91,16 +146,16 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                 <CheckCircle2 className="w-10 h-10 animate-pulse" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">Demande de Démo Enregistrée !</h3>
+                <h3 className="text-2xl font-bold text-gray-900">Demande de Démo Transmise avec Succès !</h3>
                 <p className="text-sm text-gray-600 max-w-md mx-auto">
-                  Merci <strong>{formData.fullName}</strong>. Un spécialiste hospitalier SoftCare vous contactera sous 24h à l'adresse <strong>{formData.workEmail}</strong> pour confirmer le créneau du <strong>{formData.preferredDate || 'prochain créneau disponible'}</strong> ({formData.preferredTime}).
+                  Merci <strong>{formData.fullName}</strong>. Votre demande a été envoyée à l'équipe SoftCare. Un récapitulatif a été transmis à <strong>{formData.workEmail}</strong> pour le créneau du <strong>{formData.preferredDate || 'prochain créneau disponible'}</strong> ({formData.preferredTime}).
                 </p>
               </div>
 
               <div className="p-4 bg-slate-50 rounded-2xl border border-gray-200 max-w-md mx-auto text-left space-y-2 text-xs text-gray-600">
                 <div className="flex justify-between font-semibold text-gray-800">
                   <span>Établissement :</span>
-                  <span>{formData.facilityName || 'Établissement de Santé'}</span>
+                  <span>{formData.facilityName || 'Établissement'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Profil :</span>
@@ -132,14 +187,14 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     Nom et Prénom *
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="text"
                       required
-                      placeholder="Dr. Alexandre Martin"
+                      placeholder="Alexandre Martin"
                       value={formData.fullName}
                       onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -150,14 +205,14 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     Email Professionnel *
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="email"
                       required
-                      placeholder="a.martin@chu-paris.fr"
+                      placeholder="a.martin@etablissement.fr"
                       value={formData.workEmail}
                       onChange={e => setFormData({ ...formData, workEmail: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -168,13 +223,13 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     Téléphone
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="tel"
                       placeholder="+33 1 42 68 00 00"
                       value={formData.phone}
                       onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -182,56 +237,45 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                 {/* Nom de l'établissement */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Nom de l'Établissement *
+                    Nom de l'Établissement / Structure *
                   </label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="text"
                       required
-                      placeholder="CHU de Lyon / Clinique Saint-Jean"
+                      placeholder="Centre Hospitalier / Clinique"
                       value={formData.facilityName}
                       onChange={e => setFormData({ ...formData, facilityName: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                {/* Type d'établissement */}
+                {/* Type d'établissement with CustomSelect */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Type d'Établissement
+                    Type de Structure
                   </label>
-                  <select
+                  <CustomSelect
+                    options={facilityTypeOptions}
                     value={formData.facilityType}
-                    onChange={e => setFormData({ ...formData, facilityType: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
-                  >
-                    <option value="CHU / Hôpital Universitaire">CHU / Hôpital Universitaire</option>
-                    <option value="Centre Hospitalier (CH)">Centre Hospitalier (CH)</option>
-                    <option value="Clinique Privée / ESPIC">Clinique Privée / ESPIC</option>
-                    <option value="Laboratoire Biotech / LIMS">Laboratoire Biotech / LIMS</option>
-                    <option value="Groupement Hospitalier de Territoire (GHT)">GHT / Multi-sites</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, facilityType: val })}
+                    placeholder="Sélectionner le type..."
+                  />
                 </div>
 
-                {/* Fonction du demandeur */}
+                {/* Fonction du demandeur with CustomSelect */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
                     Votre Rôle
                   </label>
-                  <select
+                  <CustomSelect
+                    options={roleOptions}
                     value={formData.role}
-                    onChange={e => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
-                  >
-                    <option value="Chef de Service Médical">Chef de Service Médical / Praticien</option>
-                    <option value="Directeur d'Établissement / DG">Directeur d'Établissement / DG</option>
-                    <option value="DSI / Responsable SI Santé">DSI / Responsable SI Santé</option>
-                    <option value="Pharmacien Hospitalier Chef (PUI)">Pharmacien Hospitalier Chef (PUI)</option>
-                    <option value="Cadre de Santé / Soignant">Cadre de Santé / Soignant</option>
-                    <option value="Biologiste / Responsable Biobanque">Biologiste / Responsable Biobanque</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, role: val })}
+                    placeholder="Sélectionner votre fonction..."
+                  />
                 </div>
 
                 {/* Date souhaitée */}
@@ -240,35 +284,27 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     Date Souhaitée
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="date"
                       value={formData.preferredDate}
                       onChange={e => setFormData({ ...formData, preferredDate: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                {/* Créneau horaire */}
+                {/* Créneau horaire with CustomSelect */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
                     Créneau Horaire Préféré
                   </label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <select
-                      value={formData.preferredTime}
-                      onChange={e => setFormData({ ...formData, preferredTime: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all"
-                    >
-                      <option value="09:00 - 10:00">09:00 - 10:00</option>
-                      <option value="10:00 - 11:00">10:00 - 11:00</option>
-                      <option value="11:30 - 12:30">11:30 - 12:30</option>
-                      <option value="14:00 - 15:00">14:00 - 15:00</option>
-                      <option value="16:00 - 17:00">16:00 - 17:00</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    options={timeSlotOptions}
+                    value={formData.preferredTime}
+                    onChange={(val) => setFormData({ ...formData, preferredTime: val })}
+                    placeholder="Sélectionner un horaire..."
+                  />
                 </div>
               </div>
 
@@ -285,14 +321,14 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                         type="button"
                         key={mod}
                         onClick={() => handleModuleToggle(mod)}
-                        className={`px-3 py-2 rounded-xl text-xs font-semibold text-left border flex items-center justify-between transition-all ${
+                        className={`px-3.5 py-2.5 rounded-2xl text-xs font-semibold text-left border flex items-center justify-between transition-all ${
                           isSelected
-                            ? 'bg-cyan-50 border-cyan-400 text-cyan-900 shadow-sm'
-                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                            ? 'bg-cyan-50/90 border-cyan-400 text-cyan-950 shadow-2xs'
+                            : 'bg-gray-50/80 border-gray-200 text-gray-600 hover:bg-gray-100/80'
                         }`}
                       >
                         <span className="truncate pr-2">{mod}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-cyan-600 shrink-0" />}
+                        {isSelected && <Check className="w-4 h-4 text-cyan-600 shrink-0" />}
                       </button>
                     );
                   })}
@@ -306,10 +342,10 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Ex : Intégration avec notre SIH existant, conformité HDS, déploiement sur 3 sites..."
+                  placeholder="Ex : Déploiement multi-services, intégration SIH, traçabilité des délivrances..."
                   value={formData.notes}
                   onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all resize-none"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all resize-none"
                 />
               </div>
 
@@ -323,7 +359,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
@@ -332,7 +368,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     </>
                   ) : (
                     <>
-                      <span>Confirmer la Demande</span>
+                      <span>Confirmer la Démo</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

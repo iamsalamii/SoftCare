@@ -484,15 +484,6 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onGoToLogin}
-              className="text-xs font-bold text-gray-400 hover:text-white transition-colors hidden sm:inline-block"
-            >
-              Accéder à l'Espace Pro &rarr;
-            </button>
-          </div>
         </div>
       </div>
     </div>
