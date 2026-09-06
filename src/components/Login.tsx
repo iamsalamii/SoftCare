@@ -4,18 +4,18 @@ import {
   User, Lock, ArrowRight, Shield, Heart, Activity, Eye, EyeOff,
   Sparkles, CheckCircle2, AlertCircle, HelpCircle, Mail, Phone,
   Building2, KeyRound, ArrowLeft, RefreshCw, Dna, Stethoscope,
-  ChevronRight, X
+  ChevronRight, X, ShieldCheck, HeartPulse, Pill, Syringe
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
-import CustomSelect from './common/CustomSelect';
+import CustomSelect, { SelectOption } from './common/CustomSelect';
 
 interface LoginProps {
   onBackToLanding?: () => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
-  const { signIn, departments, dropdownOptions } = useApp();
+  const { signIn, departments } = useApp();
   const toast = useToast();
 
   const [email, setEmail] = useState('');
@@ -40,42 +40,78 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
     message: ''
   });
 
-  // Dynamic department options from hospital settings / database
-  const departmentOptions = departments.length > 0
-    ? departments.map(d => ({ value: d.name, label: d.name, badge: d.code }))
+  const departmentOptions: SelectOption[] = departments.length > 0
+    ? departments.map(d => ({ value: d.name, label: d.name, badge: d.code, icon: Building2 }))
     : [
-        { value: 'Cardiologie', label: 'Cardiologie', badge: 'CARD' },
-        { value: 'Chirurgie & Bloc', label: 'Chirurgie & Bloc', badge: 'CHIR' },
-        { value: 'Urgences & Triage', label: 'Urgences & Triage', badge: 'URG' },
-        { value: 'Pharmacie Hospitalière', label: 'Pharmacie Hospitalière', badge: 'PHARM' },
-        { value: 'Laboratoire & Biotech', label: 'Laboratoire & Biotech', badge: 'LAB' },
-        { value: 'Maternité & Pédiatrie', label: 'Maternité & Pédiatrie', badge: 'MAT' },
-        { value: 'Radiologie & Imagerie', label: 'Radiologie & Imagerie', badge: 'RAD' }
+        { value: 'Cardiologie', label: 'Cardiologie', badge: 'CARD', icon: HeartPulse },
+        { value: 'Chirurgie & Bloc', label: 'Chirurgie & Bloc', badge: 'CHIR', icon: Stethoscope },
+        { value: 'Urgences & Triage', label: 'Urgences & Triage', badge: 'URG', icon: Activity },
+        { value: 'Pharmacie Hospitalière', label: 'Pharmacie Hospitalière', badge: 'PHARM', icon: Pill },
+        { value: 'Laboratoire & Biotech', label: 'Laboratoire & Biotech', badge: 'LAB', icon: Dna },
+        { value: 'Maternité & Pédiatrie', label: 'Maternité & Pédiatrie', badge: 'MAT', icon: Heart }
       ];
+
+  const quickDemoAccounts = [
+    {
+      role: 'Administrateur (DSI)',
+      name: 'Admin Principal',
+      email: 'admin@hopital.com',
+      password: 'password123',
+      icon: ShieldCheck,
+      color: 'from-amber-500/20 to-orange-500/20 border-amber-300 text-amber-900',
+      badge: 'Super Admin'
+    },
+    {
+      role: 'Médecin Praticien',
+      name: 'Dr. Marie Dubois',
+      email: 'marie.dubois@hopital.fr',
+      password: 'password123',
+      icon: Stethoscope,
+      color: 'from-cyan-500/20 to-teal-500/20 border-cyan-300 text-cyan-900',
+      badge: 'Cardiologie'
+    },
+    {
+      role: 'Pharmacien Hospitalier',
+      name: 'Pierre Lefebvre',
+      email: 'pierre.l@hopital.fr',
+      password: 'password123',
+      icon: Pill,
+      color: 'from-emerald-500/20 to-teal-500/20 border-emerald-300 text-emerald-900',
+      badge: 'Pharmacie / POS'
+    },
+    {
+      role: 'Infirmier / Soignant',
+      name: 'Sophie Martin',
+      email: 'sophie.martin@hopital.fr',
+      password: 'password123',
+      icon: Syringe,
+      color: 'from-indigo-500/20 to-cyan-500/20 border-indigo-300 text-indigo-900',
+      badge: 'Soins / Triage'
+    }
+  ];
 
   const slides = [
     {
-      title: "Gestion Hospitalière Unifiée",
-      description: "DPI, Triage des urgences et coordination des équipes soignantes en temps réel.",
+      title: "Système d'Information Hospitalier Unifié",
+      description: "DPI temps réel, gestion des admissions, flux d'urgences et synchronisation multi-services.",
       badge: "Hospital OS v2.4",
       icon: Activity
     },
     {
-      title: "Biotechnologies & PGx",
-      description: "Sécurisation pharmacogénomique en direct (CPIC/DPWG) et biobanque cryogénique.",
+      title: "Biotechnologies & Pharmacogénomique",
+      description: "Intercepteur automatique de contre-indications génétiques (CPIC/DPWG) et biobanque cryogénique.",
       badge: "Médecine de Précision",
       icon: Dna
     },
     {
-      title: "Traçabilité Pharmaceutique",
-      description: "Scanner GS1, codes-barres 128 / 2D QR vectoriels et délivrance robotisée.",
+      title: "Traçabilité & Pharmacie Robotisée",
+      description: "Scan des codes-barres GS1 DataMatrix < 5ms, gestion des stocks et sécurisation des délivrances.",
       badge: "Normes Sanitaires HDS",
-      icon: Shield
+      icon: ShieldCheck
     }
   ];
 
   useEffect(() => {
-    // Restore saved email if remember me was active
     const savedEmail = localStorage.getItem('softcare_saved_email');
     if (savedEmail) {
       setEmail(savedEmail);
@@ -84,7 +120,7 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4500);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -101,6 +137,12 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
 
+  const handleQuickLogin = (demoEmail: string, demoPass: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    toast.info('Identifiants pré-remplis', `Compte sélectionné : ${demoEmail}`);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutSeconds > 0) {
@@ -111,12 +153,11 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
     setError('');
     setLoading(true);
 
-    // Hospital authentication progression
     setLoadingStep('Vérification des accréditations médicales...');
-    await new Promise(r => setTimeout(r, 350));
+    await new Promise(r => setTimeout(r, 300));
 
-    setLoadingStep('Chargement du profil de service...');
-    await new Promise(r => setTimeout(r, 350));
+    setLoadingStep('Chargement de l\'espace de travail...');
+    await new Promise(r => setTimeout(r, 300));
 
     const { error: signInError } = await signIn(email, password);
 
@@ -154,51 +195,40 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
       setShowForgotPasswordModal(false);
       setForgotSubmitted(false);
       setForgotEmail('');
-    }, 2500);
+    }, 2000);
   };
 
   const handleContactAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setRequestSubmitted(true);
-    toast.success('Demande d\'inscription transmise', `Service demandé : ${requestForm.service}`);
+    toast.success('Demande transmise', `Service demandé : ${requestForm.service}`);
     setTimeout(() => {
       setShowContactAdminModal(false);
       setRequestSubmitted(false);
       setRequestForm({ name: '', email: '', service: departments[0]?.name || 'Cardiologie', message: '' });
-    }, 2500);
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row relative overflow-hidden font-sans select-none">
-      {/* Haikei / Organic Ambient Background Accents */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-200/40 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 -right-40 w-96 h-96 bg-teal-200/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-emerald-100/40 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 flex flex-col lg:flex-row relative overflow-hidden font-sans select-none text-slate-100">
+      {/* Dynamic Ambient Background Aura */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-cyan-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-teal-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Left side - Medical Brand Presentation (Modern Organic Glassmorphism) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-cyan-600 via-teal-700 to-teal-900 p-12 flex-col justify-between text-white overflow-hidden shadow-2xl">
-        {/* Haikei Style Fluid Wave Overlay */}
-        <svg
-          className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
-          viewBox="0 0 800 800"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M 0 300 C 150 200 350 400 500 250 C 650 100 750 350 800 300 L 800 800 L 0 800 Z"
-            fill="#ffffff"
-          />
-        </svg>
-
+      {/* Left side - Captivating Visual Showcase (Dark Glassmorphic Panel) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-slate-900/90 via-slate-950/95 to-teal-950/80 p-12 flex-col justify-between border-r border-white/10 shadow-2xl backdrop-blur-xl">
         {/* Top bar with back to landing button */}
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-lg">
-              <Activity className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25">
+              <Activity className="w-6 h-6 animate-pulse" />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-tight text-white block">SoftCare</span>
-              <span className="text-[10px] text-cyan-200 font-bold uppercase tracking-widest">
-                Système Hospitalier & Biotech
+              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-teal-300 bg-clip-text text-transparent block">
+                SoftCare
+              </span>
+              <span className="text-[10px] text-cyan-300/80 font-mono uppercase tracking-widest font-bold">
+                Hospital System &middot; v2.4
               </span>
             </div>
           </div>
@@ -206,7 +236,7 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
           {onBackToLanding && (
             <button
               onClick={onBackToLanding}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 text-gray-300 hover:text-white"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Accueil</span>
@@ -214,33 +244,33 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
           )}
         </div>
 
-        {/* Carousel Slides (Motion Primitives feel) */}
-        <div className="relative z-10 my-auto py-8">
-          <div className="space-y-6 max-w-lg">
+        {/* Carousel Presentation */}
+        <div className="relative z-10 my-auto py-12 max-w-lg space-y-8">
+          <div className="space-y-6">
             {slides.map((slide, index) => {
               const Icon = slide.icon;
               const isActive = currentSlide === index;
               return (
                 <div
                   key={index}
-                  className={`transition-all duration-500 transform ${
+                  className={`transition-all duration-700 transform ${
                     isActive
                       ? 'opacity-100 translate-y-0 scale-100'
-                      : 'opacity-0 translate-y-4 scale-95 absolute inset-0 pointer-events-none'
+                      : 'opacity-0 translate-y-6 scale-95 absolute inset-0 pointer-events-none'
                   }`}
                 >
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/15 backdrop-blur-md border border-white/20 rounded-full text-xs font-bold text-cyan-100 mb-4 shadow-xs">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-xs font-bold text-cyan-300 mb-4 shadow-sm">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                     <span>{slide.badge}</span>
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-xl flex-shrink-0">
-                      <Icon className="w-7 h-7 text-white" />
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 border border-cyan-400/30 flex items-center justify-center shadow-lg flex-shrink-0 text-cyan-300">
+                      <Icon className="w-7 h-7" />
                     </div>
                     <div>
                       <h3 className="text-3xl font-extrabold tracking-tight mb-2 text-white">{slide.title}</h3>
-                      <p className="text-cyan-100/90 text-sm leading-relaxed">{slide.description}</p>
+                      <p className="text-gray-300 text-sm leading-relaxed">{slide.description}</p>
                     </div>
                   </div>
                 </div>
@@ -249,43 +279,53 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
           </div>
 
           {/* Dots Indicator */}
-          <div className="flex gap-2 pt-8">
+          <div className="flex gap-2">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  currentSlide === index ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/60'
+                  currentSlide === index ? 'w-8 bg-cyan-400' : 'w-2 bg-white/20 hover:bg-white/40'
                 }`}
               />
             ))}
           </div>
+
+          {/* Live Telemetry Bar */}
+          <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/10 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-gray-300 font-mono">Système Hospitalier Actif</span>
+            </div>
+            <span className="text-cyan-300 font-bold">PostgreSQL 16 &middot; RLS Sécurisé</span>
+          </div>
         </div>
 
-        {/* Bottom Hospital Certifications */}
-        <div className="relative z-10 border-t border-white/15 pt-6 flex justify-between items-center text-xs text-cyan-100/75">
+        {/* Footer certifications */}
+        <div className="relative z-10 border-t border-white/10 pt-6 flex justify-between items-center text-xs text-gray-400">
           <span className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-300" /> Conforme Normes Sanitaires & HDS
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Hébergement Données de Santé (HDS) &amp; RGPD</span>
           </span>
-          <span className="font-mono text-[11px]">Édition Clinique 2026</span>
+          <span className="font-mono text-[11px] text-cyan-300">Edition Clinique 2026</span>
         </div>
       </div>
 
-      {/* Right side - Clean Medical Login Form (Responsive) */}
+      {/* Right side - Sleek, Captivating & Simple Login Form */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 relative z-10">
         <div className="w-full max-w-md space-y-6">
-          {/* Mobile top bar */}
+          {/* Mobile top header */}
           <div className="lg:hidden flex items-center justify-between pb-2">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-md">
-                <Activity className="w-6 h-6" />
+              <div className="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-teal-500 rounded-xl flex items-center justify-center text-white shadow-md">
+                <Activity className="w-5 h-5" />
               </div>
-              <span className="text-2xl font-black text-gray-900">SoftCare</span>
+              <span className="text-2xl font-black text-white">SoftCare</span>
             </div>
             {onBackToLanding && (
               <button
                 onClick={onBackToLanding}
-                className="text-xs font-semibold text-teal-700 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Accueil</span>
@@ -293,30 +333,67 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
             )}
           </div>
 
-          {/* Login Card (Watermelon UI soft style) */}
-          <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-8 space-y-6 animate-in fade-in duration-300">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-50 text-cyan-800 border border-cyan-200 rounded-full text-[10px] font-bold mb-2">
-                <Shield className="w-3 h-3 text-cyan-600" />
+          {/* Main Card (Crisp Minimalist Dark Surface) */}
+          <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/10 p-6 sm:p-8 space-y-6">
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-500/10 text-teal-300 border border-teal-500/30 rounded-full text-xs font-bold">
+                <Shield className="w-3.5 h-3.5 text-teal-400" />
                 <span>Portail Hospitalier Sécurisé</span>
               </div>
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Espace Professionnel</h1>
-              <p className="text-xs text-gray-500 mt-1">
-                Authentification certifiée pour les praticiens, pharmaciens et soignants.
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Connexion
+              </h1>
+              <p className="text-xs text-gray-400">
+                Accédez à votre espace clinique, DPI et pharmacie hospitalière.
               </p>
             </div>
 
+            {/* Error Message */}
             {error && (
-              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2 animate-in fade-in">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
+              <div className="p-3.5 bg-rose-950/60 border border-rose-500/40 rounded-2xl text-xs text-rose-300 flex items-start gap-2 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-400" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
+            {/* Quick 1-Click Demo Profile Switcher */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                <span>Comptes Démo en 1 clic :</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {quickDemoAccounts.map((acc, i) => {
+                  const Icon = acc.icon;
+                  const isSelected = email === acc.email;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleQuickLogin(acc.email, acc.password)}
+                      className={`p-2.5 rounded-2xl border text-left transition-all flex items-center gap-2.5 ${
+                        isSelected
+                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-md'
+                          : 'bg-slate-950/60 border-white/5 text-gray-300 hover:bg-slate-800 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="w-7 h-7 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-cyan-300">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="truncate min-w-0">
+                        <p className="text-xs font-bold truncate text-white">{acc.badge}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{acc.name}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-4 pt-1">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
-                  Identifiant / Email Professionnel <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-gray-300">
+                  Email Professionnel
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -327,16 +404,25 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="identifiant.pro@etablissement.sante.fr"
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    placeholder="nom.praticien@hopital.fr"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-white/10 rounded-2xl text-xs font-medium text-white focus:bg-slate-950 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none transition-all placeholder:text-gray-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
-                  Mot de Passe <span className="text-rose-500">*</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-gray-300">
+                    Mot de Passe
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPasswordModal(true)}
+                    className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold hover:underline"
+                  >
+                    Oublié ?
+                  </button>
+                </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                     <Lock className="w-4 h-4" />
@@ -346,13 +432,13 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-mono"
+                    placeholder="••••••••••••"
+                    className="w-full pl-10 pr-10 py-3 bg-slate-950/80 border border-white/10 rounded-2xl text-xs font-medium text-white focus:bg-slate-950 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none transition-all font-mono placeholder:text-gray-500"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-200"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -360,58 +446,50 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
               </div>
 
               <div className="flex items-center justify-between text-xs pt-1">
-                <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 font-medium">
+                <label className="flex items-center gap-2 cursor-pointer select-none text-gray-400 font-medium">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-gray-300"
+                    className="w-4 h-4 rounded bg-slate-950 border-white/20 text-cyan-500 focus:ring-cyan-400/20"
                   />
-                  <span>Se souvenir de moi</span>
+                  <span>Mémoriser mon identifiant</span>
                 </label>
-
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPasswordModal(true)}
-                  className="text-teal-700 hover:text-teal-900 font-bold hover:underline"
-                >
-                  Mot de passe oublié ?
-                </button>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || lockoutSeconds > 0}
-                className={`w-full py-3.5 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 ${
+                className={`w-full py-3.5 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2 ${
                   lockoutSeconds > 0
-                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed shadow-none'
-                    : 'bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 hover:from-cyan-700 hover:to-teal-800 text-white shadow-teal-600/25 hover:scale-[1.01] disabled:opacity-50'
+                    ? 'bg-gray-700 text-gray-400 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 text-white shadow-teal-500/25 hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50'
                 }`}
               >
                 {loading ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>{loadingStep || 'Connexion...'}</span>
+                    <span>{loadingStep || 'Connexion en cours...'}</span>
                   </>
                 ) : lockoutSeconds > 0 ? (
-                  <span>🔒 Réessayer dans {lockoutSeconds}s</span>
+                  <span>🔒 Déverrouillage dans {lockoutSeconds}s</span>
                 ) : (
                   <>
-                    <span>Se Connecter</span>
+                    <span>Accéder à l'Espace Pro</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="pt-4 border-t border-gray-100 text-center">
-              <p className="text-xs text-gray-500">
-                Pas encore de compte ?{' '}
+            <div className="pt-4 border-t border-white/10 text-center">
+              <p className="text-xs text-gray-400">
+                Besoin d'un accès soignant ?{' '}
                 <button
                   onClick={() => setShowContactAdminModal(true)}
-                  className="text-teal-700 hover:text-teal-900 font-bold hover:underline"
+                  className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline"
                 >
-                  Contactez l'administrateur / DSI
+                  Demander une accréditation
                 </button>
               </p>
             </div>
@@ -419,68 +497,66 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
         </div>
       </div>
 
-      {/* ========================================================= */}
-      {/* MODAL 1 : MOT DE PASSE OUBLIÉ (PORTALISÉ & SCROLL CONTAINED) */}
-      {/* ========================================================= */}
+      {/* MODAL 1 : MOT DE PASSE OUBLIÉ */}
       {showForgotPasswordModal && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-md w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 text-white rounded-3xl shadow-2xl border border-white/10 max-w-md w-full overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-slate-950/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-gray-900">Réinitialisation Sécurisée</h3>
-                  <p className="text-xs text-gray-500">Procédure interne de sécurité hospitalière</p>
+                  <h3 className="font-bold text-base text-white">Réinitialisation Sécurisée</h3>
+                  <p className="text-xs text-gray-400">Procédure DSI / Sécurité Hospitalière</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowForgotPasswordModal(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 modal-scroll">
+            <div className="p-6 space-y-4">
               {forgotSubmitted ? (
-                <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl text-xs space-y-2 text-center">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                  <p className="font-bold">Demande transmise avec succès</p>
-                  <p>Un administrateur de garde validera la réinitialisation de votre compte.</p>
+                <div className="p-5 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs space-y-2 text-center">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <p className="font-bold text-sm text-white">Demande Transmise avec Succès</p>
+                  <p>Un administrateur DSI validera la réinitialisation de vos accréditations sous peu.</p>
                 </div>
               ) : (
                 <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    Saisissez votre adresse email professionnelle. Un protocole de réinitialisation sécurisé sera déclenché via la DSI de l'établissement.
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    Saisissez votre adresse email professionnelle. Le protocole de réinitialisation sécurisé sera déclenché via la DSI.
                   </p>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Email Professionnel <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Email Professionnel *
                     </label>
                     <input
                       type="email"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
-                      placeholder="praticien@etablissement.sante.fr"
+                      placeholder="nom.praticien@hopital.fr"
                       required
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-white/10 rounded-2xl text-xs text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none"
                     />
                   </div>
                   <div className="flex gap-2 pt-2">
                     <button
                       type="button"
                       onClick={() => setShowForgotPasswordModal(false)}
-                      className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200 transition-colors"
+                      className="flex-1 py-2.5 bg-white/5 text-gray-300 rounded-2xl text-xs font-semibold hover:bg-white/10 transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold shadow-md hover:from-cyan-700 hover:to-teal-700 transition-all"
+                      className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md"
                     >
-                      Envoyer Demande
+                      Transmettre
                     </button>
                   </div>
                 </form>
@@ -491,94 +567,87 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
         document.body
       )}
 
-      {/* ========================================================= */}
-      {/* MODAL 2 : CONTACTER L'ADMINISTRATEUR (SERVICES DYNAMIQUES & CUSTOM SELECT) */}
-      {/* ========================================================= */}
+      {/* MODAL 2 : DEMANDE D'ACCÈS / CONTACT DSI */}
       {showContactAdminModal && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 text-white rounded-3xl shadow-2xl border border-white/10 max-w-md w-full overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-slate-950/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-gray-900">Demande d'Accès Hospitalier</h3>
-                  <p className="text-xs text-gray-500">Service Informatique & DSI</p>
+                  <h3 className="font-bold text-base text-white">Demande d'Accréditation</h3>
+                  <p className="text-xs text-gray-400">Attribution d'un rôle hospitalier</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowContactAdminModal(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 modal-scroll space-y-4">
+            <div className="p-6 space-y-4">
               {requestSubmitted ? (
-                <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl text-xs space-y-2 text-center">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                  <p className="font-bold">Demande d'inscription enregistrée</p>
-                  <p>Vos accès seront activés dès validation par votre chef de service ou la DSI.</p>
+                <div className="p-5 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs space-y-2 text-center">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <p className="font-bold text-sm text-white">Demande d'Accès Enregistrée</p>
+                  <p>Votre demande pour le service <strong>{requestForm.service}</strong> a été transmise au responsable des accréditations.</p>
                 </div>
               ) : (
-                <form onSubmit={handleContactAdminSubmit} className="space-y-4">
+                <form onSubmit={handleContactAdminSubmit} className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Nom Complet & Titre <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Nom et Prénom *
                     </label>
                     <input
                       type="text"
                       required
                       value={requestForm.name}
                       onChange={(e) => setRequestForm({ ...requestForm, name: e.target.value })}
-                      placeholder="Dr. Jean Dupont (Praticien Hospitalier)"
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      placeholder="Dr. Thomas Bernard"
+                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-white/10 rounded-2xl text-xs text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Email Professionnel <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Email Professionnel *
                     </label>
                     <input
                       type="email"
                       required
                       value={requestForm.email}
                       onChange={(e) => setRequestForm({ ...requestForm, email: e.target.value })}
-                      placeholder="jean.dupont@hopital.com"
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      placeholder="t.bernard@hopital.fr"
+                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-white/10 rounded-2xl text-xs text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Service Médical d'Affectation <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Service Hospitalier
                     </label>
                     <CustomSelect
                       options={departmentOptions}
                       value={requestForm.service}
                       onChange={(val) => setRequestForm({ ...requestForm, service: val })}
-                      searchable={true}
-                      allowCustom={true}
-                      placeholder="Sélectionner ou saisir un service..."
+                      placeholder="Sélectionner le service..."
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      Liste dynamique des départements de l'établissement (recherche ou saisie libre).
-                    </p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Observations / Rôle Souhaité
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Justification / Rôle souhaité
                     </label>
                     <textarea
                       rows={2}
                       value={requestForm.message}
                       onChange={(e) => setRequestForm({ ...requestForm, message: e.target.value })}
-                      placeholder="Médecin remplaçant en Cardiologie..."
-                      className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      placeholder="Praticien remplaçant, interne de garde..."
+                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-white/10 rounded-2xl text-xs text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none resize-none"
                     />
                   </div>
 
@@ -586,15 +655,15 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
                     <button
                       type="button"
                       onClick={() => setShowContactAdminModal(false)}
-                      className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200 transition-colors"
+                      className="flex-1 py-2.5 bg-white/5 text-gray-300 rounded-2xl text-xs font-semibold hover:bg-white/10 transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold shadow-md hover:from-cyan-700 hover:to-teal-700 transition-all"
+                      className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md"
                     >
-                      Soumettre Demande
+                      Envoyer la Demande
                     </button>
                   </div>
                 </form>
