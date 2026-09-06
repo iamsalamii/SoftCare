@@ -226,8 +226,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [operatingRooms, setOperatingRooms] = useState<OperatingRoom[]>([]);
   const [workSchedules, setWorkSchedules] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings>(defaultOrgSettings);
-  const [dropdownOptions, setDropdownOptions] = useState<DropdownOption[]>(defaultDropdownOptions);
+  const [organizationSettings, setOrganizationSettingsState] = useState<OrganizationSettings>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_org_settings');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return defaultOrgSettings;
+  });
+
+  const setOrganizationSettings = (settings: OrganizationSettings | ((prev: OrganizationSettings) => OrganizationSettings)) => {
+    setOrganizationSettingsState(prev => {
+      const next = typeof settings === 'function' ? settings(prev) : settings;
+      try {
+        localStorage.setItem('softcare_org_settings', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const [dropdownOptions, setDropdownOptionsState] = useState<DropdownOption[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_dropdown_options');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return defaultDropdownOptions;
+  });
+
+  const setDropdownOptions = (opts: DropdownOption[] | ((prev: DropdownOption[]) => DropdownOption[])) => {
+    setDropdownOptionsState(prev => {
+      const next = typeof opts === 'function' ? opts(prev) : opts;
+      try {
+        localStorage.setItem('softcare_dropdown_options', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [pharmacySales, setPharmacySales] = useState<PharmacySale[]>([]);
   const [rooms] = useState<Room[]>(mockRooms);
   const [insurances] = useState<Insurance[]>(mockInsurances);
@@ -267,7 +301,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setBiobankFreezers([...mockBiobankFreezers]);
       setClinicalTrials([...mockClinicalTrials]);
       setQuickInvoiceItems([...defaultOrgSettings.quickInvoiceItems]);
-      setOrganizationSettings({ ...defaultOrgSettings });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de chargement';
       setDataError(message);
@@ -297,16 +330,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshData();
   }, []);
 
-  // Mock sign in
+  // Inactivity timeout (30 min auto-logout for medical session security)
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let timeoutId: NodeJS.Timeout;
+    const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 minutes
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        signOut();
+        showError('Session expirée', 'Vous avez été déconnecté suite à 30 minutes d\'inactivité.');
+      }, INACTIVITY_LIMIT_MS);
+    };
+
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach(evt => window.addEventListener(evt, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      activityEvents.forEach(evt => window.removeEventListener(evt, resetTimer));
+    };
+  }, [currentUser]);
+
+  // Secure sign in with unified error message (anti account enumeration)
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
     const cleanEmail = email.toLowerCase().trim();
     const user = mockUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    if (!user) return { error: 'Identifiant ou email non trouvé' };
+    const genericAuthError = 'Identifiant ou mot de passe incorrect.';
+
+    if (!user) return { error: genericAuthError };
     
     if (cleanEmail === 'admin@hopital.com') {
-      if (password !== 'Admin123!') return { error: 'Mot de passe incorrect' };
+      if (password !== 'Admin123!') return { error: genericAuthError };
     } else {
-      if (password !== 'demo123' && password !== 'Admin123!') return { error: 'Mot de passe incorrect' };
+      if (password !== 'demo123' && password !== 'Admin123!') return { error: genericAuthError };
     }
 
     setCurrentUser(user);

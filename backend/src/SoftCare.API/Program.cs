@@ -26,16 +26,15 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
-// 3. Configure CORS
+// 3. Configure CORS with strict production domain support
+var corsOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+    ?? new[] { "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://localhost:5174" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "http://127.0.0.1:5173",
-                "http://localhost:5174")
+        policy.WithOrigins(corsOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -87,7 +86,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // EnsureCreated or Migrate
         context.Database.EnsureCreated();
         await DatabaseSeeder.SeedAsync(context);
         Console.WriteLine("--> [SoftCare] Base de données initialisée et données de référence insérées avec succès.");
@@ -98,10 +96,17 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// 6. HTTP Pipeline Configuration
+// 6. HTTP Pipeline Configuration (Security & Error Masking)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/api/error");
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("AllowFrontend");
 
-if (app.Environment.IsDevelopment() || true)
+if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("EnableSwaggerInProduction"))
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
