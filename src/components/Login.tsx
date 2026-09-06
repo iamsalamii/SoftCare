@@ -4,7 +4,7 @@ import {
   User, Lock, ArrowRight, Shield, Heart, Activity, Eye, EyeOff,
   Sparkles, CheckCircle2, AlertCircle, HelpCircle, Mail, Phone,
   Building2, KeyRound, ArrowLeft, RefreshCw, Dna, Stethoscope,
-  ChevronRight, X, ShieldCheck, HeartPulse, Pill, Syringe
+  ChevronRight, X, ShieldCheck, HeartPulse, Pill
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
@@ -50,45 +50,6 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
         { value: 'Laboratoire & Biotech', label: 'Laboratoire & Biotech', badge: 'LAB', icon: Dna },
         { value: 'Maternité & Pédiatrie', label: 'Maternité & Pédiatrie', badge: 'MAT', icon: Heart }
       ];
-
-  const quickDemoAccounts = [
-    {
-      role: 'Administrateur (DSI)',
-      name: 'Admin Principal',
-      email: 'admin@hopital.com',
-      password: 'password123',
-      icon: ShieldCheck,
-      badge: 'Super Admin',
-      badgeColor: 'bg-amber-100 text-amber-800 border-amber-200'
-    },
-    {
-      role: 'Médecin Praticien',
-      name: 'Dr. Marie Dubois',
-      email: 'marie.dubois@hopital.fr',
-      password: 'password123',
-      icon: Stethoscope,
-      badge: 'Cardiologie',
-      badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-200'
-    },
-    {
-      role: 'Pharmacien Hospitalier',
-      name: 'Pierre Lefebvre',
-      email: 'pierre.l@hopital.fr',
-      password: 'password123',
-      icon: Pill,
-      badge: 'Pharmacie / POS',
-      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200'
-    },
-    {
-      role: 'Infirmier / Soignant',
-      name: 'Sophie Martin',
-      email: 'sophie.martin@hopital.fr',
-      password: 'password123',
-      icon: Syringe,
-      badge: 'Soins / Triage',
-      badgeColor: 'bg-teal-100 text-teal-800 border-teal-200'
-    }
-  ];
 
   const slides = [
     {
@@ -136,12 +97,6 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
     }
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
-
-  const handleQuickLogin = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    toast.info('Identifiants pré-remplis', `Compte sélectionné : ${demoEmail}`);
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,39 +313,6 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
                 <span>{error}</span>
               </div>
             )}
-
-            {/* Quick 1-Click Demo Profile Switcher */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                <span>Comptes Démo en 1 clic :</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {quickDemoAccounts.map((acc, i) => {
-                  const Icon = acc.icon;
-                  const isSelected = email === acc.email;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleQuickLogin(acc.email, acc.password)}
-                      className={`p-2.5 rounded-2xl border text-left transition-all flex items-center gap-2.5 ${
-                        isSelected
-                          ? 'bg-cyan-50/90 border-cyan-400 text-cyan-950 shadow-sm ring-2 ring-cyan-400/20'
-                          : 'bg-white/70 hover:bg-white border-gray-200/80 text-gray-700 hover:border-cyan-300 shadow-2xs'
-                      }`}
-                    >
-                      <div className="w-7 h-7 rounded-xl bg-cyan-100/70 flex items-center justify-center shrink-0 text-cyan-700">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="truncate min-w-0">
-                        <p className="text-xs font-bold truncate text-gray-900">{acc.badge}</p>
-                        <p className="text-[10px] text-gray-500 truncate">{acc.name}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-4 pt-1">
