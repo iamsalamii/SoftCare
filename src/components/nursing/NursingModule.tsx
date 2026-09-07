@@ -45,7 +45,12 @@ interface NursingNote {
 }
 
 export const NursingModule: React.FC = () => {
-  const { patients = [], admissions = [], users = [], currentUser, organizationSettings } = useApp();
+  const {
+    patients = [], admissions = [], users = [], currentUser, organizationSettings,
+    vitalsList, setVitalsList, addVitalRecord,
+    carePlans, setCarePlans, addCarePlan, updateCarePlan,
+    nursingNotes, setNursingNotes, addNursingNote
+  } = useApp();
   const toast = useToast();
 
   const [selectedTab, setSelectedTab] = useState<'vitals' | 'plans' | 'notes'>('vitals');
@@ -55,57 +60,6 @@ export const NursingModule: React.FC = () => {
   const [showVitalsModal, setShowVitalsModal] = useState(false);
   const [showCarePlanModal, setShowCarePlanModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
-
-  // In-memory local records for demonstration & persistence
-  const [vitalsList, setVitalsList] = useState<VitalRecord[]>([
-    {
-      id: 'VIT-001',
-      patientId: patients[0]?.id || '1',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      nurseName: currentUser?.name || 'Inf. Sophie Martin',
-      bloodPressureSys: 125,
-      bloodPressureDia: 80,
-      heartRate: 74,
-      temperature: 36.8,
-      spO2: 98,
-      respiratoryRate: 16,
-      painScale: 1,
-      bloodGlucose: 105,
-      notes: 'Patient calme, constantes stables post-opératoire.'
-    }
-  ]);
-
-  const [carePlans, setCarePlans] = useState<CarePlan[]>([
-    {
-      id: 'PLAN-001',
-      patientId: patients[0]?.id || '1',
-      title: 'Surveillance Glycémique & Insuline rapide',
-      frequency: 'Toutes les 4 heures',
-      instructions: 'Contrôler glycémie avant chaque repas et administrer selon protocole.',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'PLAN-002',
-      patientId: patients[1]?.id || '2',
-      title: 'Réfection de pansement abdominal stérile',
-      frequency: '1 fois par jour',
-      instructions: 'Nettoyage sérum physiologique + compresse absorbante.',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    }
-  ]);
-
-  const [nursingNotes, setNursingNotes] = useState<NursingNote[]>([
-    {
-      id: 'NOTE-001',
-      patientId: patients[0]?.id || '1',
-      nurseName: currentUser?.name || 'Inf. Sophie Martin',
-      timestamp: new Date().toISOString(),
-      category: 'transmission',
-      content: 'DAR - Données : Légère céphalée signalée. Actions : Administration Paracétamol 1g sur PM. Résultats : Soulagement rapporté à H+1.'
-    }
-  ]);
 
   const getPatientName = (patientId: string) => {
     const patient = patients.find(p => p.id === patientId);
@@ -388,9 +342,8 @@ export const NursingModule: React.FC = () => {
         <VitalsModal
           patients={patients}
           onClose={() => setShowVitalsModal(false)}
-          onSave={(vital) => {
-            setVitalsList([vital, ...vitalsList]);
-            toast.success('Constantes enregistrées', `Relevé pour ${getPatientName(vital.patientId)}`);
+          onSave={async (vital) => {
+            await addVitalRecord(vital);
             setShowVitalsModal(false);
           }}
         />
@@ -401,9 +354,8 @@ export const NursingModule: React.FC = () => {
         <CarePlanModal
           patients={patients}
           onClose={() => setShowCarePlanModal(false)}
-          onSave={(plan) => {
-            setCarePlans([plan, ...carePlans]);
-            toast.success('Plan de soins créé', plan.title);
+          onSave={async (plan) => {
+            await addCarePlan(plan);
             setShowCarePlanModal(false);
           }}
         />
@@ -415,9 +367,8 @@ export const NursingModule: React.FC = () => {
           patients={patients}
           nurseName={currentUser?.name || 'Infirmier de garde'}
           onClose={() => setShowNoteModal(false)}
-          onSave={(note) => {
-            setNursingNotes([note, ...nursingNotes]);
-            toast.success('Transmission enregistrée', 'Ajoutée au cahier de relève.');
+          onSave={async (note) => {
+            await addNursingNote(note);
             setShowNoteModal(false);
           }}
         />

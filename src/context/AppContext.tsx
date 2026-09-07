@@ -64,7 +64,9 @@ interface AppContextType {
   deleteInvoice: (id: string) => Promise<void>;
   beds: Bed[];
   setBeds: (beds: Bed[]) => void;
+  addBed: (bed: Partial<Bed>) => Promise<void>;
   updateBed: (id: string, bed: Partial<Bed>) => Promise<void>;
+  deleteBed: (id: string) => Promise<void>;
   admissions: Admission[];
   setAdmissions: (admissions: Admission[]) => void;
   addAdmission: (admission: Partial<Admission>) => Promise<void>;
@@ -116,6 +118,15 @@ interface AppContextType {
   patientInsurances: PatientInsurance[];
   vitalSigns: VitalSigns[];
   carePlans: CarePlan[];
+  setCarePlans: React.Dispatch<React.SetStateAction<CarePlan[]>>;
+  addCarePlan: (plan: Partial<CarePlan>) => Promise<void>;
+  updateCarePlan: (id: string, updates: Partial<CarePlan>) => Promise<void>;
+  vitalsList: any[];
+  setVitalsList: React.Dispatch<React.SetStateAction<any[]>>;
+  addVitalRecord: (record: any) => Promise<void>;
+  nursingNotes: any[];
+  setNursingNotes: React.Dispatch<React.SetStateAction<any[]>>;
+  addNursingNote: (note: any) => Promise<void>;
   genomicProfiles: GenomicProfile[];
   setGenomicProfiles: (profiles: GenomicProfile[]) => void;
   addGenomicProfile: (profile: Partial<GenomicProfile>) => Promise<void>;
@@ -208,16 +219,87 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatientsState] = useState<Patient[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_patients');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockPatients;
+  });
+
+  const setPatients = (val: Patient[] | ((prev: Patient[]) => Patient[])) => {
+    setPatientsState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_patients', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [medicationMovements, setMedicationMovements] = useState<MedicationMovement[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+
+  const [users, setUsersState] = useState<User[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_users');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockUsers;
+  });
+
+  const setUsers = (val: User[] | ((prev: User[]) => User[])) => {
+    setUsersState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_users', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+
+  const [invoices, setInvoicesState] = useState<Invoice[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_invoices');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockInvoices;
+  });
+
+  const setInvoices = (val: Invoice[] | ((prev: Invoice[]) => Invoice[])) => {
+    setInvoicesState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_invoices', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [quickInvoiceItems, setQuickInvoiceItems] = useState<QuickInvoiceItem[]>([]);
-  const [beds, setBeds] = useState<Bed[]>([]);
+
+  const [beds, setBedsState] = useState<Bed[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_beds');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockBeds;
+  });
+
+  const setBeds = (val: Bed[] | ((prev: Bed[]) => Bed[])) => {
+    setBedsState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_beds', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [admissions, setAdmissions] = useState<Admission[]>([]);
   const [labOrders, setLabOrders] = useState<LabOrder[]>([]);
   const [labTests, setLabTests] = useState<LabTest[]>([]);
@@ -262,12 +344,112 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const [pharmacySales, setPharmacySales] = useState<PharmacySale[]>([]);
+  const [pharmacySales, setPharmacySalesState] = useState<PharmacySale[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_pharmacy_sales');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const setPharmacySales = (val: PharmacySale[] | ((prev: PharmacySale[]) => PharmacySale[])) => {
+    setPharmacySalesState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_pharmacy_sales', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const addPharmacySale = (sale: PharmacySale) => {
+    setPharmacySales(prev => [sale, ...prev]);
+  };
+
   const [rooms] = useState<Room[]>(mockRooms);
   const [insurances] = useState<Insurance[]>(mockInsurances);
   const [patientInsurances] = useState<PatientInsurance[]>(mockPatientInsurances);
   const [vitalSigns] = useState<VitalSigns[]>(mockVitalSigns);
-  const [carePlans] = useState<CarePlan[]>(mockCarePlans);
+
+  const [carePlans, setCarePlansState] = useState<CarePlan[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_care_plans');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockCarePlans;
+  });
+
+  const setCarePlans = (val: CarePlan[] | ((prev: CarePlan[]) => CarePlan[])) => {
+    setCarePlansState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_care_plans', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const [vitalsList, setVitalsListState] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_nursing_vitals');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        id: 'VIT-001',
+        patientId: '1',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        nurseName: 'Inf. Sophie Martin',
+        bloodPressureSys: 125,
+        bloodPressureDia: 80,
+        heartRate: 74,
+        temperature: 36.8,
+        spO2: 98,
+        respiratoryRate: 16,
+        painScale: 1,
+        bloodGlucose: 105,
+        notes: 'Patient calme, constantes stables post-opératoire.'
+      }
+    ];
+  });
+
+  const setVitalsList = (val: any[] | ((prev: any[]) => any[])) => {
+    setVitalsListState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_nursing_vitals', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const [nursingNotes, setNursingNotesState] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_nursing_notes');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        id: 'NOTE-001',
+        patientId: '1',
+        nurseName: 'Inf. Sophie Martin',
+        timestamp: new Date().toISOString(),
+        category: 'transmission',
+        content: 'DAR - Données : Légère céphalée signalée. Actions : Administration Paracétamol 1g sur PM. Résultats : Soulagement rapporté à H+1.'
+      }
+    ];
+  });
+
+  const setNursingNotes = (val: any[] | ((prev: any[]) => any[])) => {
+    setNursingNotesState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_nursing_notes', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [genomicProfiles, setGenomicProfiles] = useState<GenomicProfile[]>([]);
   const [pgxInteractions, setPgxInteractions] = useState<PGxDrugInteraction[]>([]);
   const [bioSamples, setBioSamples] = useState<BioSample[]>([]);
@@ -278,18 +460,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setDataLoading(true);
     setDataError(null);
     try {
-      setPatients([...mockPatients]);
-      setUsers([...mockUsers]);
+      const savedPatients = localStorage.getItem('softcare_patients');
+      if (savedPatients) {
+        setPatientsState(JSON.parse(savedPatients));
+      } else {
+        setPatientsState([...mockPatients]);
+      }
+
+      const savedUsers = localStorage.getItem('softcare_users');
+      if (savedUsers) {
+        setUsersState(JSON.parse(savedUsers));
+      } else {
+        setUsersState([...mockUsers]);
+      }
+
+      const savedBeds = localStorage.getItem('softcare_beds');
+      if (savedBeds) {
+        setBedsState(JSON.parse(savedBeds));
+      } else {
+        setBedsState([...mockBeds]);
+      }
+
+      const savedInvoices = localStorage.getItem('softcare_invoices');
+      if (savedInvoices) {
+        setInvoicesState(JSON.parse(savedInvoices));
+      } else {
+        setInvoicesState([...mockInvoices]);
+      }
+
       setDepartments([...mockDepartments]);
       setAppointments([...mockAppointments]);
       setMedications([...mockMedications]);
       setMedicationMovements([...mockMedicationMovements]);
       setMedicalRecords([...mockMedicalRecords]);
-      setBeds([...mockBeds]);
       setAdmissions([...mockAdmissions]);
       setLabOrders([...mockLabOrders]);
       setLabTests([...mockLabTests]);
-      setInvoices([...mockInvoices]);
       setEmergencyVisits([...mockEmergencyVisits]);
       setSurgeries([...mockSurgeries]);
       setOperatingRooms([...mockOperatingRooms]);
@@ -355,19 +561,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, [currentUser]);
 
-  // Secure sign in with unified error message (anti account enumeration)
+  // Secure sign in with dynamic users & fallback
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
     const cleanEmail = email.toLowerCase().trim();
-    const user = mockUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    const user = users.find(u => u.email.toLowerCase() === cleanEmail) || mockUsers.find(u => u.email.toLowerCase() === cleanEmail);
     const genericAuthError = 'Identifiant ou mot de passe incorrect.';
 
     if (!user) return { error: genericAuthError };
-    
-    if (cleanEmail === 'admin@hopital.com') {
-      if (password !== 'Admin123!') return { error: genericAuthError };
-    } else {
-      if (password !== 'demo123' && password !== 'Admin123!') return { error: genericAuthError };
+    if (user.status === 'inactive' || user.active === false) {
+      return { error: 'Ce compte utilisateur a été désactivé. Contactez votre administrateur.' };
     }
+    
+    let isValid = false;
+    if (user.passwordHash) {
+      isValid = (password === user.passwordHash);
+    }
+    if (!isValid) {
+      if (cleanEmail === 'admin@hopital.com') {
+        isValid = (password === 'Admin123!');
+      } else {
+        isValid = (password === 'demo123' || password === 'Admin123!');
+      }
+    }
+
+    if (!isValid) return { error: genericAuthError };
 
     setCurrentUser(user);
     localStorage.setItem('softcare_current_user', JSON.stringify(user));
@@ -433,6 +650,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       licenseNumber: user.licenseNumber,
       status: user.status || 'active',
       active: true,
+      passwordHash: user.passwordHash || 'demo123',
       permissions: user.permissions || [],
       createdAt: new Date().toISOString(),
     };
@@ -546,11 +764,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     success('Analyse supprimée');
   };
 
-  // === BEDS ===
-  const updateBed = async (id: string, updates: Partial<Bed>) => {
-    setBeds(prev => prev.map(b => b.id === id ? { ...b, ...updates, currentPatientId: updates.patientId || updates.currentPatientId || b.currentPatientId } : b));
-  };
-
   // === ADMISSIONS ===
   const addAdmission = async (admission: Partial<Admission>) => {
     const newAdmission: Admission = {
@@ -641,6 +854,73 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const deleteQuickInvoiceItem = async (id: string) => {
     setQuickInvoiceItems(prev => prev.filter(i => i.id !== id));
     success('Item supprimé');
+  };
+
+  // === BEDS ===
+  const addBed = async (bed: Partial<Bed>) => {
+    const newBed: Bed = {
+      id: genId(),
+      roomNumber: bed.roomNumber || '101',
+      bedNumber: bed.bedNumber || 'A',
+      departmentId: bed.departmentId || '1',
+      department: bed.department || 'Médecine',
+      type: bed.type || 'standard',
+      status: bed.status || 'available',
+      features: bed.features || ['TV', 'Salle de bain'],
+      dailyRate: bed.dailyRate || 150,
+      createdAt: new Date().toISOString()
+    };
+    setBeds(prev => [newBed, ...prev]);
+    success('Lit créé', `Lit ${newBed.roomNumber}-${newBed.bedNumber} ajouté avec succès`);
+  };
+
+  const updateBed = async (id: string, updates: Partial<Bed>) => {
+    setBeds(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+    success('Lit mis à jour');
+  };
+
+  const deleteBed = async (id: string) => {
+    setBeds(prev => prev.filter(b => b.id !== id));
+    success('Lit supprimé');
+  };
+
+  // === NURSING / SOINS ===
+  const addVitalRecord = async (record: any) => {
+    const newRecord = {
+      id: `VIT-${Date.now().toString().slice(-6)}`,
+      timestamp: new Date().toISOString(),
+      nurseName: currentUser?.name || 'Infirmier(e)',
+      ...record
+    };
+    setVitalsList(prev => [newRecord, ...prev]);
+    success('Constantes enregistrées');
+  };
+
+  const addCarePlan = async (plan: any) => {
+    const newPlan = {
+      id: `PLAN-${Date.now().toString().slice(-6)}`,
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      ...plan
+    };
+    setCarePlans(prev => [newPlan, ...prev]);
+    success('Plan de soins créé');
+  };
+
+  const updateCarePlan = async (id: string, updates: any) => {
+    setCarePlans(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    success('Plan de soins mis à jour');
+  };
+
+  const addNursingNote = async (note: any) => {
+    const newNote = {
+      id: `NOTE-${Date.now().toString().slice(-6)}`,
+      timestamp: new Date().toISOString(),
+      nurseName: currentUser?.name || 'Infirmier(e)',
+      ...note
+    };
+    setNursingNotes(prev => [newNote, ...prev]);
+    success('Transmission enregistrée');
   };
 
   // === ORGANIZATION SETTINGS ===
@@ -776,11 +1056,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // === PHARMACY SALES ===
-  const addPharmacySale = (sale: PharmacySale) => {
-    setPharmacySales(prev => [sale, ...prev]);
-  };
-
   // === DROPDOWN OPTIONS ===
   const addDropdownOption = (option: DropdownOption) =>
     setDropdownOptions(prev => [...prev, option]);
@@ -888,7 +1163,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     users, setUsers, addUser, updateUser, deleteUser,
     departments, setDepartments,
     invoices, setInvoices, addInvoice, updateInvoice, deleteInvoice,
-    beds, setBeds, updateBed,
+    beds, setBeds, addBed, updateBed, deleteBed,
     admissions, setAdmissions, addAdmission,
     labOrders, setLabOrders, addLabOrder, updateLabOrder, deleteLabOrder,
     labTests, setLabTests,
@@ -904,7 +1179,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     pharmacySales, addPharmacySale,
     quickInvoiceItems, addQuickInvoiceItem, updateQuickInvoiceItem, deleteQuickInvoiceItem,
     refreshData,
-    rooms, insurances, patientInsurances, vitalSigns, carePlans,
+    rooms, insurances, patientInsurances, vitalSigns,
+    carePlans, setCarePlans, addCarePlan, updateCarePlan,
+    vitalsList, setVitalsList, addVitalRecord,
+    nursingNotes, setNursingNotes, addNursingNote,
     genomicProfiles, setGenomicProfiles, addGenomicProfile, updateGenomicProfile,
     pgxInteractions, bioSamples, setBioSamples, addBioSample, updateBioSample,
     biobankFreezers, setBiobankFreezers, clinicalTrials, setClinicalTrials, addClinicalTrial

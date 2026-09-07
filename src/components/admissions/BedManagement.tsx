@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { BedDouble, User, Calendar, Plus, Search, RefreshCw, Download, FileSpreadsheet, Printer } from 'lucide-react';
+import { BedDouble, User, Calendar, Plus, Search, RefreshCw, Download, FileSpreadsheet, Printer, X } from 'lucide-react';
 import { Bed, Admission } from '../../types';
 import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel } from '../../utils/exportUtils';
+import CustomSelect from '../common/CustomSelect';
 
 const BedManagement: React.FC = () => {
-  const { beds, admissions, patients, departments, users, organizationSettings, rooms } = useApp();
+  const { beds, admissions, patients, departments, users, organizationSettings, rooms, addBed } = useApp();
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAdmissionModal, setShowAdmissionModal] = useState(false);
+  const [showNewBedModal, setShowNewBedModal] = useState(false);
   const [selectedBed, setSelectedBed] = useState<Bed | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
@@ -186,8 +188,8 @@ const BedManagement: React.FC = () => {
           </div>
 
           <button
-            onClick={() => {}}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            onClick={() => setShowNewBedModal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-sm font-medium transition-all"
           >
             <Plus className="w-4 h-4" />
             Nouveau Lit
@@ -221,34 +223,28 @@ const BedManagement: React.FC = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-wrap gap-4">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Département</label>
-            <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Tous les départements</option>
-              {departments.map(dept => (
-                <option key={dept.id} value={dept.id}>{dept.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Statut</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Tous les statuts</option>
-              <option value="available">Disponible</option>
-              <option value="occupied">Occupé</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="reserved">Réservé</option>
-            </select>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CustomSelect
+            label="Département"
+            value={selectedDepartment}
+            onChange={setSelectedDepartment}
+            options={[
+              { value: 'all', label: 'Tous les départements' },
+              ...departments.map(d => ({ value: d.id, label: d.name }))
+            ]}
+          />
+          <CustomSelect
+            label="Statut"
+            value={filterStatus}
+            onChange={setFilterStatus}
+            options={[
+              { value: 'all', label: 'Tous les statuts' },
+              { value: 'available', label: 'Disponible' },
+              { value: 'occupied', label: 'Occupé' },
+              { value: 'maintenance', label: 'Maintenance' },
+              { value: 'reserved', label: 'Réservé' }
+            ]}
+          />
         </div>
       </div>
 
@@ -325,6 +321,17 @@ const BedManagement: React.FC = () => {
           onClose={() => {
             setShowAdmissionModal(false);
             setSelectedBed(null);
+          }}
+        />
+      )}
+
+      {/* New Bed Modal */}
+      {showNewBedModal && (
+        <NewBedModal
+          onClose={() => setShowNewBedModal(false)}
+          onSave={async (bedData) => {
+            await addBed(bedData);
+            setShowNewBedModal(false);
           }}
         />
       )}
@@ -625,6 +632,150 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
               Valider l'admission
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Composant Modal Nouveau Lit
+const NewBedModal: React.FC<{
+  onClose: () => void;
+  onSave: (bedData: Partial<Bed>) => Promise<void>;
+}> = ({ onClose, onSave }) => {
+  const { departments, rooms } = useApp();
+  const [roomNumber, setRoomNumber] = useState('101');
+  const [bedNumber, setBedNumber] = useState('A');
+  const [departmentId, setDepartmentId] = useState(departments[0]?.id || '1');
+  const [type, setType] = useState<Bed['type']>('standard');
+  const [dailyRate, setDailyRate] = useState(150);
+  const [status, setStatus] = useState<Bed['status']>('available');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const dept = departments.find(d => d.id === departmentId);
+      await onSave({
+        roomNumber,
+        bedNumber,
+        departmentId,
+        department: dept?.name || 'Médecine',
+        type,
+        dailyRate,
+        status,
+        features: type === 'icu' ? ['Monitoring', 'Ventilateur'] : ['TV', 'Salle de bain']
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <BedDouble className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Ajouter un Nouveau Lit</h2>
+              <p className="text-xs text-gray-500">Configuration de l'équipement hospitalier</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-xl text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">N° Chambre</label>
+              <input
+                type="text"
+                value={roomNumber}
+                onChange={(e) => setRoomNumber(e.target.value)}
+                placeholder="Ex: 101, 204..."
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Code / Lettre du Lit</label>
+              <input
+                type="text"
+                value={bedNumber}
+                onChange={(e) => setBedNumber(e.target.value)}
+                placeholder="Ex: A, B, 1, 2..."
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          <CustomSelect
+            label="Service / Département"
+            value={departmentId}
+            onChange={setDepartmentId}
+            options={departments.map(d => ({ value: d.id, label: d.name }))}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <CustomSelect
+              label="Type de Lit"
+              value={type || 'standard'}
+              onChange={(val) => setType(val as Bed['type'])}
+              options={[
+                { value: 'standard', label: 'Standard / Médecine' },
+                { value: 'icu', label: 'Soins Intensifs / Réa' },
+                { value: 'pediatric', label: 'Pédiatrique' },
+                { value: 'maternity', label: 'Maternité' },
+                { value: 'emergency', label: 'Urgences / UHCD' }
+              ]}
+            />
+            <CustomSelect
+              label="Statut Initial"
+              value={status}
+              onChange={(val) => setStatus(val as Bed['status'])}
+              options={[
+                { value: 'available', label: 'Disponible' },
+                { value: 'maintenance', label: 'En Maintenance' },
+                { value: 'reserved', label: 'Réservé' }
+              ]}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Tarif Journalier (€)</label>
+            <input
+              type="number"
+              value={dailyRate}
+              onChange={(e) => setDailyRate(parseFloat(e.target.value) || 0)}
+              className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              min="0"
+              required
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+            >
+              {loading ? 'Création...' : 'Créer le Lit'}
             </button>
           </div>
         </form>

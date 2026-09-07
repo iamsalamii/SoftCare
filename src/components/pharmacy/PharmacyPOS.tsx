@@ -12,7 +12,7 @@ import BarcodeScannerModal from '../common/BarcodeScannerModal';
 const PharmacyPOS: React.FC = () => {
   const {
     medications, organizationSettings, addPharmacySale, addMedicationMovement,
-    currentUser, patients, genomicProfiles, pgxInteractions
+    currentUser, patients, genomicProfiles, pgxInteractions, addInvoice
   } = useApp();
 
   const [cart, setCart] = useState<PharmacySaleItem[]>([]);
@@ -168,10 +168,12 @@ const PharmacyPOS: React.FC = () => {
   const total = subtotal + tax;
   const change = Math.max(0, amountReceived - total);
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (cart.length === 0) return;
 
     const cashier = currentUser || { id: '1', name: 'Pharmacien de garde' };
+    const effectiveAmountReceived = paymentMethod === 'cash' ? (amountReceived || total) : total;
+    const effectiveChange = paymentMethod === 'cash' ? Math.max(0, effectiveAmountReceived - total) : 0;
 
     const sale: PharmacySale = {
       id: Date.now().toString(),
@@ -181,8 +183,8 @@ const PharmacyPOS: React.FC = () => {
       discount: 0,
       total,
       paymentMethod,
-      amountReceived: paymentMethod === 'cash' ? amountReceived : total,
-      change: paymentMethod === 'cash' ? change : 0,
+      amountReceived: effectiveAmountReceived,
+      change: effectiveChange,
       customerId: selectedPatientId,
       customerName: customerName || 'Client Comptoir',
       customerPhone,
@@ -193,6 +195,29 @@ const PharmacyPOS: React.FC = () => {
     };
 
     addPharmacySale(sale);
+
+    // Also synchronize with billing invoice
+    try {
+      await addInvoice(
+        {
+          patientId: selectedPatientId || '1',
+          subtotal,
+          tax,
+          total,
+          status: 'paid',
+          notes: `Vente Pharmacie ${sale.receiptNumber} (${paymentMethod.toUpperCase()})`
+        },
+        cart.map(i => ({
+          description: i.medicationName,
+          category: 'medication',
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          total: i.total
+        }))
+      );
+    } catch {
+      // ignore
+    }
 
     cart.forEach(item => {
       addMedicationMovement({
@@ -523,7 +548,10 @@ const PharmacyPOS: React.FC = () => {
           </div>
 
           <button
-            onClick={() => setShowPayment(true)}
+            onClick={() => {
+              setAmountReceived(total);
+              setShowPayment(true);
+            }}
             disabled={cart.length === 0}
             className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white rounded-2xl font-bold text-sm shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
           >
@@ -554,7 +582,12 @@ const PharmacyPOS: React.FC = () => {
               {(['cash', 'card', 'transfer'] as const).map((method) => (
                 <button
                   key={method}
-                  onClick={() => setPaymentMethod(method)}
+                  onClick={() => {
+                    setPaymentMethod(method);
+                    if (method !== 'cash') {
+                      setAmountReceived(total);
+                    }
+                  }}
                   className={`p-3 rounded-2xl border-2 transition-all text-center ${
                     paymentMethod === method
                       ? 'border-cyan-500 bg-cyan-50 text-cyan-900'
@@ -574,16 +607,40 @@ const PharmacyPOS: React.FC = () => {
             {/* Cash Input */}
             {paymentMethod === 'cash' && (
               <div className="space-y-3 mb-5">
-                <label className="block text-xs font-semibold text-gray-700">
-                  Espèces reçues ({organizationSettings.currencySymbol || '€'})
-                </label>
+                <div className="flex justify-between items-center">
+                  <label className="block text-xs font-semibold text-gray-700">
+                    Espèces reçues ({organizationSettings.currencySymbol || '€'})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setAmountReceived(total)}
+                    className="text-xs font-bold text-cyan-600 hover:text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-lg transition-colors"
+                  >
+                    Montant exact ({formatCurrency(total)})
+                  </button>
+                </div>
                 <input
                   type="number"
                   value={amountReceived || ''}
                   onChange={(e) => setAmountReceived(parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-lg font-bold text-center focus:bg-white"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-lg font-bold text-center focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                   placeholder="0.00"
                 />
+
+                {/* Quick denomination chips */}
+                <div className="flex flex-wrap gap-1.5 justify-center pt-1">
+                  {[10, 20, 50, 100].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setAmountReceived(val >= total ? val : total + val)}
+                      className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors"
+                    >
+                      +{val} €
+                    </button>
+                  ))}
+                </div>
+
                 {amountReceived >= total && (
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
                     <span className="text-xs text-emerald-700 font-medium">Monnaie à rendre :</span>
