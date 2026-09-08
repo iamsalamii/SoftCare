@@ -203,13 +203,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => setShowDemoModal(true)}
-              className="hidden lg:flex px-4 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 rounded-xl text-xs sm:text-sm font-bold transition-all items-center gap-1.5"
-            >
-              <Play className="w-3.5 h-3.5 text-cyan-600" />
-              <span>Démo Live</span>
-            </button>
-            <button
               onClick={onGoToLogin}
               className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-1.5 sm:gap-2"
             >
