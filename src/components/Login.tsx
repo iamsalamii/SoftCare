@@ -254,7 +254,7 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
               <span className="text-gray-700 font-mono font-semibold">Système Hospitalier Actif</span>
             </div>
             <span className="text-teal-800 font-bold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/60">
-              PostgreSQL 16 &middot; RLS Sécurisé
+              Chiffrement AES-256 &middot; Protocole HDS
             </span>
           </div>
         </div>
