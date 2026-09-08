@@ -5,7 +5,8 @@ import {
   CheckCircle2, AlertTriangle, ShieldCheck, ChevronRight,
   Layers, ArrowRight, UserCheck, Video, Radio, Mic, MicOff,
   Eye, LayoutDashboard, Zap, RefreshCw, X, MessageSquare,
-  ShieldAlert, Scan, Plus, Minus
+  ShieldAlert, Scan, Plus, Minus, Film, Settings, Upload,
+  Sliders, FastForward
 } from 'lucide-react';
 
 interface HeroVideoDemoProps {
@@ -21,6 +22,7 @@ interface DemoChapter {
   subtitle: string;
   voiceText: string;
   visualType: 'dpi' | 'pharmacy' | 'pgx' | 'ai';
+  videoUrl?: string; // MP4 video source for real video mode
 }
 
 const DEMO_CHAPTERS: DemoChapter[] = [
@@ -31,7 +33,8 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 12,
     subtitle: 'Prise en charge instantanée : constantes vitales en temps réel, score de Glasgow et antécédents médicaux centralisés.',
     voiceText: "Bonjour, je suis le Docteur Éléonore Vance. Bienvenue dans SoftCare. Dès l'admission du patient, les constantes vitales sont acquises en temps réel avec calcul automatique du score de gravité pour un triage médical sans délai. Vous pouvez tester l'ajustement des constantes directement sur l'écran.",
-    visualType: 'dpi'
+    visualType: 'dpi',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-female-doctor-explaining-a-diagnosis-to-a-patient-41846-large.mp4'
   },
   {
     id: 2,
@@ -40,7 +43,8 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 12,
     subtitle: 'Scan GS1 à la douchette en moins de 5ms : vérification des lots, dates de péremption et sécurisation de la délivrance.',
     voiceText: "Dans le module de pharmacie hospitalière, la douchette code-barres identifie chaque boîte de médicament en moins de cinq millisecondes. Cliquez sur le bouton de scan pour déclencher la douchette et constater la déduction instantanée de stock.",
-    visualType: 'pharmacy'
+    visualType: 'pharmacy',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-pharmacist-counting-pills-in-a-pharmacy-43469-large.mp4'
   },
   {
     id: 3,
@@ -49,7 +53,8 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 14,
     subtitle: 'Interception automatique : détection du variant CYP2C19 *2/*2 et substitution préventive du Clopidogrel.',
     voiceText: "SoftCare intègre une innovation majeure : l'intercepteur pharmacogénomique. En croisant le profil génétique du patient, le système bloque immédiatement toute prescription toxique de Clopidogrel. Cliquez sur le bouton pour appliquer la substitution sécurisée.",
-    visualType: 'pgx'
+    visualType: 'pgx',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dna-strand-in-a-scientific-presentation-43093-large.mp4'
   },
   {
     id: 4,
@@ -58,7 +63,8 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 13,
     subtitle: 'Hypothèses diagnostiques probabilistes, protocoles CDS Hooks et prescriptions assistées en temps réel.',
     voiceText: "Enfin, notre intelligence clinique assiste le praticien en calculant les probabilités diagnostiques différentielles en temps réel. Cliquez sur les biomarqueurs pour recalculer les probabilités algorithmiques.",
-    visualType: 'ai'
+    visualType: 'ai',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-human-heart-with-pulse-lines-43096-large.mp4'
   }
 ];
 
@@ -68,8 +74,14 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [chapterProgress, setChapterProgress] = useState(0); // 0 to 100
   const [isVoiceSpeaking, setIsVoiceSpeaking] = useState(false);
-  const [viewMode, setViewMode] = useState<'split' | 'presenter' | 'interface'>('split');
+  const [viewMode, setViewMode] = useState<'split' | 'presenter' | 'interface' | 'video-full'>('split');
+  const [videoPlaybackMode, setVideoPlaybackMode] = useState<'generative' | 'real-mp4'>('generative');
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showCustomVideoModal, setShowCustomVideoModal] = useState(false);
+  const [customVideoUrl, setCustomVideoUrl] = useState('');
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Interactive Playground States for Live Hands-on Testing
@@ -92,8 +104,6 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
   // Scene 4: AI Decision
   const [aiProbabilitySCA, setAiProbabilitySCA] = useState(92);
   const [isCalculatingAI, setIsCalculatingAI] = useState(false);
-  const [biomarkerTroponin, setBiomarkerTroponin] = useState(true);
-  const [biomarkerECG, setBiomarkerECG] = useState(true);
 
   // Doctor Vance Live Q&A State
   const [activeQAAnswer, setActiveQAAnswer] = useState<string | null>(null);
@@ -125,7 +135,7 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'fr-FR';
-    utterance.rate = 1.02;
+    utterance.rate = 1.02 * playbackSpeed;
     utterance.pitch = 1.08;
 
     const femaleVoice = getFemaleVoice();
@@ -159,14 +169,22 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
         window.speechSynthesis.cancel();
       }
     };
-  }, [currentChapterIndex, isMuted, isPlaying]);
+  }, [currentChapterIndex, isMuted, isPlaying, playbackSpeed]);
 
   // Main video timer progression loop
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) {
+      if (videoRef.current) videoRef.current.pause();
+      return;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.playbackRate = playbackSpeed;
+      videoRef.current.play().catch(() => {});
+    }
 
     const intervalTime = 100; // updates every 100ms
-    const stepIncrement = (intervalTime / (currentChapter.duration * 1000)) * 100;
+    const stepIncrement = (intervalTime / (currentChapter.duration * 1000)) * 100 * playbackSpeed;
 
     const interval = setInterval(() => {
       setChapterProgress(prev => {
@@ -179,7 +197,7 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
     }, intervalTime);
 
     return () => clearInterval(interval);
-  }, [isPlaying, currentChapterIndex, currentChapter.duration]);
+  }, [isPlaying, currentChapterIndex, currentChapter.duration, playbackSpeed]);
 
   const togglePlay = () => setIsPlaying(!isPlaying);
   const toggleMute = () => setIsMuted(!isMuted);
@@ -216,9 +234,11 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
     speakVoiceOver(answer);
   };
 
+  const activeVideoSrc = customVideoUrl || currentChapter.videoUrl;
+
   const containerContent = (
     <div className={`relative w-full rounded-3xl overflow-hidden border border-cyan-500/40 shadow-2xl bg-slate-950 text-white select-none transition-all duration-300 ${
-      isFullscreen ? 'max-w-7xl mx-auto h-[92vh] flex flex-col justify-between' : 'max-w-6xl mx-auto'
+      isFullscreen ? 'max-w-7xl mx-auto h-[94vh] flex flex-col justify-between' : 'max-w-6xl mx-auto'
     }`}>
       
       {/* Top Video Header / HUD Bar */}
@@ -231,8 +251,8 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full">
-              <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-              <span>DÉMO GRAND FORMAT INTERACTIVE</span>
+              <Film className="w-3.5 h-3.5 text-cyan-400" />
+              <span>DÉMO VIDÉO &amp; SIMULATEUR CLINIQUES</span>
             </span>
             <span className="hidden lg:inline text-xs text-gray-400 font-sans">
               &bull; Présentée par le <strong>Dr. Éléonore Vance</strong>
@@ -240,44 +260,75 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
           </div>
         </div>
 
-        {/* View Mode & Video Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* View Mode Switcher */}
+        {/* Video Mode, View Mode & Speed Controls */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          
+          {/* Real MP4 Video vs Generative Canvas Mode */}
           <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-white/10 text-xs">
             <button
-              onClick={() => setViewMode('split')}
-              className={`px-3 py-1 rounded-lg transition-all font-semibold ${
-                viewMode === 'split' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
+              onClick={() => setVideoPlaybackMode('generative')}
+              className={`px-2.5 py-1 rounded-lg transition-all font-semibold flex items-center gap-1 ${
+                videoPlaybackMode === 'generative' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
               }`}
             >
-              Vue Mixte
+              <Sparkles className="w-3 h-3" />
+              <span>Génératif Studio</span>
+            </button>
+            <button
+              onClick={() => setVideoPlaybackMode('real-mp4')}
+              className={`px-2.5 py-1 rounded-lg transition-all font-semibold flex items-center gap-1 ${
+                videoPlaybackMode === 'real-mp4' ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Video className="w-3 h-3" />
+              <span>Vidéo MP4 HD</span>
+            </button>
+          </div>
+
+          {/* View Mode Switcher */}
+          <div className="hidden sm:flex items-center bg-slate-950 p-1 rounded-xl border border-white/10 text-xs">
+            <button
+              onClick={() => setViewMode('split')}
+              className={`px-2.5 py-1 rounded-lg transition-all font-semibold ${
+                viewMode === 'split' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Mixte
             </button>
             <button
               onClick={() => setViewMode('presenter')}
-              className={`px-3 py-1 rounded-lg transition-all font-semibold ${
-                viewMode === 'presenter' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
+              className={`px-2.5 py-1 rounded-lg transition-all font-semibold ${
+                viewMode === 'presenter' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'
               }`}
             >
-              Présentatrice
+              Docteur
             </button>
             <button
               onClick={() => setViewMode('interface')}
-              className={`px-3 py-1 rounded-lg transition-all font-semibold ${
-                viewMode === 'interface' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
+              className={`px-2.5 py-1 rounded-lg transition-all font-semibold ${
+                viewMode === 'interface' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'
               }`}
             >
-              Logiciel
+              Écran
             </button>
           </div>
+
+          {/* Speed Selector */}
+          <button
+            onClick={() => setPlaybackSpeed(s => s === 1.0 ? 1.25 : s === 1.25 ? 1.5 : 1.0)}
+            className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-mono font-bold text-cyan-300 border border-white/10"
+            title="Vitesse de lecture"
+          >
+            {playbackSpeed}x
+          </button>
 
           {/* Voice Over Audio Toggle */}
           <button
             onClick={toggleMute}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-300 transition-colors border border-white/10 text-xs font-semibold"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-300 transition-colors border border-white/10 text-xs font-semibold"
             title={isMuted ? 'Activer la voix off' : 'Couper la voix off'}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-            <span className="hidden sm:inline">{isMuted ? 'Voix coupée' : 'Voix active'}</span>
           </button>
 
           {/* Fullscreen / Theater Toggle */}
@@ -299,6 +350,23 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
 
+        {/* Real MP4 Video Mode Background Player */}
+        {videoPlaybackMode === 'real-mp4' && (
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <video
+              ref={videoRef}
+              key={activeVideoSrc}
+              src={activeVideoSrc}
+              autoPlay={isPlaying}
+              loop={true}
+              muted={isMuted}
+              playsInline
+              className="w-full h-full object-cover filter brightness-[0.65] contrast-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-slate-950/70" />
+          </div>
+        )}
+
         {/* Dynamic Display Grid */}
         <div className="relative z-10 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           
@@ -306,13 +374,26 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
           {(viewMode === 'split' || viewMode === 'presenter') && (
             <div className={`${viewMode === 'presenter' ? 'lg:col-span-12 max-w-2xl mx-auto' : 'lg:col-span-5'} flex flex-col items-center justify-center`}>
               <div className="relative w-full max-w-md aspect-[4/3] rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-2xl bg-slate-900 group">
-                <img
-                  src="/demo-doctor.jpg"
-                  alt="Dr. Éléonore Vance - Présentatrice Démo Médicale"
-                  className={`w-full h-full object-cover transition-transform duration-700 ${
-                    isPlaying ? 'scale-105 filter brightness-105' : 'scale-100 filter brightness-95'
-                  }`}
-                />
+                
+                {/* Visual Presenter Media (Generated Doctor or MP4 Video Stream) */}
+                {videoPlaybackMode === 'real-mp4' ? (
+                  <video
+                    src={activeVideoSrc}
+                    autoPlay={isPlaying}
+                    loop={true}
+                    muted={true}
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src="/demo-doctor.jpg"
+                    alt="Dr. Éléonore Vance - Présentatrice Démo Médicale"
+                    className={`w-full h-full object-cover transition-transform duration-700 ${
+                      isPlaying ? 'scale-105 filter brightness-105' : 'scale-100 filter brightness-95'
+                    }`}
+                  />
+                )}
                 
                 {/* Live Presenter Overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-transparent to-black/30 pointer-events-none" />
@@ -320,14 +401,14 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
                 {/* Top Live Badge */}
                 <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-slate-950/85 backdrop-blur-md rounded-full border border-red-500/40 shadow-lg">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                  <span className="text-[11px] font-bold text-red-300 uppercase tracking-wider">Direct Studio</span>
+                  <span className="text-[11px] font-bold text-red-300 uppercase tracking-wider">Direct Vidéo</span>
                 </div>
 
                 {/* Voice Equalizer status */}
                 <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-slate-950/85 backdrop-blur-md rounded-full border border-cyan-500/40 shadow-lg">
                   <Mic className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
                   <span className="text-[11px] font-mono text-cyan-300 font-bold">
-                    {isVoiceSpeaking ? 'En direct' : 'En veille'}
+                    {isVoiceSpeaking ? 'Voix active' : 'Prête'}
                   </span>
                 </div>
 
@@ -737,6 +818,14 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
 
           <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto justify-end">
             <button
+              onClick={() => setShowCustomVideoModal(true)}
+              className="px-3 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-xl text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-colors"
+              title="Configurer une vidéo MP4 ou URL personnalisée"
+            >
+              <Settings className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Source Vidéo</span>
+            </button>
+            <button
               onClick={onRequestDemo}
               className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow-lg shadow-teal-500/25 transition-all hover:scale-105 flex items-center justify-center gap-2"
             >
@@ -830,6 +919,53 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
           </div>
         </div>
       </div>
+
+      {/* Custom Video URL Source Modal */}
+      {showCustomVideoModal && (
+        <div className="fixed inset-0 z-[999999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                <Video className="w-4 h-4 text-cyan-400" />
+                <span>Source Vidéo Personnalisée</span>
+              </h3>
+              <button onClick={() => setShowCustomVideoModal(false)} className="text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-300">
+              Collez l'URL directe d'un fichier vidéo MP4 ou WebM pour la diffuser dans le lecteur :
+            </p>
+
+            <input
+              type="url"
+              value={customVideoUrl}
+              onChange={(e) => setCustomVideoUrl(e.target.value)}
+              placeholder="https://exemple.com/video-demo.mp4"
+              className="w-full px-4 py-2.5 bg-slate-950 border border-white/15 rounded-xl text-xs text-white focus:border-cyan-400 focus:outline-none"
+            />
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => { setCustomVideoUrl(''); setShowCustomVideoModal(false); }}
+                className="px-3 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-xl text-xs font-semibold"
+              >
+                Réinitialiser
+              </button>
+              <button
+                onClick={() => {
+                  if (customVideoUrl) setVideoPlaybackMode('real-mp4');
+                  setShowCustomVideoModal(false);
+                }}
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl text-xs font-bold"
+              >
+                Appliquer la vidéo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
