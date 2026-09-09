@@ -232,6 +232,13 @@ const PharmacyPOS: React.FC = () => {
       });
     });
 
+    // Automatically trigger thermal receipt print
+    try {
+      await handlePrintReceipt(sale, 'thermal');
+    } catch {
+      // ignore
+    }
+
     setCompleted(sale);
     setShowPayment(false);
   };
@@ -636,7 +643,7 @@ const PharmacyPOS: React.FC = () => {
                       onClick={() => setAmountReceived(val >= total ? val : total + val)}
                       className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors"
                     >
-                      +{val} €
+                      +{val} {organizationSettings?.currencySymbol || '€'}
                     </button>
                   ))}
                 </div>

@@ -341,21 +341,41 @@ const BedManagement: React.FC = () => {
 
 // Composant Détails du lit
 const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClose }) => {
-  const { admissions, patients, users, departments } = useApp();
+  const { admissions, patients, users, departments, updateBed, updateAdmission, organizationSettings } = useApp();
   const patient = bed.currentPatientId ? patients.find(p => p.id === bed.currentPatientId) : null;
   const admission = bed.currentAdmissionId ? admissions.find(a => a.id === bed.currentAdmissionId) : null;
   const doctor = admission?.doctorId ? users.find(u => u.id === admission.doctorId) : null;
   const department = departments.find(d => d.id === bed.departmentId);
+  const currencySymbol = organizationSettings?.currencySymbol || '€';
+
+  const handleReleaseBed = async () => {
+    // 1. Update Bed status to available
+    await updateBed(bed.id, {
+      status: 'available',
+      currentPatientId: undefined,
+      currentAdmissionId: undefined
+    });
+
+    // 2. Discharge admission if exists
+    if (admission) {
+      await updateAdmission(admission.id, {
+        status: 'discharged',
+        dischargeDate: new Date().toISOString()
+      });
+    }
+
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">
             Lit {bed.roomNumber}-{bed.bedNumber}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <RefreshCw className="w-5 h-5 rotate-45" />
+          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -371,7 +391,7 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
             </div>
             <div>
               <p className="text-sm text-gray-500">Statut</p>
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+              <span className={`px-2.5 py-1 text-xs font-semibold rounded-full inline-block ${
                 bed.status === 'available' ? 'bg-green-100 text-green-800' :
                 bed.status === 'occupied' ? 'bg-red-100 text-red-800' :
                 'bg-yellow-100 text-yellow-800'
@@ -382,7 +402,7 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
             </div>
             <div>
               <p className="text-sm text-gray-500">Tarif/jour</p>
-              <p className="font-medium">{bed.dailyRate} €</p>
+              <p className="font-medium">{bed.dailyRate} {currencySymbol}</p>
             </div>
           </div>
 
@@ -430,12 +450,15 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
           )}
 
           <div className="flex gap-3 pt-4 border-t">
-            <button onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
+            <button onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors">
               Fermer
             </button>
             {bed.status === 'occupied' && (
-              <button className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                Libérer le lit
+              <button
+                onClick={handleReleaseBed}
+                className="flex-1 px-4 py-2 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Libérer le lit</span>
               </button>
             )}
           </div>
@@ -447,11 +470,11 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
 
 // Composant Formulaire d'admission
 const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClose }) => {
-  const { patients, users, addAdmission } = useApp();
+  const { patients, users, addAdmission, updateBed, beds } = useApp();
   const [searchPatient, setSearchPatient] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<string>('');
   const [formData, setFormData] = useState({
-    doctorId: '',
+    doctorId: users.find(u => u.role === 'doctor')?.id || '1',
     type: 'planned' as Admission['type'],
     reason: '',
     expectedDischargeDate: '',
@@ -459,31 +482,46 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
   });
 
   const filteredPatients = patients.filter(p =>
-    `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchPatient.toLowerCase()) &&
-    !p.id // Only show patients not already admitted
+    `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchPatient.toLowerCase())
   );
 
   const doctors = users.filter(u => u.role === 'doctor' || u.role === 'surgeon');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPatient || !formData.doctorId) return;
 
+    const patientObj = patients.find(p => p.id === selectedPatient);
+    const doctorObj = users.find(u => u.id === formData.doctorId);
+    const admissionId = `ADM-${Date.now().toString().slice(-6)}`;
+
     const admission: Admission = {
-      id: Date.now().toString(),
+      id: admissionId,
       patientId: selectedPatient,
+      patientName: patientObj ? `${patientObj.firstName} ${patientObj.lastName}` : '',
       bedId: bed.id,
-      doctorId: formData.doctorId,
+      bedNumber: `${bed.roomNumber}-${bed.bedNumber}`,
+      roomId: bed.roomId,
+      roomNumber: bed.roomNumber,
+      departmentId: bed.departmentId,
+      attendingDoctorId: formData.doctorId,
+      attendingDoctorName: doctorObj?.name || 'Dr. Marie Dubois',
       type: formData.type,
       reason: formData.reason,
       admissionDate: new Date().toISOString().split('T')[0],
       expectedDischargeDate: formData.expectedDischargeDate,
-      departmentId: bed.departmentId,
       notes: formData.notes,
-      status: 'admitted'
+      status: 'admitted',
+      dailyRate: bed.dailyRate || 150,
+      totalAmount: bed.dailyRate || 150
     };
 
-    addAdmission(admission);
+    await addAdmission(admission);
+    await updateBed(bed.id, {
+      status: 'occupied',
+      currentPatientId: selectedPatient,
+      currentAdmissionId: admissionId
+    });
     onClose();
   };
 

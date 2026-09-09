@@ -15,7 +15,7 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
-  const { signIn, departments } = useApp();
+  const { signIn, departments, addNotification } = useApp();
   const toast = useToast();
 
   const [email, setEmail] = useState('');
@@ -145,7 +145,19 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
   const handleForgotPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setForgotSubmitted(true);
-    toast.success('Demande transmise', 'La DSI a reçu votre demande de réinitialisation.');
+
+    // Notify the Administrator
+    addNotification({
+      id: `NOTIF-PWD-${Date.now()}`,
+      userId: 'admin-1',
+      title: 'Demande de réinitialisation de mot de passe',
+      message: `L'utilisateur avec l'adresse email ${forgotEmail} a demandé la réinitialisation de son mot de passe. Action requise par l'Administrateur Système.`,
+      type: 'warning',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+
+    toast.success('Demande transmise', 'Une notification a été envoyée à l\'Administrateur Principal (DSI).');
     setTimeout(() => {
       setShowForgotPasswordModal(false);
       setForgotSubmitted(false);
@@ -156,7 +168,19 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
   const handleContactAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setRequestSubmitted(true);
-    toast.success('Demande transmise', `Service demandé : ${requestForm.service}`);
+
+    // Notify the Administrator
+    addNotification({
+      id: `NOTIF-REQ-${Date.now()}`,
+      userId: 'admin-1',
+      title: 'Demande de création de compte professionnel',
+      message: `Demande reçue de ${requestForm.name} (${requestForm.email}) pour affectation au service : ${requestForm.service}. Message : "${requestForm.message || 'Aucun message particulier.'}"`,
+      type: 'info',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+
+    toast.success('Demande transmise', `Demande transmise à l'administrateur pour le service ${requestForm.service}.`);
     setTimeout(() => {
       setShowContactAdminModal(false);
       setRequestSubmitted(false);

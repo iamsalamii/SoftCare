@@ -7,7 +7,7 @@ declare global {
 }
 
 export const formatCurrency = (amount: number, organization?: OrganizationSettings): string => {
-  const symbol = organization?.currencySymbol || 'E';
+  const symbol = organization?.currencySymbol || '€';
   const formattedNumber = new Intl.NumberFormat('fr-FR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

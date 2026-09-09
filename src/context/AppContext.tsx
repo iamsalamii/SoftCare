@@ -70,6 +70,7 @@ interface AppContextType {
   admissions: Admission[];
   setAdmissions: (admissions: Admission[]) => void;
   addAdmission: (admission: Partial<Admission>) => Promise<void>;
+  updateAdmission: (id: string, admission: Partial<Admission>) => Promise<void>;
   labOrders: LabOrder[];
   setLabOrders: (orders: LabOrder[]) => void;
   addLabOrder: (order: Partial<LabOrder>) => Promise<void>;
@@ -96,6 +97,7 @@ interface AppContextType {
   setNotifications: (notifications: Notification[]) => void;
   addNotification: (notification: Notification) => void;
   markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
   unreadCount: number;
   organizationSettings: OrganizationSettings;
   setOrganizationSettings: (settings: OrganizationSettings) => void;
@@ -300,14 +302,48 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const [admissions, setAdmissions] = useState<Admission[]>([]);
+  const [admissions, setAdmissionsState] = useState<Admission[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_admissions');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockAdmissions;
+  });
+
+  const setAdmissions = (val: Admission[] | ((prev: Admission[]) => Admission[])) => {
+    setAdmissionsState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_admissions', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [labOrders, setLabOrders] = useState<LabOrder[]>([]);
   const [labTests, setLabTests] = useState<LabTest[]>([]);
   const [emergencyVisits, setEmergencyVisits] = useState<EmergencyVisit[]>([]);
   const [surgeries, setSurgeries] = useState<Surgery[]>([]);
   const [operatingRooms, setOperatingRooms] = useState<OperatingRoom[]>([]);
   const [workSchedules, setWorkSchedules] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const [notifications, setNotificationsState] = useState<Notification[]>(() => {
+    try {
+      const saved = localStorage.getItem('softcare_notifications');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mockNotifications;
+  });
+
+  const setNotifications = (val: Notification[] | ((prev: Notification[]) => Notification[])) => {
+    setNotificationsState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      try {
+        localStorage.setItem('softcare_notifications', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
   const [organizationSettings, setOrganizationSettingsState] = useState<OrganizationSettings>(() => {
     try {
       const saved = localStorage.getItem('softcare_org_settings');
@@ -769,21 +805,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newAdmission: Admission = {
       id: genId(),
       patientId: admission.patientId || '',
-      bedId: admission.bedId || '',
-      doctorId: admission.doctorId || '',
-      type: admission.type || 'planned',
+      patientName: admission.patientName || '',
+      departmentId: admission.departmentId || '1',
+      departmentName: admission.departmentName || 'Médecine',
+      roomId: admission.roomId,
+      roomNumber: admission.roomNumber,
+      bedId: admission.bedId,
+      bedNumber: admission.bedNumber,
+      admissionDate: admission.admissionDate || new Date().toISOString(),
+      dischargeDate: admission.dischargeDate,
       reason: admission.reason || '',
-      admissionDate: admission.admissionDate || new Date().toISOString().split('T')[0],
-      expectedDischargeDate: admission.expectedDischargeDate,
+      diagnosis: admission.diagnosis,
+      attendingDoctorId: admission.attendingDoctorId || '1',
+      attendingDoctorName: admission.attendingDoctorName || 'Dr. Marie Dubois',
       status: admission.status || 'admitted',
-      departmentId: admission.departmentId || '',
+      insuranceProvider: admission.insuranceProvider,
+      insurancePolicyNumber: admission.insurancePolicyNumber,
+      dailyRate: admission.dailyRate || 150,
+      totalAmount: admission.totalAmount || 0,
       notes: admission.notes,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
-    setAdmissions(prev => [...prev, newAdmission]);
+    setAdmissions(prev => [newAdmission, ...prev]);
     if (admission.bedId) {
-      await updateBed(admission.bedId, { status: 'occupied', patientId: admission.patientId, currentPatientId: admission.patientId, currentAdmissionId: newAdmission.id, admissionDate: admission.admissionDate });
+      await updateBed(admission.bedId, {
+        status: 'occupied',
+        patientId: admission.patientId,
+        currentPatientId: admission.patientId,
+        currentAdmissionId: newAdmission.id,
+        admissionDate: newAdmission.admissionDate
+      });
     }
-    success('Patient admis');
+    success('Admission enregistrée', `Patient admis avec succès`);
+  };
+
+  const updateAdmission = async (id: string, updates: Partial<Admission>) => {
+    setAdmissions(prev => prev.map(a => a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a));
+    success('Admission mise à jour');
   };
 
   // === INVOICES ===
@@ -1069,6 +1128,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNotifications(prev => [notification, ...prev]);
   const markNotificationRead = (id: string) =>
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAllNotificationsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    success('Notifications', 'Toutes les notifications ont été marquées comme lues.');
+  };
 
   const getDropdownOptions = (category: string) =>
     dropdownOptions.filter(o => o.category === category && o.active).sort((a, b) => a.order - b.order);
@@ -1164,14 +1227,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     departments, setDepartments,
     invoices, setInvoices, addInvoice, updateInvoice, deleteInvoice,
     beds, setBeds, addBed, updateBed, deleteBed,
-    admissions, setAdmissions, addAdmission,
+    admissions, setAdmissions, addAdmission, updateAdmission,
     labOrders, setLabOrders, addLabOrder, updateLabOrder, deleteLabOrder,
     labTests, setLabTests,
     emergencyVisits, setEmergencyVisits, addEmergencyVisit, updateEmergencyVisit,
     surgeries, setSurgeries, addSurgery, updateSurgery, deleteSurgery,
     operatingRooms, setOperatingRooms, addOperatingRoom, updateOperatingRoom,
     workSchedules, setWorkSchedules,
-    notifications, setNotifications, addNotification, markNotificationRead, unreadCount,
+    notifications, setNotifications, addNotification, markNotificationRead, markAllNotificationsRead, unreadCount,
     organizationSettings, setOrganizationSettings,
     updateOrganizationSettings: updateOrganizationSettingsFn,
     dropdownOptions, setDropdownOptions, getDropdownOptions,

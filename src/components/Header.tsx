@@ -10,6 +10,7 @@ const Header: React.FC = () => {
     signOut,
     notifications,
     markNotificationRead,
+    markAllNotificationsRead,
     unreadCount,
     setCurrentView,
     sidebarCollapsed,
@@ -143,9 +144,14 @@ const Header: React.FC = () => {
               <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-[480px] overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
                   <h3 className="font-semibold text-gray-900">Notifications</h3>
-                  <span className="text-xs text-cyan-600 cursor-pointer hover:underline font-medium">
-                    Tout marquer comme lu
-                  </span>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllNotificationsRead}
+                      className="text-xs text-cyan-600 hover:text-cyan-700 font-medium hover:underline transition-colors"
+                    >
+                      Tout marquer comme lu
+                    </button>
+                  )}
                 </div>
                 <div className="overflow-y-auto max-h-80">
                   {!notifications || notifications.length === 0 ? (
