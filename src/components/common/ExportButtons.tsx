@@ -65,10 +65,6 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
       return;
     }
 
-    printWindow.document.open();
-    printWindow.document.write('<!DOCTYPE html><html><head><title></title></head><body></body></html>');
-    printWindow.document.close();
-    
     printWindow.document.title = title;
     
     const style = printWindow.document.createElement('style');
@@ -81,8 +77,11 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
       @media print { @page { margin: 10mm; size: A4; } }
     `;
     printWindow.document.head.appendChild(style);
-    
-    printWindow.document.body.innerHTML = content;
+    const parser = new DOMParser();
+    const parsedDoc = parser.parseFromString(content, 'text/html');
+    Array.from(parsedDoc.body.childNodes).forEach(node => {
+      printWindow.document.body.appendChild(printWindow.document.importNode(node, true));
+    });
     setTimeout(() => printWindow.print(), 250);
     setShowMenu(false);
   };

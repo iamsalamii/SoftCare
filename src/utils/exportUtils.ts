@@ -177,10 +177,6 @@ export const exportToPDF = async (
     return;
   }
 
-  printWindow.document.open();
-  printWindow.document.write('<!DOCTYPE html><html><head><title></title></head><body></body></html>');
-  printWindow.document.close();
-
   printWindow.document.title = filename;
 
   const style = printWindow.document.createElement('style');
@@ -217,8 +213,11 @@ export const exportToPDF = async (
     }
   `;
   printWindow.document.head.appendChild(style);
-
-  printWindow.document.body.innerHTML = content;
+  const parser = new DOMParser();
+  const parsedDoc = parser.parseFromString(content, 'text/html');
+  Array.from(parsedDoc.body.childNodes).forEach(node => {
+    printWindow.document.body.appendChild(printWindow.document.importNode(node, true));
+  });
 
   printWindow.document.close();
   printWindow.focus();
