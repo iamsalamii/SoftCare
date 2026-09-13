@@ -105,3 +105,43 @@ button:focus {
 .shadow-glow {
   box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
 }
+
+/* ======================================================
+   SoftCare Design System — Global Select (.sc-select)
+   Applique le style unifié à tous les <select> natifs
+   ====================================================== */
+.sc-select {
+  width: 100%;
+  padding: 0.5rem 2.25rem 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #1e293b;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.sc-select:hover {
+  border-color: #cbd5e1;
+  background-color: #fff;
+}
+
+.sc-select:focus {
+  border-color: #0891b2;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.12);
+}
+
+.sc-select option {
+  font-weight: 500;
+  color: #1e293b;
+  background: #fff;
+}

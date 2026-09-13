@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { BedDouble, User, Calendar, Plus, Search, RefreshCw, Download, FileSpreadsheet, Printer, X } from 'lucide-react';
 import { Bed, Admission } from '../../types';
 import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel } from '../../utils/exportUtils';
@@ -471,6 +472,7 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
 // Composant Formulaire d'admission
 const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClose }) => {
   const { patients, users, addAdmission, updateBed, beds } = useApp();
+  const toast = useToast();
   const [searchPatient, setSearchPatient] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<string>('');
   const [formData, setFormData] = useState({
@@ -493,7 +495,10 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
 
     const todayStr = new Date().toISOString().split('T')[0];
     if (formData.expectedDischargeDate && formData.expectedDischargeDate < todayStr) {
-      alert("Erreur chronologique : La date prévisionnelle de sortie ne peut pas être antérieure à la date d'admission.");
+      toast.error(
+        'Date de sortie invalide',
+        "La date prévisionnelle de sortie ne peut pas être antérieure à la date d'admission (aujourd'hui)."
+      );
       return;
     }
 
@@ -682,7 +687,8 @@ const NewBedModal: React.FC<{
   onClose: () => void;
   onSave: (bedData: Partial<Bed>) => Promise<void>;
 }> = ({ onClose, onSave }) => {
-  const { departments, rooms } = useApp();
+  const { departments, rooms, organizationSettings } = useApp();
+  const currencySymbol = organizationSettings?.currencySymbol || 'FCFA';
   const [roomNumber, setRoomNumber] = useState('101');
   const [bedNumber, setBedNumber] = useState('A');
   const [departmentId, setDepartmentId] = useState(departments[0]?.id || '1');

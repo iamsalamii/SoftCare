@@ -171,7 +171,25 @@ const Header: React.FC = () => {
                     userNotifications.slice(0, 15).map((notif) => (
                       <div
                         key={notif.id}
-                        onClick={() => markNotificationRead(notif.id)}
+                        onClick={() => {
+                          markNotificationRead(notif.id);
+                          setShowNotifications(false);
+                          // Smart routing based on notification type/content
+                          if (
+                            notif.type === 'password_reset' ||
+                            (notif.message && notif.message.toLowerCase().includes('r\u00e9initialisation')) ||
+                            (notif.message && notif.message.toLowerCase().includes('mot de passe')) ||
+                            (notif.title && notif.title.toLowerCase().includes('r\u00e9initialisation'))
+                          ) {
+                            setCurrentView('users');
+                          } else if (notif.type === 'critical' || (notif.message && notif.message.toLowerCase().includes('patient'))) {
+                            setCurrentView('patients');
+                          } else if (notif.message && notif.message.toLowerCase().includes('pharmacie')) {
+                            setCurrentView('pharmacy');
+                          } else if (notif.message && notif.message.toLowerCase().includes('laboratoire')) {
+                            setCurrentView('lab');
+                          }
+                        }}
                         className={`px-5 py-4 flex items-start gap-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 transition-colors ${!notif.read ? 'bg-cyan-50/50' : ''}`}
                       >
                         {getNotificationIcon(notif.type)}
@@ -181,6 +199,11 @@ const Header: React.FC = () => {
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date(notif.createdAt).toLocaleString('fr-FR')}
                           </p>
+                          {(notif.type === 'password_reset' || (notif.message && notif.message.toLowerCase().includes('r\u00e9initialisation'))) && (
+                            <span className="inline-block mt-1 text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-full border border-cyan-200">
+                              → Voir Gestion Utilisateurs
+                            </span>
+                          )}
                         </div>
                         {!notif.read && (
                           <div className="w-2 h-2 bg-cyan-500 rounded-full mt-1.5"></div>

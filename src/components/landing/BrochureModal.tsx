@@ -69,8 +69,8 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
 
         <!-- PAGE 3 -->
         <div style="page-break-after: always; padding: 30px 0;">
-          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">3. Pôle Biotechnologies & Pharmacogénomique (PGx)</h2>
-          <p>SoftCare intègre la médecine de précision au cœur des décisions cliniques conformément aux directives internationales CPIC et DPWG :</p>
+          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">3. Pôle Biotechnologies &amp; Pharmacogénomique (PGx)</h2>
+          <p>${organizationSettings.name} intègre la médecine de précision au cœur des décisions cliniques conformément aux directives internationales CPIC et DPWG :</p>
           <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
             <li><strong>Sécurité PGx :</strong> Blocage automatique des prescriptions à risque toxicologique selon les génotypes (ex: <em>CYP2C19</em> pour le Clopidogrel, <em>DPYD</em> pour le 5-Fluorouracile).</li>
             <li><strong>Biobanque Cryogénique & LIMS :</strong> Gestion cartographique des congélateurs (-80°C et cuves d'azote -196°C) avec traçabilité des puits 2D.</li>
@@ -104,7 +104,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
       </div>
     `;
 
-    await printDocument(brochureHtml, organizationSettings, 'Brochure-SoftCare-2026');
+    await printDocument(brochureHtml, organizationSettings, `Brochure-${organizationSettings.name || 'Hopital'}-${new Date().getFullYear()}`);
   };
 
   const modalContent = (
@@ -118,7 +118,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-white">Brochure Médicale SoftCare</h3>
+                <h3 className="font-bold text-lg text-white">Brochure Médicale — {organizationSettings.name || 'Système Hospitalier'}</h3>
                 <span className="px-2.5 py-0.5 text-[9px] font-bold bg-white/20 border border-white/30 text-cyan-50 rounded-full">
                   Page {currentPage} / {totalPages}
                 </span>

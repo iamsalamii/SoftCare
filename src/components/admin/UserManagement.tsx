@@ -206,7 +206,7 @@ const UserManagement: React.FC = () => {
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="sc-select"
             >
               {roles.map(role => (
                 <option key={role} value={role}>

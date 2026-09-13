@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import {
   Search, Plus, Minus, Trash2, ShoppingCart, CreditCard, Banknote,
   Receipt, Printer, ScanLine, X, CheckCircle, AlertTriangle, Package,
-  Dna, ShieldAlert, UserCheck, Sparkles
+  Dna, ShieldAlert, UserCheck, Sparkles, FileText
 } from 'lucide-react';
 import { PharmacySaleItem, PharmacySale, Medication } from '../../types';
 import { formatCurrency, generateReceiptHTML, printDocument } from '../../utils/exportUtils';
@@ -14,6 +15,7 @@ const PharmacyPOS: React.FC = () => {
     medications, organizationSettings, addPharmacySale, addMedicationMovement,
     currentUser, patients, genomicProfiles, pgxInteractions, addInvoice
   } = useApp();
+  const toast = useToast();
 
   const [cart, setCart] = useState<PharmacySaleItem[]>([]);
   const [search, setSearch] = useState('');
@@ -106,7 +108,7 @@ const PharmacyPOS: React.FC = () => {
     if (!med) return;
 
     if (med.stock <= 0) {
-      alert('Stock insuffisant pour ce médicament !');
+      toast.error('Stock insuffisant', `${med.name} : aucun stock disponible.`);
       return;
     }
 
@@ -114,7 +116,7 @@ const PharmacyPOS: React.FC = () => {
       const existing = prev.find(item => item.medicationId === medicationId);
       if (existing) {
         if (existing.quantity >= med.stock) {
-          alert('Stock maximum disponible atteint !');
+          toast.warning('Stock maximum atteint', `Quantité maximale disponible pour ${med.name} : ${med.stock} unité(s).`);
           return prev;
         }
         return prev.map(item =>
@@ -150,7 +152,7 @@ const PharmacyPOS: React.FC = () => {
     }
 
     if (med && quantity > med.stock) {
-      alert(`Stock insuffisant ! Maximum disponible : ${med.stock}`);
+      toast.warning('Stock insuffisant', `Maximum disponible pour ${med.name} : ${med.stock} unité(s).`);
       return;
     }
 
@@ -491,13 +493,28 @@ const PharmacyPOS: React.FC = () => {
 
           {/* Customer info fields */}
           <div className="space-y-2">
-            <input
-              type="text"
-              placeholder="Nom du client / patient..."
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none"
-            />
+            {/* Patient search dropdown */}
+            <select
+              value={selectedPatientId}
+              onChange={(e) => handlePatientSelect(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+            >
+              <option value="">-- Sélectionner ou saisir un patient --</option>
+              {patients.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.firstName} {p.lastName}{p.phone ? ` (${p.phone})` : ''}
+                </option>
+              ))}
+            </select>
+            {!selectedPatientId && (
+              <input
+                type="text"
+                placeholder="Ou saisir un nom client..."
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none"
+              />
+            )}
           </div>
         </div>
 

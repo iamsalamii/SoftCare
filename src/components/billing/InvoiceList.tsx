@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Plus, Search, FileText, Eye, Printer, CreditCard, Euro, Calendar, Building, Download, FileSpreadsheet } from 'lucide-react';
 import InvoiceForm from './InvoiceForm';
@@ -12,6 +12,7 @@ const InvoiceList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const getPatientName = (patientId: string) => {
     const patient = patients.find(p => p.id === patientId);
@@ -195,7 +196,12 @@ const InvoiceList: React.FC = () => {
           </div>
 
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+              setTimeout(() => {
+                formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 50);
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -262,7 +268,7 @@ const InvoiceList: React.FC = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="sc-select"
             >
               <option value="all">Tous les statuts</option>
               <option value="draft">Brouillon</option>
@@ -367,7 +373,11 @@ const InvoiceList: React.FC = () => {
       </div>
 
       {/* Modal Formulaire */}
-      {showForm && <InvoiceForm onClose={() => setShowForm(false)} />}
+      {showForm && (
+        <div ref={formRef} className="mt-6">
+          <InvoiceForm onClose={() => setShowForm(false)} />
+        </div>
+      )}
 
       {/* Modal Détails */}
       {selectedInvoice && (

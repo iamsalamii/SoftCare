@@ -22,32 +22,23 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
     phone: '',
     email: '',
     address: '',
-    city: 'Paris',
+    city: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
     emergencyContactRelationship: 'Conjoint(e)',
-    bloodType: 'A+',
+    bloodType: '',
     socialSecurityNumber: '',
-    insuranceName: 'CPAM / Sécurité Sociale',
+    insuranceName: '',
     insurancePolicyNumber: '',
     allergies: '',
     notes: ''
   });
 
-  // Dynamic Dictionaries
+  // Dynamic Dictionaries — villes (vide par défaut pour compatibilité internationale)
   const cityDropdown = getDropdownOptions ? getDropdownOptions('city') : [];
   const cityOptions = cityDropdown.length > 0
     ? cityDropdown.map(c => ({ value: c.value, label: c.label }))
-    : [
-        { value: 'Paris', label: 'Paris' },
-        { value: 'Lyon', label: 'Lyon' },
-        { value: 'Marseille', label: 'Marseille' },
-        { value: 'Bordeaux', label: 'Bordeaux' },
-        { value: 'Toulouse', label: 'Toulouse' },
-        { value: 'Lille', label: 'Lille' },
-        { value: 'Nantes', label: 'Nantes' },
-        { value: 'Strasbourg', label: 'Strasbourg' }
-      ];
+    : [];
 
   const relDropdown = getDropdownOptions ? getDropdownOptions('relationship') : [];
   const relationshipOptions = relDropdown.length > 0
@@ -79,6 +70,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
         ]);
 
   const bloodTypeOptions = [
+    { value: '', label: 'Inconnu / À déterminer par analyse', badge: 'Non déterminé' },
     { value: 'A+', label: 'A Positif (A+)', badge: 'Rhésus +' },
     { value: 'A-', label: 'A Négatif (A-)', badge: 'Rhésus -' },
     { value: 'B+', label: 'B Positif (B+)', badge: 'Rhésus +' },
@@ -238,22 +230,22 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
               />
             </FormField>
 
-            <FormField label="Numéro de Sécurité Sociale (NIR)" required={true} hint="Format national ou international">
+            <FormField label="Numéro d'Identification Sanitaire / NIR" hint="Optionnel — selon pays (sécurité sociale, carte patient, passeport sanitaire)">
               <input
                 type="text"
-                required
                 value={formData.socialSecurityNumber}
                 onChange={(e) => setFormData({ ...formData, socialSecurityNumber: e.target.value })}
-                placeholder="Ex: 1 80 05 75 001 123 45 ou ID Int."
+                placeholder="NIR, Numéro CNSS, ID Sanitaire National..."
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono font-bold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
             </FormField>
 
-            <FormField label="Groupe Sanguin" required={true}>
+            <FormField label="Groupe Sanguin" hint="Optionnel — à renseigner après analyse si non connu">
               <CustomSelect
                 options={bloodTypeOptions}
                 value={formData.bloodType}
                 onChange={(val) => setFormData({ ...formData, bloodType: val })}
+                placeholder="Sélectionner si connu..."
               />
             </FormField>
           </div>
@@ -273,7 +265,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+XXX XX XX XX XX (ex: +225 07 12 34 56)"
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
             </FormField>
@@ -295,7 +287,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
                 onChange={(val) => setFormData({ ...formData, city: val })}
                 searchable={true}
                 allowCustom={true}
-                placeholder="Sélectionner ou saisir une ville..."
+                placeholder="Saisir ou sélectionner une ville..."
               />
             </FormField>
 
@@ -340,14 +332,14 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
 
           {!noInsurance ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField label="Organisme d'Assurance / Mutuelle" required={true} hint="Sélectionner ou saisir une nouvelle mutuelle">
+              <FormField label="Organisme d'Assurance / Mutuelle" hint="Optionnel — sélectionner ou saisir">
                 <CustomSelect
                   options={insuranceOptions}
                   value={formData.insuranceName}
                   onChange={(val) => setFormData({ ...formData, insuranceName: val })}
                   searchable={true}
                   allowCustom={true}
-                  placeholder="Choisir l'organisme d'assurance..."
+                  placeholder="CNAM, CNSS, Mutuelle, Assurance privée..."
                 />
               </FormField>
 

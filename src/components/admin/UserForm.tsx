@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Save, Shield, Loader2, Eye, EyeOff } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { X, Save, Shield, Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
 
 interface UserFormProps {
   userId?: string | null;
@@ -8,8 +9,10 @@ interface UserFormProps {
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
-  const { users, addUser, updateUser } = useApp();
+  const { users, addUser, updateUser, addNotification } = useApp();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
+  const [resettingPwd, setResettingPwd] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -87,11 +90,41 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
           role: user.role,
           department: user.department || '',
           phone: user.phone || '',
-          status: user.status || 'active'
+          status: user.status || 'active',
+          password: ''
         });
       }
     }
   }, [userId, users]);
+
+  const handleResetPassword = async () => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    setResettingPwd(true);
+    try {
+      // Generate a temporary password and update
+      const tempPwd = `Temp${Math.random().toString(36).slice(-6).toUpperCase()}#1`;
+      await updateUser(userId!, { passwordHash: tempPwd });
+      // Notify admins
+      addNotification({
+        id: `PWD-${Date.now()}`,
+        type: 'warning',
+        title: 'Mot de passe réinitialisé',
+        message: `Le mot de passe de ${user.name} (${user.email}) a été réinitialisé. Mot de passe temporaire : ${tempPwd}`,
+        read: false,
+        userId: 'all',
+        createdAt: new Date().toISOString()
+      });
+      toast.success(
+        'Mot de passe réinitialisé',
+        `Nouveau mot de passe temporaire généré pour ${user.name}. Il sera affiché dans les notifications.`
+      );
+    } catch (err) {
+      toast.error('Erreur', 'Impossible de réinitialiser le mot de passe.');
+    } finally {
+      setResettingPwd(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,7 +219,7 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
                 required
                 value={formData.role}
                 onChange={(e) => setFormData({...formData, role: e.target.value as any})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="sc-select"
               >
                 <option value="nurse">Infirmier(e)</option>
                 <option value="doctor">Medecin</option>
@@ -205,7 +238,7 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({...formData, status: e.target.value as 'active' | 'inactive'})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="sc-select"
               >
                 <option value="active">Actif</option>
                 <option value="inactive">Inactif</option>
@@ -219,7 +252,7 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
               <select
                 value={formData.department}
                 onChange={(e) => setFormData({...formData, department: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="sc-select"
               >
                 <option value="">Selectionner un departement</option>
                 {departments.map(dept => (
@@ -269,23 +302,39 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, onClose }) => {
             )}
           </div>
 
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{loading ? 'Enregistrement...' : (userId ? 'Modifier' : 'Creer')}</span>
-            </button>
+          <div className="flex justify-between items-center">
+            {/* Left: Reset Password button - only when editing */}
+            {userId && (
+              <button
+                type="button"
+                onClick={handleResetPassword}
+                disabled={resettingPwd}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors text-sm font-semibold disabled:opacity-50"
+              >
+                {resettingPwd ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                <span>{resettingPwd ? 'Réinitialisation...' : 'Réinitialiser MDP'}</span>
+              </button>
+            )}
+            {!userId && <span />}
+
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span>{loading ? 'Enregistrement...' : (userId ? 'Modifier' : 'Creer')}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>
