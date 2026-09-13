@@ -90,7 +90,8 @@ public class AuthController : ControllerBase
             Name = request.Name,
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = request.Role,
+            Role = "nurse", // Fixed: Prevent Privilege Escalation by assigning default role
+
             DepartmentId = request.Department,
             Phone = request.Phone,
             Specialization = request.Specialization,

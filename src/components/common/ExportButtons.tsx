@@ -59,30 +59,30 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
 
   const handleExportPDF = async () => {
     const content = customContent || generateTableHTML();
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) {
       alert('Veuillez autoriser les fenetres pop-up pour exporter en PDF');
       return;
     }
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${title}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-          th { background-color: ${organizationSettings.primaryColor}; color: white; }
-          @media print { @page { margin: 10mm; size: A4; } }
-        </style>
-      </head>
-      <body>${content}</body>
-      </html>
-    `);
+    printWindow.document.open();
+    printWindow.document.write('<!DOCTYPE html><html><head><title></title></head><body></body></html>');
     printWindow.document.close();
+    
+    printWindow.document.title = title;
+    
+    const style = printWindow.document.createElement('style');
+    style.textContent = `
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+      table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+      th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+      th { background-color: ${organizationSettings.primaryColor}; color: white; }
+      @media print { @page { margin: 10mm; size: A4; } }
+    `;
+    printWindow.document.head.appendChild(style);
+    
+    printWindow.document.body.innerHTML = content;
     setTimeout(() => printWindow.print(), 250);
     setShowMenu(false);
   };

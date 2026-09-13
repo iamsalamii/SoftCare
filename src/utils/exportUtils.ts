@@ -171,55 +171,54 @@ export const exportToPDF = async (
   organization: OrganizationSettings,
   filename: string
 ): Promise<void> => {
-  const printWindow = window.open('', '_blank');
+  const printWindow = window.open('', '_blank', 'noopener,noreferrer');
   if (!printWindow) {
     alert('Veuillez autoriser les fenetres pop-up pour exporter en PDF');
     return;
   }
 
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${filename}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          padding: 40px;
-          max-width: 210mm;
-          margin: 0 auto;
-          color: #333;
-          line-height: 1.5;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 20px 0;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 10px;
-          text-align: left;
-        }
-        th {
-          background-color: ${organization.primaryColor};
-          color: white;
-          font-weight: 600;
-        }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .total-row { font-weight: bold; background-color: #f0f0f0; }
-        @media print {
-          body { padding: 20mm; }
-          @page { margin: 10mm; size: A4; }
-        }
-      </style>
-    </head>
-    <body>
-      ${content}
-    </body>
-    </html>
-  `);
+  printWindow.document.open();
+  printWindow.document.write('<!DOCTYPE html><html><head><title></title></head><body></body></html>');
+  printWindow.document.close();
+
+  printWindow.document.title = filename;
+
+  const style = printWindow.document.createElement('style');
+  style.textContent = `
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
+      max-width: 210mm;
+      margin: 0 auto;
+      color: #333;
+      line-height: 1.5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: ${organization.primaryColor};
+      color: white;
+      font-weight: 600;
+    }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .total-row { font-weight: bold; background-color: #f0f0f0; }
+    @media print {
+      body { padding: 20mm; }
+      @page { margin: 10mm; size: A4; }
+    }
+  `;
+  printWindow.document.head.appendChild(style);
+
+  printWindow.document.body.innerHTML = content;
 
   printWindow.document.close();
   printWindow.focus();
