@@ -75,6 +75,14 @@ const Header: React.FC = () => {
     return colors[role] || 'bg-gradient-to-r from-gray-500 to-slate-500';
   };
 
+  const userNotifications = (notifications || []).filter(n => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
+    return !n.userId || n.userId === 'all' || n.userId === currentUser.id;
+  });
+
+  const effectiveUnreadCount = userNotifications.filter(n => !n.read).length;
+
   if (!currentUser) return null;
 
   return (
@@ -133,9 +141,9 @@ const Header: React.FC = () => {
               className="relative p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
             >
               <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
+              {effectiveUnreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 bg-gradient-to-r from-rose-500 to-red-500 text-white text-xs rounded-full flex items-center justify-center px-1 font-medium shadow-lg shadow-rose-500/30">
-                  {unreadCount > 99 ? '99+' : unreadCount}
+                  {effectiveUnreadCount > 99 ? '99+' : effectiveUnreadCount}
                 </span>
               )}
             </button>
@@ -144,7 +152,7 @@ const Header: React.FC = () => {
               <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-[480px] overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
                   <h3 className="font-semibold text-gray-900">Notifications</h3>
-                  {unreadCount > 0 && (
+                  {effectiveUnreadCount > 0 && (
                     <button
                       onClick={markAllNotificationsRead}
                       className="text-xs text-cyan-600 hover:text-cyan-700 font-medium hover:underline transition-colors"
@@ -154,13 +162,13 @@ const Header: React.FC = () => {
                   )}
                 </div>
                 <div className="overflow-y-auto max-h-80">
-                  {!notifications || notifications.length === 0 ? (
+                  {!userNotifications || userNotifications.length === 0 ? (
                     <div className="py-10 text-center text-gray-500">
                       <Bell className="w-12 h-12 mx-auto mb-3 text-gray-200" />
                       <p>Aucune notification</p>
                     </div>
                   ) : (
-                    notifications.slice(0, 10).map((notif) => (
+                    userNotifications.slice(0, 15).map((notif) => (
                       <div
                         key={notif.id}
                         onClick={() => markNotificationRead(notif.id)}

@@ -10,8 +10,9 @@ interface PatientFormProps {
 }
 
 export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) => {
-  const { patients, addPatient, updatePatient, insurances, dropdownOptions } = useApp();
+  const { patients, addPatient, updatePatient, insurances, getDropdownOptions } = useApp();
   const [loading, setLoading] = useState(false);
+  const [noInsurance, setNoInsurance] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -33,19 +34,49 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
     notes: ''
   });
 
-  // Insurance Options from Settings or presets with custom support
-  const insuranceOptions = insurances && insurances.length > 0
-    ? insurances.map(ins => ({ value: ins.name, label: ins.name, badge: `${ins.coverageRate || 80}%` }))
+  // Dynamic Dictionaries
+  const cityDropdown = getDropdownOptions ? getDropdownOptions('city') : [];
+  const cityOptions = cityDropdown.length > 0
+    ? cityDropdown.map(c => ({ value: c.value, label: c.label }))
     : [
-        { value: 'CPAM / Sécurité Sociale', label: 'CPAM / Sécurité Sociale', badge: 'Régime Général' },
-        { value: 'MGEN', label: 'MGEN (Mutuelle Générale)', badge: 'Mutuelle' },
-        { value: 'Harmonie Mutuelle', label: 'Harmonie Mutuelle', badge: 'Complémentaire' },
-        { value: 'Alan Santé', label: 'Alan Santé Pro', badge: '100% Santé' },
-        { value: 'AXA Santé & Prévoyance', label: 'AXA Santé & Prévoyance', badge: 'Tiers Payant' },
-        { value: 'Malakoff Humanis', label: 'Malakoff Humanis', badge: 'Complémentaire' },
-        { value: 'SwissLife Santé', label: 'SwissLife Santé', badge: 'Privé' },
-        { value: 'Sans Mutuelle / Aide Médicale État (AME)', label: 'Sans Mutuelle / AME', badge: 'Aide d\'État' }
+        { value: 'Paris', label: 'Paris' },
+        { value: 'Lyon', label: 'Lyon' },
+        { value: 'Marseille', label: 'Marseille' },
+        { value: 'Bordeaux', label: 'Bordeaux' },
+        { value: 'Toulouse', label: 'Toulouse' },
+        { value: 'Lille', label: 'Lille' },
+        { value: 'Nantes', label: 'Nantes' },
+        { value: 'Strasbourg', label: 'Strasbourg' }
       ];
+
+  const relDropdown = getDropdownOptions ? getDropdownOptions('relationship') : [];
+  const relationshipOptions = relDropdown.length > 0
+    ? relDropdown.map(r => ({ value: r.value, label: r.label }))
+    : [
+        { value: 'Conjoint(e)', label: 'Conjoint(e) / Époux(se)' },
+        { value: 'Parent', label: 'Père / Mère' },
+        { value: 'Enfant', label: 'Fils / Fille' },
+        { value: 'Frère / Sœur', label: 'Frère / Sœur' },
+        { value: 'Ami(e)', label: 'Ami(e) / Proche' },
+        { value: 'Tuteur légal', label: 'Tuteur / Mandataire légal' }
+      ];
+
+  // Insurance Options from Settings or presets with custom support
+  const insDropdown = getDropdownOptions ? getDropdownOptions('insurance_provider') : [];
+  const insuranceOptions = insDropdown.length > 0
+    ? insDropdown.map(i => ({ value: i.value, label: i.label, badge: 'Organisme' }))
+    : (insurances && insurances.length > 0
+      ? insurances.map(ins => ({ value: ins.name, label: ins.name, badge: `${ins.coverageRate || 80}%` }))
+      : [
+          { value: 'CPAM / Sécurité Sociale', label: 'CPAM / Sécurité Sociale', badge: 'Régime Général' },
+          { value: 'MGEN', label: 'MGEN (Mutuelle Générale)', badge: 'Mutuelle' },
+          { value: 'Harmonie Mutuelle', label: 'Harmonie Mutuelle', badge: 'Complémentaire' },
+          { value: 'Alan Santé', label: 'Alan Santé Pro', badge: '100% Santé' },
+          { value: 'AXA Santé & Prévoyance', label: 'AXA Santé & Prévoyance', badge: 'Tiers Payant' },
+          { value: 'Malakoff Humanis', label: 'Malakoff Humanis', badge: 'Complémentaire' },
+          { value: 'SwissLife Santé', label: 'SwissLife Santé', badge: 'Privé' },
+          { value: 'Sans Mutuelle / Aide Médicale État (AME)', label: 'Sans Mutuelle / AME', badge: 'Aide d\'État' }
+        ]);
 
   const bloodTypeOptions = [
     { value: 'A+', label: 'A Positif (A+)', badge: 'Rhésus +' },
@@ -207,13 +238,13 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
               />
             </FormField>
 
-            <FormField label="Numéro de Sécurité Sociale (NIR)" required={true} hint="13 ou 15 chiffres avec clé">
+            <FormField label="Numéro de Sécurité Sociale (NIR)" required={true} hint="Format national ou international">
               <input
                 type="text"
                 required
                 value={formData.socialSecurityNumber}
                 onChange={(e) => setFormData({ ...formData, socialSecurityNumber: e.target.value })}
-                placeholder="1 80 05 75 001 123 45"
+                placeholder="Ex: 1 80 05 75 001 123 45 ou ID Int."
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono font-bold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
             </FormField>
@@ -258,12 +289,13 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
             </FormField>
 
             <FormField label="Ville">
-              <input
-                type="text"
+              <CustomSelect
+                options={cityOptions}
                 value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="Paris"
-                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                onChange={(val) => setFormData({ ...formData, city: val })}
+                searchable={true}
+                allowCustom={true}
+                placeholder="Sélectionner ou saisir une ville..."
               />
             </FormField>
 
@@ -283,38 +315,58 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
 
         {/* Section 3: Assurance & Tiers Payant (Combo Box Paramétrable) */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
-          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 flex items-center gap-2">
               <Shield className="w-4 h-4 text-cyan-600" />
               <span>3. Couverture Santé & Organisme d'Assurance</span>
             </h2>
-            <span className="text-[10px] text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full font-bold border border-teal-200">
-              Paramétrable dans Réglages
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Organisme d'Assurance / Mutuelle" required={true} hint="Sélectionner ou saisir une nouvelle mutuelle">
-              <CustomSelect
-                options={insuranceOptions}
-                value={formData.insuranceName}
-                onChange={(val) => setFormData({ ...formData, insuranceName: val })}
-                searchable={true}
-                allowCustom={true}
-                placeholder="Choisir l'organisme d'assurance..."
-              />
-            </FormField>
-
-            <FormField label="Numéro d'Adhérent / Police Mutuelle">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 transition-colors">
               <input
-                type="text"
-                value={formData.insurancePolicyNumber}
-                onChange={(e) => setFormData({ ...formData, insurancePolicyNumber: e.target.value })}
-                placeholder="MUT-88492-X"
-                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                type="checkbox"
+                checked={noInsurance}
+                onChange={(e) => {
+                  setNoInsurance(e.target.checked);
+                  if (e.target.checked) {
+                    setFormData(prev => ({ ...prev, insuranceName: 'Sans Mutuelle / Paiement Direct', insurancePolicyNumber: 'N/A' }));
+                  } else {
+                    setFormData(prev => ({ ...prev, insuranceName: 'CPAM / Sécurité Sociale', insurancePolicyNumber: '' }));
+                  }
+                }}
+                className="rounded text-cyan-600 focus:ring-cyan-500"
               />
-            </FormField>
+              <span>Sans couverture / Paiement Direct</span>
+            </label>
           </div>
+
+          {!noInsurance ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Organisme d'Assurance / Mutuelle" required={true} hint="Sélectionner ou saisir une nouvelle mutuelle">
+                <CustomSelect
+                  options={insuranceOptions}
+                  value={formData.insuranceName}
+                  onChange={(val) => setFormData({ ...formData, insuranceName: val })}
+                  searchable={true}
+                  allowCustom={true}
+                  placeholder="Choisir l'organisme d'assurance..."
+                />
+              </FormField>
+
+              <FormField label="Numéro d'Adhérent / Police Mutuelle">
+                <input
+                  type="text"
+                  value={formData.insurancePolicyNumber}
+                  onChange={(e) => setFormData({ ...formData, insurancePolicyNumber: e.target.value })}
+                  placeholder="MUT-88492-X"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </FormField>
+            </div>
+          ) : (
+            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-xs text-gray-600">
+              <p className="font-semibold text-gray-800">Mode de facturation directe activé</p>
+              <p className="mt-0.5">Le patient règlera l'intégralité des prestations et honoraires directement sans prise en charge par un tiers payeur.</p>
+            </div>
+          )}
         </div>
 
         {/* Section 4: Contact d'Urgence & Allergies */}
@@ -336,12 +388,13 @@ export const PatientForm: React.FC<PatientFormProps> = ({ patientId, onClose }) 
             </FormField>
 
             <FormField label="Lien de Parenté">
-              <input
-                type="text"
+              <CustomSelect
+                options={relationshipOptions}
                 value={formData.emergencyContactRelationship}
-                onChange={(e) => setFormData({ ...formData, emergencyContactRelationship: e.target.value })}
-                placeholder="Épouse / Frère / Parent..."
-                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium"
+                onChange={(val) => setFormData({ ...formData, emergencyContactRelationship: val })}
+                searchable={true}
+                allowCustom={true}
+                placeholder="Sélectionner ou saisir..."
               />
             </FormField>
 

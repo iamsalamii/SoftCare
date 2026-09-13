@@ -32,26 +32,26 @@ export const generateDocumentHeader = (
 ): string => {
   const docLabels: Record<string, string> = {
     invoice: 'Facture',
-    receipt: 'Recu',
-    report: 'Rapport',
-    prescription: 'Ordonnance',
-    lab_result: 'Resultat d\\\'analyse'
+    receipt: 'Reçu',
+    report: 'Rapport Médical',
+    prescription: 'Ordonnance Médicale',
+    lab_result: 'Résultat d\'Analyse'
   };
 
   return `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid ${organization.primaryColor};">
-      <div style="display: flex; align-items: center; gap: 20px;">
-        ${organization.logo ? `<img src="${organization.logo}" alt="Logo" style="max-height: 60px; max-width: 150px;">` : ''}
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid ${organization.primaryColor || '#0891b2'};">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        ${organization.logo ? `<img src="${organization.logo}" alt="${organization.name}" style="max-height: 55px; max-width: 140px; object-fit: contain;">` : ''}
         <div>
-          <h1 style="margin: 0; font-size: 24px; color: ${organization.primaryColor}; font-weight: bold;">${organization.name}</h1>
-          <p style="margin: 5px 0 0; color: #666; font-size: 12px;">${organization.address}, ${organization.city}</p>
-          <p style="margin: 2px 0 0; color: #666; font-size: 12px;">Tel: ${organization.phone} | Email: ${organization.email}</p>
+          <h1 style="margin: 0; font-size: 20px; color: ${organization.primaryColor || '#0891b2'}; font-weight: bold;">${organization.name}</h1>
+          <p style="margin: 3px 0 0; color: #475569; font-size: 11px;">${organization.address}, ${organization.city}</p>
+          <p style="margin: 2px 0 0; color: #475569; font-size: 11px;">Tél: ${organization.phone} | Email: ${organization.email}</p>
         </div>
       </div>
       <div style="text-align: right;">
-        <h2 style="margin: 0; font-size: 20px; color: #333;">${docLabels[docType]}</h2>
-        <p style="margin: 5px 0 0; font-size: 14px;"><strong>N:</strong> ${docNumber}</p>
-        <p style="margin: 2px 0 0; font-size: 12px; color: #666;">${formatDate(new Date())}</p>
+        <h2 style="margin: 0; font-size: 16px; color: #1e293b; text-transform: uppercase;">${docLabels[docType]}</h2>
+        <p style="margin: 4px 0 0; font-size: 12px; font-weight: bold; color: ${organization.primaryColor || '#0891b2'};">N° ${docNumber}</p>
+        <p style="margin: 2px 0 0; font-size: 11px; color: #64748b;">Émis le : ${formatDate(new Date())}</p>
       </div>
     </div>
   `;
@@ -59,12 +59,14 @@ export const generateDocumentHeader = (
 
 export const generateDocumentFooter = (organization: OrganizationSettings): string => {
   return `
-    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 11px;">
-      <p style="margin: 0;"><strong>${organization.name}</strong></p>
-      <p style="margin: 3px 0;">${organization.address}, ${organization.city}, ${organization.country}</p>
-      <p style="margin: 3px 0;">Tel: ${organization.phone} | Email: ${organization.email} ${organization.website ? `| Web: ${organization.website}` : ''}</p>
-      ${organization.taxId ? `<p style="margin: 3px 0;">N fiscal: ${organization.taxId}</p>` : ''}
-      ${organization.bankName ? `<p style="margin: 10px 0 0;"><strong>Banque:</strong> ${organization.bankName} - Compte: ${organization.bankAccount} - IBAN: ${organization.bankIban}</p>` : ''}
+    <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 10px; line-height: 1.4;">
+      <p style="margin: 0; font-weight: bold; color: #334155;">${organization.name}</p>
+      <p style="margin: 2px 0;">${organization.address}, ${organization.city} &bull; Tél : ${organization.phone} &bull; Email : ${organization.email}</p>
+      ${organization.taxId ? `<p style="margin: 2px 0;">NIF / TVA : ${organization.taxId}</p>` : ''}
+      ${organization.bankName ? `<p style="margin: 4px 0 0;">Banque : ${organization.bankName} &bull; IBAN : ${organization.bankIban || organization.bankAccount}</p>` : ''}
+      <div style="margin-top: 10px; font-size: 8.5px; color: #94a3b8; letter-spacing: 0.5px;">
+        &copy; ${new Date().getFullYear()} SoftCare Hospital OS &bull; Système d'Information Hospitalier (HIS) &bull; Tous droits réservés
+      </div>
     </div>
   `;
 };
@@ -74,98 +76,94 @@ export const printDocument = async (
   organization: OrganizationSettings,
   title: string = 'Document'
 ): Promise<void> => {
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    alert('Veuillez autoriser les fenetres pop-up pour imprimer');
-    return;
-  }
+  return new Promise((resolve) => {
+    // Create an invisible iframe to prevent screen blanking / window freezing
+    const existingIframe = document.getElementById('softcare-print-frame');
+    if (existingIframe) {
+      existingIframe.remove();
+    }
 
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${title}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          padding: 40px;
-          max-width: 210mm;
-          margin: 0 auto;
-          color: #333;
-          line-height: 1.5;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 20px 0;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 10px;
-          text-align: left;
-        }
-        th {
-          background-color: ${organization.primaryColor};
-          color: white;
-          font-weight: 600;
-        }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        h1, h2, h3 { color: #333; }
-        .total-row { font-weight: bold; background-color: #f0f0f0; }
-        .print-actions {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          background: #333;
-          padding: 15px;
-          display: flex;
-          justify-content: center;
-          gap: 15px;
-          z-index: 9999;
-        }
-        .print-actions button {
-          padding: 10px 25px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 14px;
-        }
-        .btn-print {
-          background: #2563eb;
-          color: white;
-        }
-        .btn-close {
-          background: #dc2626;
-          color: white;
-        }
-        .preview-content {
-          margin-top: 70px;
-        }
-        @media print {
-          .print-actions { display: none !important; }
-          body { padding: 20mm; margin-top: 0; }
-          .preview-content { margin-top: 0; }
-          @page { margin: 10mm; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="print-actions">
-        <button class="btn-print" onclick="window.print()">Imprimer</button>
-        <button class="btn-close" onclick="window.close()">Fermer</button>
-      </div>
-      <div class="preview-content">
+    const iframe = document.createElement('iframe');
+    iframe.id = 'softcare-print-frame';
+    iframe.style.position = 'fixed';
+    iframe.style.top = '-9999px';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
+      resolve();
+      return;
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${title}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 15mm 20mm;
+            max-width: 210mm;
+            margin: 0 auto;
+            color: #1e293b;
+            line-height: 1.4;
+            background: #fff;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+          }
+          th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 11px;
+          }
+          th {
+            background-color: ${organization.primaryColor || '#0891b2'};
+            color: white;
+            font-weight: 600;
+          }
+          tr:nth-child(even) { background-color: #f8fafc; }
+          @media print {
+            body { padding: 5mm 10mm; }
+            @page { margin: 8mm; size: auto; }
+          }
+        </style>
+      </head>
+      <body>
         ${content}
-      </div>
-    </body>
-    </html>
-  `);
+      </body>
+      </html>
+    `;
 
-  printWindow.document.close();
-  printWindow.focus();
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+
+    // Trigger print after iframe renders
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error('Print iframe error:', err);
+      } finally {
+        setTimeout(() => {
+          iframe.remove();
+          resolve();
+        }, 1000);
+      }
+    }, 250);
+  });
 };
 
 export const exportToPDF = async (

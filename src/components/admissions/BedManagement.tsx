@@ -491,6 +491,12 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
     e.preventDefault();
     if (!selectedPatient || !formData.doctorId) return;
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (formData.expectedDischargeDate && formData.expectedDischargeDate < todayStr) {
+      alert("Erreur chronologique : La date prévisionnelle de sortie ne peut pas être antérieure à la date d'admission.");
+      return;
+    }
+
     const patientObj = patients.find(p => p.id === selectedPatient);
     const doctorObj = users.find(u => u.id === formData.doctorId);
     const admissionId = `ADM-${Date.now().toString().slice(-6)}`;
@@ -508,7 +514,7 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
       attendingDoctorName: doctorObj?.name || 'Dr. Marie Dubois',
       type: formData.type,
       reason: formData.reason,
-      admissionDate: new Date().toISOString().split('T')[0],
+      admissionDate: todayStr,
       expectedDischargeDate: formData.expectedDischargeDate,
       notes: formData.notes,
       status: 'admitted',
@@ -584,20 +590,13 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
           </div>
 
           {/* Doctor */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Médecin traitant</label>
-            <select
-              value={formData.doctorId}
-              onChange={(e) => setFormData(prev => ({ ...prev, doctorId: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Sélectionner un médecin</option>
-              {doctors.map(doc => (
-                <option key={doc.id} value={doc.id}>{doc.name}</option>
-              ))}
-            </select>
-          </div>
+          <CustomSelect
+            label="Médecin traitant"
+            value={formData.doctorId}
+            onChange={(val) => setFormData(prev => ({ ...prev, doctorId: val }))}
+            options={doctors.map(doc => ({ value: doc.id, label: doc.name }))}
+            searchable={true}
+          />
 
           {/* Type */}
           <div>
@@ -789,7 +788,7 @@ const NewBedModal: React.FC<{
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Tarif Journalier (€)</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Tarif Journalier ({currencySymbol})</label>
             <input
               type="number"
               value={dailyRate}

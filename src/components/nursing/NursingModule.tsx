@@ -49,7 +49,7 @@ export const NursingModule: React.FC = () => {
     patients = [], admissions = [], users = [], currentUser, organizationSettings,
     vitalsList, setVitalsList, addVitalRecord,
     carePlans, setCarePlans, addCarePlan, updateCarePlan,
-    nursingNotes, setNursingNotes, addNursingNote
+    nursingNotes, setNursingNotes, addNursingNote, getDropdownOptions
   } = useApp();
   const toast = useToast();
 
@@ -353,6 +353,7 @@ export const NursingModule: React.FC = () => {
       {showCarePlanModal && (
         <CarePlanModal
           patients={patients}
+          getDropdownOptions={getDropdownOptions}
           onClose={() => setShowCarePlanModal(false)}
           onSave={async (plan) => {
             await addCarePlan(plan);
@@ -563,9 +564,10 @@ const CarePlanModal: React.FC<{
   patients: any[];
   onClose: () => void;
   onSave: (plan: CarePlan) => void;
-}> = ({ patients, onClose, onSave }) => {
+  getDropdownOptions?: (category: string) => any[];
+}> = ({ patients, onClose, onSave, getDropdownOptions }) => {
   const [patientId, setPatientId] = useState(patients[0]?.id || '');
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState('Pansement & Soins de plaie');
   const [frequency, setFrequency] = useState('Toutes les 4 heures');
   const [instructions, setInstructions] = useState('');
 
@@ -573,6 +575,34 @@ const CarePlanModal: React.FC<{
     value: p.id,
     label: `${p.firstName} ${p.lastName}`
   }));
+
+  const careTypeDropdown = getDropdownOptions ? getDropdownOptions('nursing_care_type') : [];
+  const careTypeOptions = careTypeDropdown.length > 0
+    ? careTypeDropdown.map(c => ({ value: c.value, label: c.label }))
+    : [
+        { value: 'Pansement & Soins de plaie', label: 'Pansement & Soins de plaie' },
+        { value: 'Perfusion & Voie veineuse', label: 'Perfusion & Voie veineuse' },
+        { value: 'Injection IM / SC', label: 'Injection IM / SC' },
+        { value: 'Prise de sang & Bilan', label: 'Prise de sang & Bilan biologique' },
+        { value: 'Sondage urinaire', label: 'Sondage urinaire & Diurèse' },
+        { value: 'Administration PO', label: 'Administration médicamenteuse PO' },
+        { value: 'Surveillance post-op', label: 'Surveillance post-opératoire' },
+        { value: 'Soins d\'hygiène / Nursing', label: 'Soins d\'hygiène / Nursing' }
+      ];
+
+  const freqDropdown = getDropdownOptions ? getDropdownOptions('nursing_frequency') : [];
+  const frequencyOptions = freqDropdown.length > 0
+    ? freqDropdown.map(f => ({ value: f.value, label: f.label }))
+    : [
+        { value: 'Toutes les 2 heures', label: 'Toutes les 2 heures' },
+        { value: 'Toutes les 4 heures', label: 'Toutes les 4 heures' },
+        { value: 'Toutes les 6 heures', label: 'Toutes les 6 heures' },
+        { value: '3 fois par jour (8h-14h-20h)', label: '3 fois par jour (8h-14h-20h)' },
+        { value: '2 fois par jour (Matin / Soir)', label: '2 fois par jour (Matin / Soir)' },
+        { value: '1 fois par jour (Matin)', label: '1 fois par jour (Matin)' },
+        { value: 'Au besoin / Si douleur', label: 'Au besoin / Si douleur' },
+        { value: 'En continu', label: 'En continu' }
+      ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -607,25 +637,25 @@ const CarePlanModal: React.FC<{
             />
           </FormField>
 
-          <FormField label="Intitulé du Soin" required={true}>
-            <input
-              type="text"
-              required
+          <FormField label="Type / Intitulé du Soin" required={true}>
+            <CustomSelect
+              options={careTypeOptions}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Pansement post-opératoire et drainage..."
-              className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold"
+              onChange={(val) => setTitle(val)}
+              searchable={true}
+              allowCustom={true}
+              placeholder="Sélectionner ou saisir..."
             />
           </FormField>
 
           <FormField label="Fréquence d'Exécution" required={true}>
-            <input
-              type="text"
-              required
+            <CustomSelect
+              options={frequencyOptions}
               value={frequency}
-              onChange={(e) => setFrequency(e.target.value)}
-              placeholder="Ex: 3 fois / jour, Matin et Soir..."
-              className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs"
+              onChange={(val) => setFrequency(val)}
+              searchable={true}
+              allowCustom={true}
+              placeholder="Sélectionner la fréquence..."
             />
           </FormField>
 

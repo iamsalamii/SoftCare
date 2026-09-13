@@ -201,7 +201,7 @@ const defaultDropdownOptions: DropdownOption[] = [
   { id: '7', category: 'payment_method', value: 'card', label: 'Carte bancaire', order: 2, active: true, createdAt: new Date().toISOString() },
   { id: '8', category: 'payment_method', value: 'transfer', label: 'Virement', order: 3, active: true, createdAt: new Date().toISOString() },
   { id: '9', category: 'payment_method', value: 'check', label: 'Chèque', order: 4, active: true, createdAt: new Date().toISOString() },
-  { id: '10', category: 'payment_method', value: 'insurance', label: 'Assurance', order: 5, active: true, createdAt: new Date().toISOString() },
+  { id: '10', category: 'payment_method', value: 'insurance', label: 'Assurance / Tiers Payant', order: 5, active: true, createdAt: new Date().toISOString() },
   { id: '11', category: 'user_role', value: 'admin', label: 'Administrateur', order: 1, active: true, createdAt: new Date().toISOString() },
   { id: '12', category: 'user_role', value: 'doctor', label: 'Médecin', order: 2, active: true, createdAt: new Date().toISOString() },
   { id: '13', category: 'user_role', value: 'nurse', label: 'Infirmier(e)', order: 3, active: true, createdAt: new Date().toISOString() },
@@ -209,6 +209,55 @@ const defaultDropdownOptions: DropdownOption[] = [
   { id: '15', category: 'user_role', value: 'receptionist', label: "Agent d'accueil", order: 5, active: true, createdAt: new Date().toISOString() },
   { id: '16', category: 'user_role', value: 'lab_tech', label: 'Technicien labo', order: 6, active: true, createdAt: new Date().toISOString() },
   { id: '17', category: 'user_role', value: 'surgeon', label: 'Chirurgien', order: 7, active: true, createdAt: new Date().toISOString() },
+  // Cities
+  { id: '18', category: 'city', value: 'Paris', label: 'Paris', order: 1, active: true, createdAt: new Date().toISOString() },
+  { id: '19', category: 'city', value: 'Lyon', label: 'Lyon', order: 2, active: true, createdAt: new Date().toISOString() },
+  { id: '20', category: 'city', value: 'Marseille', label: 'Marseille', order: 3, active: true, createdAt: new Date().toISOString() },
+  { id: '21', category: 'city', value: 'Bordeaux', label: 'Bordeaux', order: 4, active: true, createdAt: new Date().toISOString() },
+  { id: '22', category: 'city', value: 'Toulouse', label: 'Toulouse', order: 5, active: true, createdAt: new Date().toISOString() },
+  { id: '23', category: 'city', value: 'Lille', label: 'Lille', order: 6, active: true, createdAt: new Date().toISOString() },
+  { id: '24', category: 'city', value: 'Nantes', label: 'Nantes', order: 7, active: true, createdAt: new Date().toISOString() },
+  { id: '25', category: 'city', value: 'Strasbourg', label: 'Strasbourg', order: 8, active: true, createdAt: new Date().toISOString() },
+  // Relationships
+  { id: '26', category: 'relationship', value: 'Conjoint(e)', label: 'Conjoint(e) / Époux(se)', order: 1, active: true, createdAt: new Date().toISOString() },
+  { id: '27', category: 'relationship', value: 'Parent', label: 'Père / Mère', order: 2, active: true, createdAt: new Date().toISOString() },
+  { id: '28', category: 'relationship', value: 'Enfant', label: 'Fils / Fille', order: 3, active: true, createdAt: new Date().toISOString() },
+  { id: '29', category: 'relationship', value: 'Frère / Sœur', label: 'Frère / Sœur', order: 4, active: true, createdAt: new Date().toISOString() },
+  { id: '30', category: 'relationship', value: 'Ami(e)', label: 'Ami(e) / Proche', order: 5, active: true, createdAt: new Date().toISOString() },
+  { id: '31', category: 'relationship', value: 'Tuteur légal', label: 'Tuteur / Mandataire légal', order: 6, active: true, createdAt: new Date().toISOString() },
+  // Insurances
+  { id: '32', category: 'insurance_provider', value: 'CPAM / Sécurité Sociale', label: 'CPAM / Sécurité Sociale (Régime Général)', order: 1, active: true, createdAt: new Date().toISOString() },
+  { id: '33', category: 'insurance_provider', value: 'MGEN', label: 'MGEN (Mutuelle Générale)', order: 2, active: true, createdAt: new Date().toISOString() },
+  { id: '34', category: 'insurance_provider', value: 'Harmonie Mutuelle', label: 'Harmonie Mutuelle', order: 3, active: true, createdAt: new Date().toISOString() },
+  { id: '35', category: 'insurance_provider', value: 'Alan Santé', label: 'Alan Santé Pro', order: 4, active: true, createdAt: new Date().toISOString() },
+  { id: '36', category: 'insurance_provider', value: 'AXA Santé & Prévoyance', label: 'AXA Santé & Prévoyance', order: 5, active: true, createdAt: new Date().toISOString() },
+  { id: '37', category: 'insurance_provider', value: 'Malakoff Humanis', label: 'Malakoff Humanis', order: 6, active: true, createdAt: new Date().toISOString() },
+  { id: '38', category: 'insurance_provider', value: 'SwissLife Santé', label: 'SwissLife Santé', order: 7, active: true, createdAt: new Date().toISOString() },
+  { id: '39', category: 'insurance_provider', value: 'Sans Mutuelle / Aide Médicale État (AME)', label: 'Sans Mutuelle / Aide Médicale État (AME)', order: 8, active: true, createdAt: new Date().toISOString() },
+  // Nursing Care Types
+  { id: '40', category: 'nursing_care_type', value: 'Pansement & Soins de plaie', label: 'Pansement & Soins de plaie', order: 1, active: true, createdAt: new Date().toISOString() },
+  { id: '41', category: 'nursing_care_type', value: 'Perfusion & Voie veineuse', label: 'Perfusion & Voie veineuse', order: 2, active: true, createdAt: new Date().toISOString() },
+  { id: '42', category: 'nursing_care_type', value: 'Injection IM / SC', label: 'Injection IM / SC', order: 3, active: true, createdAt: new Date().toISOString() },
+  { id: '43', category: 'nursing_care_type', value: 'Prise de sang & Bilan', label: 'Prise de sang & Bilan biologique', order: 4, active: true, createdAt: new Date().toISOString() },
+  { id: '44', category: 'nursing_care_type', value: 'Sondage urinaire', label: 'Sondage urinaire & Surveillance diurèse', order: 5, active: true, createdAt: new Date().toISOString() },
+  { id: '45', category: 'nursing_care_type', value: 'Administration PO', label: 'Administration médicamenteuse PO', order: 6, active: true, createdAt: new Date().toISOString() },
+  { id: '46', category: 'nursing_care_type', value: 'Surveillance post-op', label: 'Surveillance post-opératoire rapprochée', order: 7, active: true, createdAt: new Date().toISOString() },
+  { id: '47', category: 'nursing_care_type', value: 'Soins d\'hygiène / Nursing', label: 'Soins d\'hygiène / Nursing', order: 8, active: true, createdAt: new Date().toISOString() },
+  // Nursing Frequencies
+  { id: '48', category: 'nursing_frequency', value: 'Toutes les 2 heures', label: 'Toutes les 2 heures', order: 1, active: true, createdAt: new Date().toISOString() },
+  { id: '49', category: 'nursing_frequency', value: 'Toutes les 4 heures', label: 'Toutes les 4 heures', order: 2, active: true, createdAt: new Date().toISOString() },
+  { id: '50', category: 'nursing_frequency', value: 'Toutes les 6 heures', label: 'Toutes les 6 heures', order: 3, active: true, createdAt: new Date().toISOString() },
+  { id: '51', category: 'nursing_frequency', value: '3 fois par jour (8h-14h-20h)', label: '3 fois par jour (8h-14h-20h)', order: 4, active: true, createdAt: new Date().toISOString() },
+  { id: '52', category: 'nursing_frequency', value: '2 fois par jour (Matin / Soir)', label: '2 fois par jour (Matin / Soir)', order: 5, active: true, createdAt: new Date().toISOString() },
+  { id: '53', category: 'nursing_frequency', value: '1 fois par jour (Matin)', label: '1 fois par jour (Matin)', order: 6, active: true, createdAt: new Date().toISOString() },
+  { id: '54', category: 'nursing_frequency', value: 'Au besoin / Si douleur', label: 'Au besoin / Si douleur (Si besoin)', order: 7, active: true, createdAt: new Date().toISOString() },
+  { id: '55', category: 'nursing_frequency', value: 'En continu', label: 'En continu', order: 8, active: true, createdAt: new Date().toISOString() },
+  // Bed types
+  { id: '56', category: 'bed_type', value: 'standard', label: 'Standard / Médecine Générale', order: 1, active: true, createdAt: new Date().toISOString() },
+  { id: '57', category: 'bed_type', value: 'icu', label: 'Soins Intensifs / Réanimation (ICU)', order: 2, active: true, createdAt: new Date().toISOString() },
+  { id: '58', category: 'bed_type', value: 'pediatric', label: 'Pédiatrie', order: 3, active: true, createdAt: new Date().toISOString() },
+  { id: '59', category: 'bed_type', value: 'maternity', label: 'Maternité / Obstétrique', order: 4, active: true, createdAt: new Date().toISOString() },
+  { id: '60', category: 'bed_type', value: 'emergency', label: 'Urgences / Déchoquage / UHCD', order: 5, active: true, createdAt: new Date().toISOString() },
 ];
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -533,10 +582,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setLabOrders([...mockLabOrders]);
       setLabTests([...mockLabTests]);
       setEmergencyVisits([...mockEmergencyVisits]);
-      setSurgeries([...mockSurgeries]);
-      setOperatingRooms([...mockOperatingRooms]);
-      setWorkSchedules([...mockWorkSchedules]);
-      setNotifications([...mockNotifications]);
+      const savedNotifications = localStorage.getItem('softcare_notifications');
+      if (savedNotifications) {
+        setNotificationsState(JSON.parse(savedNotifications));
+      } else {
+        setNotificationsState([...mockNotifications]);
+      }
       setGenomicProfiles([...mockGenomicProfiles]);
       setPgxInteractions([...mockPGxInteractions]);
       setBioSamples([...mockBioSamples]);
@@ -700,6 +751,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteUser = async (id: string) => {
+    if (id === '1' || id === 'admin-1' || id === 'USR-001') {
+      showError('Action interdite', 'Le compte Super-Administrateur système ne peut pas être supprimé.');
+      return;
+    }
     setUsers(prev => prev.filter(u => u.id !== id));
     success('Utilisateur supprimé');
   };

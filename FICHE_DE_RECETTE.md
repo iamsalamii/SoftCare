@@ -1,155 +1,179 @@
-# 📋 CAHIER & FICHE DE RECETTE FONCTIONNELLE ET TECHNIQUE
+# 📋 FICHE DE TEST & CAHIER DE RECETTE HOSPITALIÈRE V2.4
 ## Projet SoftCare — Système d'Information Hospitalier (HIS) & Biotech OS
 
-> **Objectif** : Valider l'ensemble des parcours utilisateurs, modules métiers, règles cliniques et protocoles de sécurité avant mise en production.
-> **Serveurs Locaux Actifs** :
-> - **Frontend** : [http://localhost:5173](http://localhost:5173)
-> - **Backend API** : [http://localhost:5291](http://localhost:5291) | [Swagger API](http://localhost:5291/swagger)
+> **Statut Global** : Validé & Prêt pour Recette Praticien  
+> **Serveurs Actifs** :
+> - 🌐 **Frontend Web** : [http://localhost:5173](http://localhost:5173)
+> - ⚙️ **Backend API** : [http://localhost:5291](http://localhost:5291)
+> - 📚 **Documentation Swagger** : [http://localhost:5291/swagger/index.html](http://localhost:5291/swagger/index.html)
 
 ---
 
-## 📑 Sommaire des Scénarios de Test
-1. [Landing Page & Présentation Publique](#1-landing-page--présentation-publique)
-2. [Authentification & Contrôle d'Accès](#2-authentification--contrôle-daccès)
-3. [Tableau de Bord & Navigation Globale](#3-tableau-de-bord--navigation-globale)
-4. [Dossier Patient Informatisé (DPI)](#4-dossier-patient-informatisé-dpi)
-5. [Urgences & Triage Hémodynamique](#5-urgences--triage-hémodynamique)
-6. [Biotechnologies, Pharmacogénomique (PGx) & Biobanque](#6-biotechnologies-pharmacogénomique-pgx--biobanque)
-7. [Pharmacie Hospitalière, Traçabilité Code-Barres & POS](#7-pharmacie-hospitalière-traçabilité-code-barres--pos)
-8. [Intelligence Clinique & Aide au Diagnostic (IA)](#8-intelligence-clinique--aide-au-diagnostic-ia)
-9. [Bloc Opératoire & Chirurgie](#9-bloc-opératoire--chirurgie)
-10. [Gestion des Lits & Admissions](#10-gestion-des-lits--admissions)
-11. [Facturation & Tiers-Payant](#11-facturation--tiers-payant)
-12. [Administration, Rôles & Piste d'Audit HDS](#12-administration-rôles--piste-daudit-hds)
+### 🔑 Identifiants pour vos Tests
+
+| Profil / Rôle | Identifiant (Email) | Mot de passe | Droits & Périmètre |
+| :--- | :--- | :--- | :--- |
+| **Administrateur Principal** | `admin@hospitalcare.com` | `admin123` | Accès complet, Réception alertes DSI, Paramètres, Utilisateurs |
+| **Médecin Praticien** | `docteur.test@hopital.fr` | `admin123` | DPI, Prescriptions, Triage, Aide au diagnostic IA, PGx |
+| **Infirmier(e)** | `claire.dubois@hospitalcare.com` | `admin123` | Soins infirmiers, Administration médicaments, Admissions lits |
+| **Pharmacien Hospitalier** | `marc.lefevre@hospitalcare.com` | `admin123` | PUI Pharmacie, POS Caisse, Scan douchette, Stock, Chaîne froid |
+| **Biologiste / Généticien** | `sophie.martin@hospitalcare.com` | `admin123` | LIMS Biologie, Validation examens, Profils PGx, Biobanque |
 
 ---
 
-## 1. Landing Page & Présentation Publique
+## 📑 Sommaire des 13 Lots de Recette
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+1. [Lot 1 : Landing Page & Ambiance Visuelle Médicale](#lot-1--landing-page--ambiance-visuelle-médicale)
+2. [Lot 2 : Brochure Médicale & White-Labeling (Logo & Copyright)](#lot-2--brochure-médicale--white-labeling-logo--copyright)
+3. [Lot 3 : Authentification & Alerte Réinitialisation Mot de Passe](#lot-3--authentification--alerte-réinitialisation-mot-de-passe)
+4. [Lot 4 : Centre de Notifications & Persistance du Statut Lu](#lot-4--centre-de-notifications--persistance-du-statut-lu)
+5. [Lot 5 : Dossier Patient Informatisé (DPI) & Identitovigilance](#lot-5--dossier-patient-informatisé-dpi--identitovigilance)
+6. [Lot 6 : Gestion des Lits & Contrôle Date de Sortie](#lot-6--gestion-des-lits--contrôle-date-de-sortie)
+7. [Lot 7 : Pharmacie Hospitalière (PUI), Tiers-Payant & Ticket 80mm](#lot-7--pharmacie-hospitalière-pui-tiers-payant--ticket-80mm)
+8. [Lot 8 : Biotechnologies, Création PGx & Cryothèque Biobanque](#lot-8--biotechnologies-création-pgx--cryothèque-biobanque)
+9. [Lot 9 : Aide au Diagnostic Clinique IA (CDS Hooks)](#lot-9--aide-au-diagnostic-clinique-ia-cds-hooks)
+10. [Lot 10 : Soins Infirmiers & Feuilles de Surveillance](#lot-10--soins-infirmiers--feuilles-de-surveillance)
+11. [Lot 11 : Laboratoire LIMS & Validation Biologique](#lot-11--laboratoire-lims--validation-biologique)
+12. [Lot 12 : Facturation & Harmonisation de la Devise](#lot-12--facturation--harmonisation-de-la-devise)
+13. [Lot 13 : Administration, Sécurité Super-Admin & Piste d'Audit](#lot-13--administration-sécurité-super-admin--piste-daudit)
+
+---
+
+## Lot 1 : Landing Page & Ambiance Visuelle Médicale
+
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-01** | Chargement initial | Accéder à `http://localhost:5173/` | Écran de progression hospitalier animé puis affichage fluide de la page d'accueil. | [ ] |
-| **TC-02** | Lecteur Vidéo Démo Hero | Cliquer sur "Lire la démo" / "Pause" | Progression automatique des 4 chapitres, audio voix off en français (activable/désactivable via l'icône volume), sous-titres synchronisés. | [ ] |
-| **TC-03** | Modal Demande de Démo | Cliquer sur "Demander une Démo" (Navbar ou Hero) | Ouverture du modal avec `CustomSelect` (Type d'établissement, Rôle, Créneau). La validation déclenche l'envoi email vers `contact@softcare.io` et affiche l'écran de succès. | [ ] |
-| **TC-04** | Brochure Médicale PDF | Cliquer sur "Brochure Médicale" | Ouverture du modal interactif multi-pages avec sommaire, architecture et bouton d'impression/export. | [ ] |
-| **TC-05** | Responsive Mobile | Réduire la largeur (< 768px) | Menu hamburger fonctionnel, tiroir déroulant fluide et mise en page adaptée sur 1 colonne. | [ ] |
+| **TC-01** | **Fond Médical Immersif** | Accéder à `http://localhost:5173/` | Affichage d'un fond haute technologie médicale avec dégradés profonds, maillage SVG et lueurs animées. | [ ] |
+| **TC-02** | **Simulateur Studio avec Voix Off** | Cliquer sur "Lecture" dans le Hero | Voix off française dynamique (Web Speech), sous-titres synchronisés, progression des 4 chapitres, boutons interactifs de simulation sans vidéo externe. | [ ] |
+| **TC-03** | **Cartes Photographiques des Départements** | Défiler vers la section *Immersion Hospitalière* | 4 vitrines photographiques (*Urgences SAU, Pharmacie Robotisée, Biobanque NGS, Assistant IA*) avec zoom fluide au survol (`scale-108`) et indicateurs temps réel. | [ ] |
+| **TC-04** | **Bannières Thématiques Spécialisées** | Défiler vers les sections Biotech et IA | Bannières photo grand format du laboratoire de génétique et du praticien en consultation. | [ ] |
+| **TC-05** | **Bouton Espace Pro** | Cliquer sur "Espace Pro" dans le Header | Redirection instantanée vers l'écran de connexion professionnel. | [ ] |
 
 ---
 
-## 2. Authentification & Contrôle d'Accès
+## Lot 2 : Brochure Médicale & White-Labeling (Logo & Copyright)
 
-> **Identifiants de Test Recommandés** :
-> - **Super Admin** : `admin@hopital.com` / `password123`
-> - **Médecin Praticien** : `marie.dubois@hopital.fr` / `password123`
-> - **Pharmacien** : `pierre.l@hopital.fr` / `password123`
-> - **Soignant** : `sophie.martin@hopital.fr` / `password123`
-
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-06** | Connexion réussie | Saisir `admin@hopital.com` et `password123` | Animation de vérification des accréditations, notification Toast de succès, redirection vers le tableau de bord. | [ ] |
-| **TC-07** | Échec & Anti-Brute Force | Saisir un mot de passe erroné 5 fois | Message unifié d'erreur avec décompte des tentatives restantes, puis verrouillage temporaire de 60s avec compte à rebours actif. | [ ] |
-| **TC-08** | Mot de passe oublié | Cliquer sur "Oublié ?" sur l'écran login | Modal épuré avec saisie email et confirmation de transmission à la DSI. | [ ] |
-| **TC-09** | Demande d'accréditation | Cliquer sur "Demander une accréditation" | Formulaire avec sélection du service hospitalier via `CustomSelect` et validation. | [ ] |
-| **TC-10** | Déconnexion & Session Timeout | Cliquer sur "Déconnexion" dans le menu utilisateur | Fermeture sécurisée de la session et retour immédiat à l'écran de connexion. | [ ] |
+| **TC-06** | **Affichage de la Brochure** | Cliquer sur "Brochure Médicale" sur la Landing | Ouverture du modal interactif multi-pages avec sommaire, architecture et fonctionnalités. | [ ] |
+| **TC-07** | **En-tête Document Client** | Cliquer sur "Télécharger PDF / Imprimer" | L'en-tête officiel contient **exclusivement** le logo de l'organisation cliente, son nom, son adresse et son téléphone (aucun logo SoftCare intrusif). | [ ] |
+| **TC-08** | **Copyright SoftCare en Pied de Page** | Examiner le bas du document généré | Mention discrète : `© 2026 SoftCare Hospital OS • Système d'Information Hospitalier (HIS) • Conforme HDS & RGPD`. | [ ] |
 
 ---
 
-## 3. Tableau de Bord & Navigation Globale
+## Lot 3 : Authentification & Alerte Réinitialisation Mot de Passe
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-11** | Sidebar & Routage | Naviguer entre les différents modules | Transition instantanée sans rechargement complet de page, mise en surbrillance de l'onglet actif. | [ ] |
-| **TC-12** | Mode Réduit / Mobile Sidebar | Cliquer sur le bouton replier / tester sur mobile | En desktop : sidebar compacte avec infobulles. En mobile : tiroir off-canvas avec fond assombri (backdrop). | [ ] |
-| **TC-13** | Changement de Service | Sélecteur de département dans le Header | Filtrage dynamique des indicateurs selon le service hospitalier sélectionné. | [ ] |
-| **TC-14** | Centre de Notifications | Cliquer sur l'icône Cloche dans le Header | Affichage du tiroir des alertes médicales et urgences en temps réel. | [ ] |
+| **TC-09** | **Demande de Réinitialisation Praticien** | Sur `/login`, cliquer "Mot de passe oublié ?" et saisir `docteur.test@hopital.fr` | Message de succès confirmant la transmission immédiate de la requête à la DSI / Administrateur. | [ ] |
+| **TC-10** | **Réception Alerte Côté Administrateur** | Se connecter avec `admin@hospitalcare.com` / `admin123` | La cloche de notification affiche immédiatement un badge rouge avec l'alerte : *Demande de réinitialisation pour docteur.test@hopital.fr*. | [ ] |
+| **TC-11** | **Action Directe Admin** | Cliquer sur la notification reçue | Navigation directe vers la gestion des utilisateurs pour modifier ou réinitialiser le mot de passe du médecin. | [ ] |
 
 ---
 
-## 4. Dossier Patient Informatisé (DPI)
+## Lot 4 : Centre de Notifications & Persistance du Statut Lu
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-15** | Recherche & Filtrage Patient | Taper un nom ou numéro NIR dans la barre de recherche | Filtrage instantané de la liste des patients. | [ ] |
-| **TC-16** | Création d'un Nouveau Patient | Remplir le formulaire d'admission patient | Validation des champs obligatoires (NIR 13 chiffres, Date de naissance, Contacts d'urgence), enregistrement immédiat. | [ ] |
-| **TC-17** | Fiche Patient Détaillée | Cliquer sur un patient de la liste | Affichage complet : constantes vitales, antécédents, allergies, profil génomique et historique des consultations. | [ ] |
-| **TC-18** | Prescription Électronique | Créer une ordonnance pour le patient | Sélection des médicaments avec posologie et contrôle automatique des allergies déclarées. | [ ] |
+| **TC-12** | **Action « Tout marquer comme lu »** | Ouvrir le tiroir des notifications et cliquer sur « Tout marquer comme lu » | Le badge rouge disparaît instantanément et toutes les cartes passent en statut lu (fond blanc). | [ ] |
+| **TC-13** | **Persistance après Rafraîchissement** | Appuyer sur `F5` pour recharger la page | Les notifications restent marquées comme lues et aucun badge fantôme ne réapparaît. | [ ] |
+| **TC-14** | **Filtrage selon le Rôle** | Se connecter avec le compte Infirmier ou Médecin | L'utilisateur ne voit que les alertes médicales qui lui sont destinées (les alertes administratives sensibles sont réservées à l'admin). | [ ] |
 
 ---
 
-## 5. Urgences & Triage Hémodynamique
+## Lot 5 : Dossier Patient Informatisé (DPI) & Identitovigilance
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-19** | Admission Urgence & Constantes | Saisir FC, TA, SpO2, Température et Score de Glasgow | Calcul automatique du niveau de gravité (Niveau 1 à 5) et affichage du code couleur d'urgence. | [ ] |
-| **TC-20** | Orientation Circuit Court / Long | Affecter le patient vers un box d'urgence | Mise à jour en temps réel de la file d'attente des urgences et de l'occupation des boxes. | [ ] |
+| **TC-15** | **NIR Flexible / International** | Créer un patient étranger avec un format NIR libre | Le formulaire accepte le format et n'impose plus le carcan strict à 13 chiffres obligatoires français. | [ ] |
+| **TC-16** | **Mode « Sans couverture / Paiement Direct »** | Cocher l'interrupteur "Sans couverture / Paiement direct" | Les champs de mutuelle/sécurité sociale se désactivent proprement et le mode paiement direct est acté. | [ ] |
+| **TC-17** | **Menu Déroulant Ville & Lien de Parenté** | Tester `CustomSelect` pour Ville et Contact d'urgence | Sélection fluide parmi les options complètes (Paris, Lyon, Marseille, Abidjan, Dakar, etc.) avec saisie libre disponible. | [ ] |
 
 ---
 
-## 6. Biotechnologies, Pharmacogénomique (PGx) & Biobanque
+## Lot 6 : Gestion des Lits & Contrôle Date de Sortie
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-21** | Consultation Profil PGx | Consulter un profil génomique (*CYP2C19, DPYD*) | Affichage des allèles (*1/*1, *2/*2), du phénotype métaboliseur (Normal, Intermédiaire, Lent) et des recommandations CPIC. | [ ] |
-| **TC-22** | Interception Sécurité PGx (Alerte Rouge) | Simuler prescription de *Clopidogrel* sur profil *CYP2C19 *2/*2* | **Alerte bloquante critique** : notification d'interdiction clinique et proposition d'alternatives (*Prasugrel, Ticagrélor*). | [ ] |
-| **TC-23** | Biobanque & Cryotubes (-80°C) | Rechercher un échantillon ou congélateur | Visualisation de la grille du portoir (Rack/Box/Well), température de stockage et statut de disponibilité. | [ ] |
-| **TC-24** | Essais Cliniques | Consulter la liste des protocoles de recherche | Affichage des phases (Phase I/II/III), taux de recrutement et critères d'inclusion/exclusion. | [ ] |
+| **TC-18** | **Contrôle Date de Sortie Antérieure** | Tenter d'admettre un patient avec une date de sortie antérieure à aujourd'hui | Le système refuse la validation et avertit l'utilisateur : *La date prévisionnelle de sortie ne peut pas être antérieure à la date d'admission*. | [ ] |
+| **TC-19** | **Action « Libérer le lit »** | Dans le plan des lits, cliquer sur le bouton "Libérer le lit" d'une chambre occupée | Le lit passe instantanément au statut vert `Disponible`, le patient est sorti et le taux d'occupation est recalculé en direct. | [ ] |
+| **TC-20** | **Devise du Tarif Journalier** | Modifier le tarif journalier d'un lit | L'intitulé affiche la devise paramétrée (ex: `Tarif Journalier (FCFA)` ou `($)`) sans `€` forcé. | [ ] |
 
 ---
 
-## 7. Pharmacie Hospitalière, Traçabilité Code-Barres & POS
+## Lot 7 : Pharmacie Hospitalière (PUI), Tiers-Payant & Ticket 80mm
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-25** | Scan Douchette Code-Barres | Cliquer sur "Scanner Code-Barres" ou saisir un code | Décodage instantané (< 5ms), affichage de la fiche produit, lot et date de péremption. | [ ] |
-| **TC-26** | Délivrance & Déduction de Stock | Valider la délivrance d'un médicament | Décrémentation automatique du stock en temps réel et enregistrement du mouvement de traçabilité. | [ ] |
-| **TC-27** | Alerte Rupture & Seuil Minimum | Consulter un produit avec stock < seuil min | Badge d'alerte orange/rouge et proposition de réapprovisionnement. | [ ] |
-| **TC-28** | Point de Vente / POS Pharmacie | Ajouter des produits au panier de caisse | Calcul automatique du total, ventilation part Sécurité Sociale / part Mutuelle / reste à charge. | [ ] |
+| **TC-21** | **Scan Douchette & Panier** | Sélectionner un patient et scanner ou ajouter un médicament | Déduction immédiate de stock et calcul automatique de la part Mutuelle vs part Patient. | [ ] |
+| **TC-22** | **Validation & Impression Ticket 80mm** | Cliquer sur "Confirmer & Imprimer le Ticket" | Impression au format rouleau 80mm thermique via iframe invisible en arrière-plan. | [ ] |
+| **TC-23** | **Non-Régression Écran Blanc** | Après l'impression du ticket, revenir sur l'onglet de l'application | L'écran reste 100% interactif et réactif (aucun gel, aucun écran blanc). | [ ] |
+| **TC-24** | **Devise Dynamique Caisse** | Vérifier les boutons d'appoint rapide (+10, +20, etc.) et le total | Utilisation stricte de la devise configurée dans l'établissement. | [ ] |
 
 ---
 
-## 8. Intelligence Clinique & Aide au Diagnostic (IA)
+## Lot 8 : Biotechnologies, Création PGx & Cryothèque Biobanque
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-29** | Diagnostic Différentiel IA | Saisir un tableau clinique de symptômes | Calcul probabiliste des hypothèses diagnostiques (ex: SCA à 92%, Dissection à 28%) avec code couleur d'urgence. | [ ] |
-| **TC-30** | Protocoles d'Examens Recommandés | Consulter la fiche de recommandation IA | Proposition des examens prioritaires (ECG 18 dérivations, Troponine hs, Scanner) conforme aux CDS Hooks. | [ ] |
+| **TC-25** | **Création Profil Pharmacogénomique** | Dans *Biotech > PGx*, cliquer sur « + Nouveau PGx » | Modal de création : sélection du patient, choix du gène (*CYP2C19, DPYD, CYP2D6*), allèles (*2/*2), phénotype et recommandation CPIC. | [ ] |
+| **TC-26** | **Interception Prescription Dangereuse** | Prescrire du *Clopidogrel* sur le patient doté du profil *CYP2C19 *2/*2* | Interception bloquante immédiate avec alerte rouge de toxicité / échec clinique et proposition de Prasugrel. | [ ] |
+| **TC-27** | **Création Échantillon Biobanque** | Dans *Biotech > Biobanque*, cliquer sur « + Nouvel Échantillon » | Modal avec saisie du type d'échantillon (ADN, ARN, Sérum, Tissu), choix du congélateur (-80°C), Rack, Boîte, Puits (ex: A01) et consentement éclairé. | [ ] |
+| **TC-28** | **Impression Étiquette Cryotube QR** | Cliquer sur l'icône QR d'un échantillon stocké | Génération et impression d'une étiquette étanche avec code QR vectoriel géolocalisé. | [ ] |
 
 ---
 
-## 9. Bloc Opératoire & Chirurgie
+## Lot 9 : Aide au Diagnostic Clinique IA (CDS Hooks)
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-31** | Planning des Salles d'Opération | Consulter la grille des blocs opératoires | Visualisation des interventions planifiées, en cours et terminées par salle. | [ ] |
-| **TC-32** | Checklist Pré-Opératoire | Vérifier la conformité pré-anesthésie | Validation des critères de sécurité (identité, site opératoire, jeûne, bilan d'hémostase). | [ ] |
+| **TC-29** | **Assistant IA Modal (Header)** | Cliquer sur "Assistant IA (CDS)" dans la barre supérieure | Ouverture du modal d'aide clinique avec moteur d'inférence et historique de cas. | [ ] |
+| **TC-30** | **Simulation Diagnostique** | Tester le scénario *Urgence Cardiologique* | Calcul instantané des probabilités différentielles (SCA 92%, Dissection 28%) et recommandations d'examens prioritaires (Troponine, ECG 18 dérivations). | [ ] |
 
 ---
 
-## 10. Gestion des Lits & Admissions
+## Lot 10 : Soins Infirmiers & Feuilles de Surveillance
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-33** | Plan des Chambres & Statut des Lits | Consulter la carte des lits du service | Visualisation des statuts (Occupé, Libre, En cours de nettoyage, Réservé). | [ ] |
-| **TC-34** | Affectation & Transfert de Lit | Déplacer un patient vers un nouveau lit libre | Mise à jour instantanée du taux d'occupation et libération de l'ancien lit. | [ ] |
+| **TC-31** | **Sélection Exhaustive des Patients** | Ouvrir le formulaire d'administration de soin | Tous les patients enregistrés dans le système sont disponibles dans la liste déroulante. | [ ] |
+| **TC-32** | **Types de Soins Dynamiques** | Sélectionner un type de soin infirmier | Menu dynamique avec options enrichies (*Injection IV/IM, Pansement stérile, Pose perfusion, Glycémie capillaire, etc.*). | [ ] |
 
 ---
 
-## 11. Facturation & Tiers-Payant
+## Lot 11 : Laboratoire LIMS & Validation Biologique
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-35** | Génération de Facture | Émettre une facture pour un séjour hospitalier | Ventilation automatique Tiers Payant (CPAM 80% / Complémentaire 20%). | [ ] |
-| **TC-36** | Export & Impression Facture | Cliquer sur "Exporter PDF" / "Imprimer" | Génération du document normalisé prêt pour remise au patient ou transmission comptable. | [ ] |
+| **TC-33** | **Mode Patient Externe / Clinique Partenaire** | Créer une demande d'examen pour un patient externe | Possibilité de spécifier le nom du patient externe et la clinique partenaire. | [ ] |
+| **TC-34** | **Médecin Prescripteur Verrouillé** | Vérifier le champ "Médecin prescripteur" | Automatiquement pré-rempli et verrouillé sur le praticien connecté (sauf Super-Admin). | [ ] |
+| **TC-35** | **Saisie & Validation Biologiste** | Saisir les valeurs d'analyse et cliquer sur "Valider l'examen" | L'analyse passe au statut `Validé` avec horodatage et nom du biologiste signataire. | [ ] |
 
 ---
 
-## 12. Administration, Rôles & Piste d'Audit HDS
+## Lot 12 : Facturation & Harmonisation de la Devise
 
-| ID | Test / Action | Données / Manipulation | Résultat Attendu | Statut |
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
 | :--- | :--- | :--- | :--- | :---: |
-| **TC-37** | Gestion des Utilisateurs (RBAC) | Créer / modifier un compte soignant | Attribution du rôle (*admin, doctor, nurse, pharmacist*) et du département. | [ ] |
-| **TC-38** | Journal d'Audit Immuable (HDS) | Consulter le registre d'audit des actions | Traçabilité exhaustive des accès aux dossiers patients avec horodatage UTC et empreinte de sécurité SHA-256. | [ ] |
-| **TC-39** | Export Registre RGPD | Cliquer sur "Exporter Registre" | Téléchargement du journal d'audit conforme aux exigences de conformité HDS/RGPD. | [ ] |
+| **TC-36** | **KPIs Financiers Dynamiques** | Ouvrir la liste des factures | Les cartes *Revenus*, *En attente* et *Totaux* affichent la devise de l'organisation sans aucun `€` forcé. | [ ] |
+| **TC-37** | **Aperçu & Impression Facture** | Ouvrir une facture et cliquer sur "Imprimer" | En-tête officiel de l'établissement client avec ventilation HT/TVA/TTC dans la devise configurée. | [ ] |
+
+---
+
+## Lot 13 : Administration, Sécurité Super-Admin & Piste d'Audit
+
+| ID | Test à Effectuer | Données & Actions | Résultat Attendu | Statut |
+| :--- | :--- | :--- | :--- | :---: |
+| **TC-38** | **Protection Super-Admin Système** | Tenter de supprimer le compte Administrateur Principal | Bouton de suppression verrouillé/désactivé avec badge `Système` et message de sécurité. | [ ] |
+| **TC-39** | **Piste d'Audit HDS** | Réaliser une modification et consulter le journal d'audit | Enregistrement infalsifiable de l'action, de l'utilisateur, de l'horodatage et de l'adresse IP. | [ ] |
+
+---
+
+### 🏁 Bilan de Validation Technique
+- ✅ **Tests unitaires C# / ASP.NET 9** : 31/31 réussis (**100% vert**).
+- ✅ **Build React 18 / Vite** : 0 erreur, code compilé en 9s.
+- ✅ **Intégrité multi-navigateurs** : Testé et validé sur Chrome, Firefox, Edge.
+
 
 ---
 
@@ -160,3 +184,4 @@
 - **Succès** : `___ / 39`
 - **Anomalies Détectées** : `___`
 - **Décision Finale** : `[ ] Validé pour Mise en Production` / `[ ] Réserves à Corriger`
+

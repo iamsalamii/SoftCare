@@ -27,6 +27,8 @@ const PharmacyPOS: React.FC = () => {
   const [completed, setCompleted] = useState<PharmacySale | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const [insuranceCoverageRate, setInsuranceCoverageRate] = useState<number>(0);
+
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
@@ -40,7 +42,14 @@ const PharmacyPOS: React.FC = () => {
       if (patient) {
         setCustomerName(`${patient.firstName} ${patient.lastName}`);
         setCustomerPhone(patient.phone || '');
+        if (patient.insuranceName && !patient.insuranceName.toLowerCase().includes('sans')) {
+          setInsuranceCoverageRate(70); // Default 70% mutuelle / tiers payant
+        } else {
+          setInsuranceCoverageRate(0);
+        }
       }
+    } else {
+      setInsuranceCoverageRate(0);
     }
   };
 
@@ -161,27 +170,30 @@ const PharmacyPOS: React.FC = () => {
     setCustomerName('');
     setCustomerPhone('');
     setSelectedPatientId('');
+    setInsuranceCoverageRate(0);
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
   const tax = Math.round(subtotal * (organizationSettings.taxRate / 100) * 100) / 100;
   const total = subtotal + tax;
-  const change = Math.max(0, amountReceived - total);
+  const insuranceAmount = Math.round((total * insuranceCoverageRate) / 100 * 100) / 100;
+  const patientDue = Math.max(0, Math.round((total - insuranceAmount) * 100) / 100);
+  const change = Math.max(0, amountReceived - patientDue);
 
   const handlePayment = async () => {
     if (cart.length === 0) return;
 
     const cashier = currentUser || { id: '1', name: 'Pharmacien de garde' };
-    const effectiveAmountReceived = paymentMethod === 'cash' ? (amountReceived || total) : total;
-    const effectiveChange = paymentMethod === 'cash' ? Math.max(0, effectiveAmountReceived - total) : 0;
+    const effectiveAmountReceived = paymentMethod === 'cash' ? (amountReceived || patientDue) : patientDue;
+    const effectiveChange = paymentMethod === 'cash' ? Math.max(0, effectiveAmountReceived - patientDue) : 0;
 
     const sale: PharmacySale = {
       id: Date.now().toString(),
       items: cart,
       subtotal,
       tax,
-      discount: 0,
-      total,
+      discount: insuranceAmount,
+      total: patientDue,
       paymentMethod,
       amountReceived: effectiveAmountReceived,
       change: effectiveChange,
@@ -541,29 +553,39 @@ const PharmacyPOS: React.FC = () => {
         <div className="p-5 border-t border-gray-100 bg-gray-50/70 space-y-3">
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between text-gray-500">
-              <span>Sous-total</span>
-              <span>{formatCurrency(subtotal)}</span>
+              <span>Sous-total HT</span>
+              <span>{formatCurrency(subtotal, organizationSettings)}</span>
             </div>
             <div className="flex justify-between text-gray-500">
               <span>TVA ({organizationSettings.taxRate}%)</span>
-              <span>{formatCurrency(tax)}</span>
+              <span>{formatCurrency(tax, organizationSettings)}</span>
             </div>
-            <div className="flex justify-between text-sm font-bold text-gray-900 pt-2 border-t border-gray-200">
+            <div className="flex justify-between text-xs font-semibold text-gray-700 pt-1 border-t border-gray-200">
               <span>Total TTC</span>
-              <span className="text-base text-cyan-600">{formatCurrency(total)}</span>
+              <span>{formatCurrency(total, organizationSettings)}</span>
+            </div>
+            {insuranceCoverageRate > 0 && (
+              <div className="flex justify-between text-xs text-purple-700 font-semibold bg-purple-50 p-2 rounded-xl border border-purple-100">
+                <span>Prise en charge Tiers-Payant ({insuranceCoverageRate}%)</span>
+                <span>-{formatCurrency(insuranceAmount, organizationSettings)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm font-bold text-gray-900 pt-1 border-t border-gray-200">
+              <span>Net à Payer (Patient)</span>
+              <span className="text-base text-cyan-600">{formatCurrency(patientDue, organizationSettings)}</span>
             </div>
           </div>
 
           <button
             onClick={() => {
-              setAmountReceived(total);
+              setAmountReceived(patientDue);
               setShowPayment(true);
             }}
             disabled={cart.length === 0}
             className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white rounded-2xl font-bold text-sm shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <CreditCard className="w-4 h-4" />
-            <span>Encaisser & Délivrer ({formatCurrency(total)})</span>
+            <span>Encaisser & Délivrer ({formatCurrency(patientDue, organizationSettings)})</span>
           </button>
         </div>
       </div>
@@ -579,9 +601,14 @@ const PharmacyPOS: React.FC = () => {
               </button>
             </div>
 
-            <div className="text-center py-4 bg-gray-50 rounded-2xl border border-gray-100 mb-5">
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Montant total à régler</p>
-              <p className="text-3xl font-extrabold text-cyan-600 mt-1">{formatCurrency(total)}</p>
+            <div className="text-center py-4 bg-gray-50 rounded-2xl border border-gray-100 mb-5 space-y-1">
+              <p className="text-xs text-gray-500 uppercase tracking-wider">Montant restant à régler par le patient</p>
+              <p className="text-3xl font-extrabold text-cyan-600">{formatCurrency(patientDue, organizationSettings)}</p>
+              {insuranceCoverageRate > 0 && (
+                <p className="text-[11px] text-purple-700 font-medium">
+                  Dont {formatCurrency(insuranceAmount, organizationSettings)} pris en charge par l'organisme d'assurance.
+                </p>
+              )}
             </div>
 
             {/* Payment Methods */}
@@ -592,7 +619,7 @@ const PharmacyPOS: React.FC = () => {
                   onClick={() => {
                     setPaymentMethod(method);
                     if (method !== 'cash') {
-                      setAmountReceived(total);
+                      setAmountReceived(patientDue);
                     }
                   }}
                   className={`p-3 rounded-2xl border-2 transition-all text-center ${
@@ -620,10 +647,10 @@ const PharmacyPOS: React.FC = () => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => setAmountReceived(total)}
+                    onClick={() => setAmountReceived(patientDue)}
                     className="text-xs font-bold text-cyan-600 hover:text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-lg transition-colors"
                   >
-                    Montant exact ({formatCurrency(total)})
+                    Montant exact ({formatCurrency(patientDue, organizationSettings)})
                   </button>
                 </div>
                 <input
@@ -640,7 +667,7 @@ const PharmacyPOS: React.FC = () => {
                     <button
                       key={val}
                       type="button"
-                      onClick={() => setAmountReceived(val >= total ? val : total + val)}
+                      onClick={() => setAmountReceived(val >= patientDue ? val : patientDue + val)}
                       className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors"
                     >
                       +{val} {organizationSettings?.currencySymbol || '€'}
@@ -648,10 +675,10 @@ const PharmacyPOS: React.FC = () => {
                   ))}
                 </div>
 
-                {amountReceived >= total && (
+                {amountReceived >= patientDue && (
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
                     <span className="text-xs text-emerald-700 font-medium">Monnaie à rendre :</span>
-                    <p className="text-xl font-bold text-emerald-700">{formatCurrency(change)}</p>
+                    <p className="text-xl font-bold text-emerald-700">{formatCurrency(change, organizationSettings)}</p>
                   </div>
                 )}
               </div>
@@ -659,7 +686,7 @@ const PharmacyPOS: React.FC = () => {
 
             <button
               onClick={handlePayment}
-              disabled={paymentMethod === 'cash' && amountReceived < total}
+              disabled={paymentMethod === 'cash' && amountReceived < patientDue}
               className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-2xl font-bold text-sm shadow-lg shadow-teal-500/25 transition-all disabled:opacity-40"
             >
               Confirmer et imprimer le ticket

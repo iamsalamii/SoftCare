@@ -4,7 +4,7 @@ import {
   CheckCircle2, Users, BedDouble, Stethoscope, Clock, Award,
   Sparkles, Lock, Building2, ChevronRight, Phone, Mail, MapPin,
   FileText, Download, BookOpen, HeartPulse, AlertTriangle, Check,
-  Thermometer, Search, RefreshCw, Send, Layers, Play, Menu, X
+  Thermometer, Search, RefreshCw, Send, Layers, Play, Menu, X, Snowflake
 } from 'lucide-react';
 import BrochureModal from './BrochureModal';
 import DemoRequestModal from './DemoRequestModal';
@@ -281,52 +281,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
         )}
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 bg-gradient-to-b from-cyan-50/50 via-white to-white">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-tr from-cyan-200/30 via-teal-200/20 to-emerald-200/20 blur-3xl -z-10 rounded-full pointer-events-none" />
+      {/* Hero Section with Immersive High-Tech Hospital Backdrop */}
+      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-32 bg-slate-950 text-white">
+        {/* Real Medical Hero Photographic Background with Dark Cyan Gradient Blend */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 mix-blend-luminosity scale-105 pointer-events-none"
+          style={{ backgroundImage: "url('/images/hospital_modern_hero.jpg')" }}
+        />
+        {/* Radiant Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-teal-950/80 to-slate-950 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-tr from-cyan-500/20 via-teal-500/15 to-emerald-500/10 blur-3xl -z-0 rounded-full pointer-events-none animate-pulse" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-full border border-cyan-200/80 shadow-sm">
-            <Sparkles className="w-4 h-4 text-cyan-600" />
-            <span className="text-xs font-bold text-teal-900">
+        {/* Ambient Medical Grid Pattern */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:32px_32px]" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-cyan-400/40 shadow-lg shadow-cyan-500/10">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span className="text-xs font-bold text-cyan-200 uppercase tracking-wider">
               Système d'Information Hospitalier (HIS) & Médecine de Précision
             </span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 max-w-4xl mx-auto leading-tight">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-sm">
             L'excellence des soins alliée aux{' '}
-            <span className="bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
               biotechnologies avancées
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Une plateforme médicale complète unifiant dossier patient informatisé, pharmacie robotisée avec traçabilité par code-barres, pharmacogénomique (PGx) et aide au diagnostic clinique par IA.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               onClick={() => setShowDemoModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-2xl font-bold text-base shadow-xl shadow-teal-600/30 transition-all hover:scale-[1.02] flex items-center justify-center gap-3"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-2xl font-bold text-base shadow-xl shadow-teal-500/30 transition-all hover:scale-[1.03] flex items-center justify-center gap-3"
             >
               <Sparkles className="w-5 h-5" />
-              <span>Demander une Démo Live</span>
+              <span>Demander une Démo</span>
               <ArrowRight className="w-5 h-5" />
             </button>
 
             <button
               onClick={onGoToLogin}
-              className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-cyan-50 text-teal-900 border border-teal-200 rounded-2xl font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2.5"
+              className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md rounded-2xl font-bold text-base shadow-sm transition-all hover:scale-[1.02] flex items-center justify-center gap-2.5"
             >
-              <Stethoscope className="w-5 h-5 text-cyan-600" />
+              <Stethoscope className="w-5 h-5 text-cyan-300" />
               <span>Accéder à l'Espace Pro</span>
             </button>
 
             <button
               onClick={() => setShowBrochureModal(true)}
-              className="w-full sm:w-auto px-6 py-4 bg-white/80 hover:bg-white text-gray-700 border border-gray-200 rounded-2xl font-semibold text-sm shadow-2xs transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-4 bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-2xl font-semibold text-sm shadow-2xs transition-all flex items-center justify-center gap-2"
             >
-              <BookOpen className="w-4 h-4 text-teal-600" />
+              <BookOpen className="w-4 h-4 text-teal-400" />
               <span>Brochure PDF</span>
             </button>
           </div>
@@ -341,21 +351,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
           {/* Quick Metrics */}
           <div className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-extrabold text-teal-600">100%</p>
-              <p className="text-xs text-gray-500 mt-1">Traçabilité GS1 / CIP</p>
+            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
+              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">100%</p>
+              <p className="text-xs text-slate-400 mt-1">Traçabilité GS1 / CIP</p>
             </div>
-            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-extrabold text-teal-600">-40%</p>
-              <p className="text-xs text-gray-500 mt-1">Temps de Triage Urgences</p>
+            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-teal-500/50 transition-all">
+              <p className="text-2xl sm:text-3xl font-extrabold text-teal-400">-40%</p>
+              <p className="text-xs text-slate-400 mt-1">Temps de Triage Urgences</p>
             </div>
-            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-extrabold text-teal-600">CPIC & DPWG</p>
-              <p className="text-xs text-gray-500 mt-1">Normes PGx Intégrées</p>
+            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
+              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">CPIC & DPWG</p>
+              <p className="text-xs text-slate-400 mt-1">Normes PGx Intégrées</p>
             </div>
-            <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-extrabold text-teal-600">99.9%</p>
-              <p className="text-xs text-gray-500 mt-1">Disponibilité H24</p>
+            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-emerald-500/50 transition-all">
+              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400">99.9%</p>
+              <p className="text-xs text-slate-400 mt-1">Disponibilité H24</p>
             </div>
           </div>
         </div>
@@ -377,88 +387,332 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
-                <Stethoscope className="w-6 h-6" />
+            {/* Card 1: DPI */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-cyan-200 transition-all duration-300 overflow-hidden flex flex-col group">
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/medical_stethoscope.jpg"
+                  alt="Dossier Patient Informatisé"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md text-cyan-600 flex items-center justify-center font-bold shadow-md">
+                  <Stethoscope className="w-5 h-5" />
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Dossier Patient Informatisé (DPI)</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Consultations, antécédents, constantes hémodynamiques, ordonnances électroniques et historique des séjours centralisés.
-              </p>
+              <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 group-hover:text-cyan-700 transition-colors">
+                    Dossier Patient Informatisé (DPI)
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed mt-1.5">
+                    Consultations, antécédents, constantes hémodynamiques, ordonnances électroniques et historique des séjours centralisés.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Card 2 */}
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
-                <QrCode className="w-6 h-6" />
+            {/* Card 2: Pharmacie */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all duration-300 overflow-hidden flex flex-col group">
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/medical_pharmacy_pills.jpg"
+                  alt="Pharmacie Hospitalière et Médicaments"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md text-teal-600 flex items-center justify-center font-bold shadow-md">
+                  <QrCode className="w-5 h-5" />
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Pharmacie, Traçabilité & POS</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Moteur d'encodage Code 128 / QR Code 2D vectoriel, gestion des lots, chaîne du froid (2-8°C / -80°C) et caisse délivrance.
-              </p>
+              <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
+                    Pharmacie, Traçabilité & POS
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed mt-1.5">
+                    Moteur d'encodage Code 128 / QR Code 2D vectoriel, gestion des lots, chaîne du froid (2-8°C / -80°C) et caisse délivrance.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Card 3 (Clickable anchor to Biotech) */}
+            {/* Card 3: Biotech */}
             <a
               href="#biotech"
               onClick={(e) => scrollToSection(e, 'biotech')}
-              className="bg-white p-8 rounded-3xl border border-cyan-100 shadow-sm hover:shadow-lg hover:border-cyan-300 transition-all space-y-4 block group cursor-pointer"
+              className="bg-white rounded-3xl border border-cyan-100 shadow-sm hover:shadow-xl hover:border-cyan-300 transition-all duration-300 overflow-hidden flex flex-col group cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
-                <Dna className="w-6 h-6" />
-              </div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">Biotechnologies & PGx</h3>
-                <span className="text-xs text-cyan-600 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                  Explorer <ChevronRight className="w-3.5 h-3.5" />
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/precision_medicine_banner.jpg"
+                  alt="Biotechnologies et Médecine de Précision"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md text-emerald-600 flex items-center justify-center font-bold shadow-md">
+                  <Dna className="w-5 h-5" />
+                </div>
+                <span className="absolute top-3 right-3 text-[10px] bg-cyan-600 text-white font-bold px-2.5 py-1 rounded-full shadow-md">
+                  Médecine Personnalisée
                 </span>
               </div>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Analyse des polymorphismes génétiques (*CYP2C19, CYP2D6, DPYD*), prévention des toxicités et LIMS biobanque cryogénique.
-              </p>
+              <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-cyan-700 transition-colors">
+                      Biotechnologies & PGx
+                    </h3>
+                    <span className="text-xs text-cyan-600 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Explorer <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed mt-1.5">
+                    Analyse des polymorphismes génétiques (*CYP2C19, CYP2D6, DPYD*), prévention des toxicités et LIMS biobanque cryogénique.
+                  </p>
+                </div>
+              </div>
             </a>
 
-            {/* Card 4 (Clickable anchor to AI) */}
+            {/* Card 4: AI Clinical */}
             <a
               href="#ai"
               onClick={(e) => scrollToSection(e, 'ai')}
-              className="bg-white p-8 rounded-3xl border border-teal-100 shadow-sm hover:shadow-lg hover:border-teal-300 transition-all space-y-4 block group cursor-pointer"
+              className="bg-white rounded-3xl border border-teal-100 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold group-hover:scale-110 transition-transform">
-                <Brain className="w-6 h-6" />
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/medical_doctor_care.jpg"
+                  alt="Aide au Diagnostic Clinique IA"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md text-teal-600 flex items-center justify-center font-bold shadow-md">
+                  <Brain className="w-5 h-5" />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">Aide au Diagnostic Clinique IA</h3>
-                <span className="text-xs text-teal-600 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                  Tester <ChevronRight className="w-3.5 h-3.5" />
-                </span>
+              <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
+                      Aide au Diagnostic Clinique IA
+                    </h3>
+                    <span className="text-xs text-teal-600 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Tester <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed mt-1.5">
+                    Calcul d'hypothèses diagnostiques différentielles probabilistes, protocoles CDS Hooks et recommandations d'examens.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Calcul d'hypothèses diagnostiques différentielles probabilistes, protocoles CDS Hooks et recommandations d'examens.
-              </p>
             </a>
 
-            {/* Card 5 */}
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
-                <BedDouble className="w-6 h-6" />
+            {/* Card 5: Beds & Admissions */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all duration-300 overflow-hidden flex flex-col group">
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/hospital_emergency_icu.jpg"
+                  alt="Admissions et Gestion des Lits"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md text-teal-600 flex items-center justify-center font-bold shadow-md">
+                  <BedDouble className="w-5 h-5" />
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Admissions & Gestion des Lits</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Planification des séjours, gestion des chambres, transferts inter-services et suivi du taux d'occupation hospitalier en direct.
-              </p>
+              <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
+                    Admissions & Gestion des Lits
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed mt-1.5">
+                    Planification des séjours, gestion des chambres, transferts inter-services et suivi du taux d'occupation hospitalier en direct.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Card 6 */}
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                <Shield className="w-6 h-6" />
+            {/* Card 6: Lab & Billing */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all duration-300 overflow-hidden flex flex-col group">
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/medical_lab_tubes.jpg"
+                  alt="Laboratoire et Facturation Hospitalière"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md text-emerald-600 flex items-center justify-center font-bold shadow-md">
+                  <Shield className="w-5 h-5" />
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Facturation & Piste d'Audit</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Émission de factures hospitalières normalisées, gestion des tiers payants et conformité RGPD / HDS avec chiffrement fort.
-              </p>
+              <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
+                    Laboratoire, Facturation & Audit
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed mt-1.5">
+                    Émission de factures hospitalières normalisées, gestion des tiers payants et conformité RGPD / HDS avec chiffrement fort.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION CLINICAL ATMOSPHERE & VISUAL SHOWCASE WITH REAL MEDICAL IMAGERY */}
+      <section className="py-24 bg-gradient-to-b from-slate-950 via-teal-950 to-slate-950 text-white relative overflow-hidden">
+        {/* Subtle animated medical grid and ECG background line */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 -right-32 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-14">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <span className="text-xs font-bold text-cyan-300 uppercase tracking-widest bg-cyan-900/60 px-4 py-1.5 rounded-full border border-cyan-500/30 inline-flex items-center gap-2 shadow-inner">
+              <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span>Immersion Hospitalière Connectée</span>
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+              Une infrastructure taillée pour les <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">environnements critiques</span>
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              Du chevet du patient aux séquenceurs ADN du laboratoire, SoftCare synchronise l'ensemble des flux vitaux en temps réel avec une traçabilité sans faille.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Visual Card 1: Urgences & Réanimation */}
+            <div className="group relative bg-slate-900/90 border border-slate-800 hover:border-cyan-400/80 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20 flex flex-col justify-between">
+              {/* Image Preview Header */}
+              <div className="relative h-48 w-full overflow-hidden bg-slate-800">
+                <img
+                  src="/images/hospital_emergency_icu.jpg"
+                  alt="Urgences et Soins Intensifs"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent" />
+                <span className="absolute top-3 left-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-950/80 text-cyan-300 border border-cyan-400/30 backdrop-blur-md">
+                  Urgences / SAU
+                </span>
+                <div className="absolute bottom-3 right-3 w-8 h-8 rounded-xl bg-cyan-500/80 backdrop-blur-md text-white flex items-center justify-center shadow-md">
+                  <HeartPulse className="w-4 h-4 animate-pulse" />
+                </div>
+              </div>
+
+              <div className="p-6 space-y-2">
+                <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">Triage & Télémétrie H24</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Acquisition des constantes physiologiques, calcul automatisé des scores de gravité clinique et alertes précoces en cas de désaturation.
+                </p>
+              </div>
+
+              <div className="p-6 pt-0 mt-auto">
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-cyan-300 font-semibold">
+                  <span>Latence triage</span>
+                  <span className="font-mono bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-500/30">&lt; 15 sec</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Card 2: Pharmacie Robotisée */}
+            <div className="group relative bg-slate-900/90 border border-slate-800 hover:border-teal-400/80 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-teal-500/20 flex flex-col justify-between">
+              {/* Image Preview Header */}
+              <div className="relative h-48 w-full overflow-hidden bg-slate-800">
+                <img
+                  src="/images/hospital_smart_pharmacy.jpg"
+                  alt="Pharmacie Robotisée et Traçabilité"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent" />
+                <span className="absolute top-3 left-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-950/80 text-teal-300 border border-teal-400/30 backdrop-blur-md">
+                  PUI Hospitalière
+                </span>
+                <div className="absolute bottom-3 right-3 w-8 h-8 rounded-xl bg-teal-500/80 backdrop-blur-md text-white flex items-center justify-center shadow-md">
+                  <QrCode className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="p-6 space-y-2">
+                <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition-colors">Dispensation & Robotique</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Scan douchette Code 128 / Datamatrix 2D instantané, gestion rigoureuse de la chaîne du froid (2-8°C) et inventaires perpétuels.
+                </p>
+              </div>
+
+              <div className="p-6 pt-0 mt-auto">
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-teal-300 font-semibold">
+                  <span>Scan douchette</span>
+                  <span className="font-mono bg-teal-950/80 px-2 py-0.5 rounded-md border border-teal-500/30">&lt; 5 ms</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Card 3: Biobanque & NGS */}
+            <div className="group relative bg-slate-900/90 border border-slate-800 hover:border-emerald-400/80 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-500/20 flex flex-col justify-between">
+              {/* Image Preview Header */}
+              <div className="relative h-48 w-full overflow-hidden bg-slate-800">
+                <img
+                  src="/images/hospital_genetics_biotech.jpg"
+                  alt="Biobanque et Génomique"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent" />
+                <span className="absolute top-3 left-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-950/80 text-emerald-300 border border-emerald-400/30 backdrop-blur-md">
+                  Biobanque -80°C
+                </span>
+                <div className="absolute bottom-3 right-3 w-8 h-8 rounded-xl bg-emerald-500/80 backdrop-blur-md text-white flex items-center justify-center shadow-md">
+                  <Snowflake className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="p-6 space-y-2">
+                <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">Cryoconservation & NGS</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Cartographie 2D des cryotubes en azote liquide, gestion des consentements éclairés et panels de pharmacogénomique de haute précision.
+                </p>
+              </div>
+
+              <div className="p-6 pt-0 mt-auto">
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-emerald-300 font-semibold">
+                  <span>Directives</span>
+                  <span className="font-mono bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/30">CPIC / DPWG</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Card 4: Intelligence Clinique */}
+            <div className="group relative bg-slate-900/90 border border-slate-800 hover:border-cyan-400/80 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20 flex flex-col justify-between">
+              {/* Image Preview Header */}
+              <div className="relative h-48 w-full overflow-hidden bg-slate-800">
+                <img
+                  src="/images/hospital_modern_hero.jpg"
+                  alt="Assistant Clinique IA"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent" />
+                <span className="absolute top-3 left-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-950/80 text-cyan-300 border border-cyan-400/30 backdrop-blur-md">
+                  CDS Hooks
+                </span>
+                <div className="absolute bottom-3 right-3 w-8 h-8 rounded-xl bg-cyan-500/80 backdrop-blur-md text-white flex items-center justify-center shadow-md">
+                  <Brain className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="p-6 space-y-2">
+                <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">Assistant Clinique IA</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Moteur de diagnostic différentiel probabiliste, contrôle des interactions médicamenteuses et protocoles thérapeutiques validés.
+                </p>
+              </div>
+
+              <div className="p-6 pt-0 mt-auto">
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-cyan-300 font-semibold">
+                  <span>Interactions</span>
+                  <span className="font-mono bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-500/30">100% Temps Réel</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -478,6 +732,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
               Sécurisez vos prescriptions grâce à l'intercepteur pharmacogénomique automatique conforme aux consortiums internationaux <strong>CPIC</strong> et <strong>DPWG</strong>.
             </p>
+          </div>
+
+          {/* Biotech Visual Lab Banner */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-cyan-100 max-h-72 w-full group">
+            <img
+              src="/images/hospital_genetics_biotech.jpg"
+              alt="Plateforme de Génétique Moléculaire et Biobanque"
+              className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-cyan-950/70 to-transparent flex flex-col justify-center p-8 sm:p-12 text-white">
+              <span className="text-[10px] uppercase font-mono font-bold px-3 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 rounded-full w-fit mb-2 backdrop-blur-md">
+                Laboratoire de Séquençage & Biobanque Cryogénique
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black max-w-lg leading-snug">
+                Intégration native des panels pharmacogénomiques au lit du patient
+              </h3>
+              <p className="text-xs text-cyan-100/80 max-w-md mt-2 hidden sm:block">
+                Contrôle instantané des incompatibilités moléculaires dès la prescription médicale ou lors de la dispensation en pharmacie.
+              </p>
+            </div>
           </div>
 
           {/* Interactive PGx Interceptor Showcase */}
@@ -718,6 +992,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
               Un co-pilote clinique probabiliste qui assiste le praticien en analysant les symptômes, antécédents et constantes en temps réel.
             </p>
+          </div>
+
+          {/* AI Clinical Assistant Visual Banner */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-teal-100 max-h-72 w-full group">
+            <img
+              src="/images/medical_doctor_care.jpg"
+              alt="Assistant Médical IA et Diagnostic Clinique"
+              className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-teal-950/70 to-transparent flex flex-col justify-center p-8 sm:p-12 text-white">
+              <span className="text-[10px] uppercase font-mono font-bold px-3 py-1 bg-teal-500/20 text-teal-300 border border-teal-400/30 rounded-full w-fit mb-2 backdrop-blur-md">
+                Intelligence Clinique CDS Hooks
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black max-w-lg leading-snug">
+                Co-pilote diagnostique temps réel au chevet du patient
+              </h3>
+              <p className="text-xs text-teal-100/80 max-w-md mt-2 hidden sm:block">
+                Analyse croisée des constantes télémétriques, des antécédents et des biomarqueurs pour guider la décision médicale sans latence.
+              </p>
+            </div>
           </div>
 
           {/* Interactive AI Diagnostic Simulator */}

@@ -5,20 +5,23 @@ import {
   Search, Plus, QrCode, Printer, FileText, CheckCircle2, ChevronRight,
   ExternalLink, Layers, Sparkles, Activity, Download
 } from 'lucide-react';
-import { GenomicProfile, BioSample, ClinicalTrial } from '../../types';
+import { GenomicProfile, BioSample, ClinicalTrial, Patient } from '../../types';
 import { generateQrCodeSvg } from '../../utils/barcodeUtils';
 import { printDocument, generateDocumentHeader, generateDocumentFooter } from '../../utils/exportUtils';
+import CustomSelect from '../common/CustomSelect';
 
 export const BiotechModule: React.FC = () => {
   const {
     genomicProfiles, pgxInteractions, bioSamples, biobankFreezers,
-    clinicalTrials, organizationSettings
+    clinicalTrials, organizationSettings, patients, addGenomicProfile, addBioSample
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'pgx' | 'biobank' | 'trials'>('pgx');
   const [selectedProfile, setSelectedProfile] = useState<GenomicProfile | null>(genomicProfiles[0] || null);
   const [selectedFreezerId, setSelectedFreezerId] = useState<string>(biobankFreezers[0]?.id || 'FRZ-80-01');
   const [selectedBioSample, setSelectedBioSample] = useState<BioSample | null>(null);
+  const [showNewProfileModal, setShowNewProfileModal] = useState(false);
+  const [showNewSampleModal, setShowNewSampleModal] = useState(false);
 
   const activeFreezer = biobankFreezers.find(f => f.id === selectedFreezerId) || biobankFreezers[0];
   const freezerSamples = bioSamples.filter(s => s.freezerId === selectedFreezerId);
@@ -183,10 +186,18 @@ export const BiotechModule: React.FC = () => {
             {/* List of Patient Genomic Profiles */}
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <h3 className="font-bold text-sm text-gray-900">Profils Génomiques Patients</h3>
-                <span className="text-xs bg-cyan-100 text-cyan-800 font-bold px-2.5 py-0.5 rounded-full">
-                  {genomicProfiles.length}
-                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-gray-900">Profils Génomiques Patients</h3>
+                  <span className="text-[10px] text-gray-500">{genomicProfiles.length} profils enregistrés</span>
+                </div>
+                <button
+                  onClick={() => setShowNewProfileModal(true)}
+                  className="px-2.5 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm transition-all hover:scale-105"
+                  title="Ajouter un profil pharmacogénomique"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Nouveau PGx</span>
+                </button>
               </div>
 
               <div className="space-y-2.5">
@@ -407,12 +418,20 @@ export const BiotechModule: React.FC = () => {
             {/* Samples Table */}
             <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <h3 className="font-bold text-sm text-gray-900">
-                  Échantillons dans {activeFreezer?.name}
-                </h3>
-                <span className="text-xs bg-cyan-100 text-cyan-800 font-bold px-2.5 py-0.5 rounded-full">
-                  {freezerSamples.length} cryotubes
-                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-gray-900">
+                    Échantillons dans {activeFreezer?.name}
+                  </h3>
+                  <span className="text-[10px] text-gray-500">{freezerSamples.length} cryotubes stockés</span>
+                </div>
+                <button
+                  onClick={() => setShowNewSampleModal(true)}
+                  className="px-2.5 py-1.5 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm transition-all hover:scale-105"
+                  title="Enregistrer un nouvel échantillon"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Nouvel Échantillon</span>
+                </button>
               </div>
 
               <div className="overflow-x-auto">
@@ -526,6 +545,464 @@ export const BiotechModule: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Creation Modals */}
+      {showNewProfileModal && (
+        <NewGenomicProfileModal
+          patients={patients}
+          onClose={() => setShowNewProfileModal(false)}
+          onSave={async (profileData) => {
+            await addGenomicProfile(profileData);
+            setShowNewProfileModal(false);
+          }}
+        />
+      )}
+
+      {showNewSampleModal && (
+        <NewBioSampleModal
+          patients={patients}
+          freezers={biobankFreezers}
+          onClose={() => setShowNewSampleModal(false)}
+          onSave={async (sampleData) => {
+            await addBioSample(sampleData);
+            setShowNewSampleModal(false);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// =========================================================================
+// MODAL: NOUVEAU PROFIL PHARMACOGÉNOMIQUE
+// =========================================================================
+interface NewGenomicProfileModalProps {
+  patients: Patient[];
+  onClose: () => void;
+  onSave: (data: Partial<GenomicProfile>) => Promise<void>;
+}
+
+const NewGenomicProfileModal: React.FC<NewGenomicProfileModalProps> = ({ patients, onClose, onSave }) => {
+  const [patientId, setPatientId] = useState(patients[0]?.id || '');
+  const [panelName, setPanelName] = useState('Panel PGx Standard (Cardio & Onco)');
+  const [selectedGene, setSelectedGene] = useState('CYP2C19');
+  const [diplotype, setDiplotype] = useState('*2/*2');
+  const [phenotype, setPhenotype] = useState('Métaboliseur Lent (PM)');
+  const [clinicalImpact, setClinicalImpact] = useState('Perte totale d\'activation du Clopidogrel -> Risque de thrombose de stent');
+  const [recommendation, setRecommendation] = useState('Substituer impérativement le Clopidogrel par Prasugrel ou Ticagrelor.');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const patientOptions = patients.map(p => ({
+    value: p.id,
+    label: `${p.firstName} ${p.lastName} (${p.nir || p.id})`
+  }));
+
+  const panelOptions = [
+    { value: 'Panel PGx Standard (Cardio & Onco)', label: 'Panel PGx Standard (Cardio & Onco)' },
+    { value: 'Panel Oncologie & Chimiothérapie (DPYD, UGT1A1)', label: 'Panel Oncologie & Chimiothérapie (DPYD, UGT1A1)' },
+    { value: 'Panel Psychiatrie & Neurologie (CYP2D6, CYP2C19)', label: 'Panel Psychiatrie & Neurologie (CYP2D6, CYP2C19)' },
+    { value: 'Panel Cardiologie & Antiagrégants (CYP2C19, SLCO1B1)', label: 'Panel Cardiologie & Antiagrégants (CYP2C19, SLCO1B1)' },
+    { value: 'Séquençage Exome Médical Complet', label: 'Séquençage Exome Médical Complet' }
+  ];
+
+  const geneOptions = [
+    { value: 'CYP2C19', label: 'CYP2C19 (Clopidogrel, IPP, Antidépresseurs)' },
+    { value: 'CYP2D6', label: 'CYP2D6 (Codéine, Tramadol, Tamoxifène, Bêta-bloquants)' },
+    { value: 'DPYD', label: 'DPYD (5-Fluorouracile, Capécitabine)' },
+    { value: 'SLCO1B1', label: 'SLCO1B1 (Statines / Simvastatine)' },
+    { value: 'VKORC1', label: 'VKORC1 (Warfarine / Antivitamines K)' },
+    { value: 'TPMT', label: 'TPMT (Azathioprine, 6-Mercaptopurine)' }
+  ];
+
+  const handleGeneChange = (gene: string) => {
+    setSelectedGene(gene);
+    if (gene === 'CYP2C19') {
+      setDiplotype('*2/*2');
+      setPhenotype('Métaboliseur Lent (PM)');
+      setClinicalImpact('Perte d\'activation du Clopidogrel -> Risque majeur d\'échec thérapeutique');
+      setRecommendation('Contre-indication formelle au Clopidogrel. Remplacer par Ticagrelor ou Prasugrel.');
+    } else if (gene === 'DPYD') {
+      setDiplotype('*2A/wt');
+      setPhenotype('Activité Intermédiaire (Déficit Partiel)');
+      setClinicalImpact('Clairance réduite du 5-FU -> Risque de toxicité hématologique et digestive létale');
+      setRecommendation('Réduction de dose initiale de 50% sur le 5-FU ou la Capécitabine avec surveillance du TDM.');
+    } else if (gene === 'CYP2D6') {
+      setDiplotype('*4/*4');
+      setPhenotype('Métaboliseur Lent (PM)');
+      setClinicalImpact('Absence de bioactivation de la Codéine et du Tramadol en métabolites actifs');
+      setRecommendation('Inefficacité antalgique attendue. Utiliser un analgésique non dépendant du CYP2D6.');
+    } else if (gene === 'SLCO1B1') {
+      setDiplotype('*5/*5');
+      setPhenotype('Fonction de transport fortement diminuée');
+      setClinicalImpact('Augmentation majeure des concentrations plasmatiques de Simvastatine -> Risque de rhabdomyolyse');
+      setRecommendation('Éviter les fortes doses de Simvastatine. Privilégier la Rosuvastatine ou Pravastatine à faible dose.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const selectedPt = patients.find(p => p.id === patientId);
+    try {
+      await onSave({
+        patientId,
+        patientName: selectedPt ? `${selectedPt.firstName} ${selectedPt.lastName}` : 'Patient',
+        testDate: new Date().toISOString().split('T')[0],
+        panelName,
+        genes: [
+          {
+            gene: selectedGene,
+            diplotype,
+            phenotype,
+            clinicalImpact
+          }
+        ],
+        phenotypes: {
+          [selectedGene]: phenotype
+        },
+        recommendations: [recommendation],
+        status: 'validated'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold">
+              <Dna className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Nouveau Profil Pharmacogénomique (PGx)</h2>
+              <p className="text-xs text-gray-500">Saisie et intégration au moteur d'interception clinique</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100">
+            <Plus className="w-5 h-5 rotate-45" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">Patient concerné *</label>
+            <CustomSelect
+              value={patientId}
+              onChange={setPatientId}
+              options={patientOptions}
+              category="patient"
+              placeholder="Sélectionner un patient..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">Panel Séquencé *</label>
+            <CustomSelect
+              value={panelName}
+              onChange={setPanelName}
+              options={panelOptions}
+              category="pgx_panel"
+              allowCustom={true}
+            />
+          </div>
+
+          <div className="p-4 bg-cyan-50/60 rounded-2xl border border-cyan-100 space-y-4">
+            <h3 className="text-xs font-bold text-cyan-950 uppercase tracking-wider flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-cyan-600" />
+              <span>Gène Cible & Génotypage Analytique</span>
+            </h3>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Gène évalué *</label>
+              <CustomSelect
+                value={selectedGene}
+                onChange={handleGeneChange}
+                options={geneOptions}
+                category="pgx_gene"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Diplotype (Allèles) *</label>
+                <input
+                  type="text"
+                  value={diplotype}
+                  onChange={(e) => setDiplotype(e.target.value)}
+                  placeholder="Ex: *2/*2 ou *1/*17"
+                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-cyan-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Phénotype Métabolique *</label>
+                <input
+                  type="text"
+                  value={phenotype}
+                  onChange={(e) => setPhenotype(e.target.value)}
+                  placeholder="Ex: Métaboliseur Lent (PM)"
+                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-cyan-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Impact Clinique Détecté</label>
+              <textarea
+                value={clinicalImpact}
+                onChange={(e) => setClinicalImpact(e.target.value)}
+                rows={2}
+                className="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Recommandation Thérapeutique (CPIC / DPWG)</label>
+              <textarea
+                value={recommendation}
+                onChange={(e) => setRecommendation(e.target.value)}
+                rows={2}
+                className="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-cyan-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 transition-all"
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer le Profil PGx'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// =========================================================================
+// MODAL: NOUVEL ÉCHANTILLON BIOBANQUE
+// =========================================================================
+interface NewBioSampleModalProps {
+  patients: Patient[];
+  freezers: { id: string; name: string; temperature: string }[];
+  onClose: () => void;
+  onSave: (data: Partial<BioSample>) => Promise<void>;
+}
+
+const NewBioSampleModal: React.FC<NewBioSampleModalProps> = ({ patients, freezers, onClose, onSave }) => {
+  const [patientId, setPatientId] = useState(patients[0]?.id || '');
+  const [sampleType, setSampleType] = useState('DNA');
+  const [freezerId, setFreezerId] = useState(freezers[0]?.id || 'FRZ-80-01');
+  const [rackNumber, setRackNumber] = useState('Rack-01');
+  const [boxNumber, setBoxNumber] = useState('Boîte-01');
+  const [wellPosition, setWellPosition] = useState('A01');
+  const [volumeMl, setVolumeMl] = useState(1.5);
+  const [concentration, setConcentration] = useState('145 ng/µL');
+  const [consentSigned, setConsentSigned] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const patientOptions = patients.map(p => ({
+    value: p.id,
+    label: `${p.firstName} ${p.lastName} (${p.nir || p.id})`
+  }));
+
+  const sampleTypeOptions = [
+    { value: 'DNA', label: 'ADN Génomique Purifié' },
+    { value: 'RNA', label: 'ARN Total' },
+    { value: 'Serum', label: 'Sérum Sanguin' },
+    { value: 'Plasma', label: 'Plasma EDTA' },
+    { value: 'Tissue Biopsy', label: 'Biopsie Tissulaire Cryoconservée' },
+    { value: 'PBMC', label: 'Cellules Mononucléées (PBMC)' }
+  ];
+
+  const freezerOptions = freezers.map(f => ({
+    value: f.id,
+    label: `${f.name} (${f.temperature})`
+  }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const selectedPt = patients.find(p => p.id === patientId);
+    const selectedFrz = freezers.find(f => f.id === freezerId);
+    try {
+      await onSave({
+        sampleCode: `BS-${Date.now().toString().slice(-6)}`,
+        patientId,
+        patientName: selectedPt ? `${selectedPt.firstName} ${selectedPt.lastName}` : 'Patient Anonymisé',
+        sampleType,
+        freezerId,
+        freezerName: selectedFrz?.name || 'Congélateur Cryogénique',
+        storageTemp: selectedFrz?.temperature || '-80°C',
+        rackNumber,
+        boxNumber,
+        wellPosition,
+        volumeMl,
+        concentration,
+        collectionDate: new Date().toISOString().split('T')[0],
+        consentSigned,
+        consentType: 'Diagnostic & Recherche Translationnelle',
+        qualityScore: 'A',
+        status: 'available'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+              <Snowflake className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Nouvel Échantillon Biobanque</h2>
+              <p className="text-xs text-gray-500">Enregistrement et géolocalisation cryogénique</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100">
+            <Plus className="w-5 h-5 rotate-45" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">Patient Source *</label>
+            <CustomSelect
+              value={patientId}
+              onChange={setPatientId}
+              options={patientOptions}
+              category="patient"
+              placeholder="Sélectionner un patient..."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">Type de Matériel Biologique *</label>
+              <CustomSelect
+                value={sampleType}
+                onChange={setSampleType}
+                options={sampleTypeOptions}
+                category="sample_type"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">Volume (mL)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={volumeMl}
+                onChange={(e) => setVolumeMl(parseFloat(e.target.value) || 0)}
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-teal-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="p-4 bg-teal-50/50 rounded-2xl border border-teal-100 space-y-3">
+            <h3 className="text-xs font-bold text-teal-950 uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-teal-600" />
+              <span>Emplacement dans la Cryothèque</span>
+            </h3>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Unité de Stockage *</label>
+              <CustomSelect
+                value={freezerId}
+                onChange={setFreezerId}
+                options={freezerOptions}
+                category="freezer"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">Rack</label>
+                <input
+                  type="text"
+                  value={rackNumber}
+                  onChange={(e) => setRackNumber(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">Boîte</label>
+                <input
+                  type="text"
+                  value={boxNumber}
+                  onChange={(e) => setBoxNumber(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">Puits (ex: A01)</label>
+                <input
+                  type="text"
+                  value={wellPosition}
+                  onChange={(e) => setWellPosition(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono font-bold text-teal-800"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="consentSigned"
+              checked={consentSigned}
+              onChange={(e) => setConsentSigned(e.target.checked)}
+              className="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+            />
+            <label htmlFor="consentSigned" className="text-xs text-gray-700 font-medium cursor-pointer">
+              Consentement éclairé du patient signé et archivé dans le DPI
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 transition-all"
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer le Cryotube'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

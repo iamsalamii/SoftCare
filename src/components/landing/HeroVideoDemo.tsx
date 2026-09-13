@@ -6,7 +6,7 @@ import {
   Layers, ArrowRight, UserCheck, Video, Radio, Mic, MicOff,
   Eye, LayoutDashboard, Zap, RefreshCw, X, MessageSquare,
   ShieldAlert, Scan, Plus, Minus, Film, Settings, Upload,
-  Sliders, FastForward
+  Sliders, FastForward, HeartPulse, Pill, Bot, HelpCircle
 } from 'lucide-react';
 
 interface HeroVideoDemoProps {
@@ -22,7 +22,6 @@ interface DemoChapter {
   subtitle: string;
   voiceText: string;
   visualType: 'dpi' | 'pharmacy' | 'pgx' | 'ai';
-  videoUrl?: string; // MP4 video source for real video mode
 }
 
 const DEMO_CHAPTERS: DemoChapter[] = [
@@ -31,10 +30,9 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     title: 'Dossier Patient & Triage Urgences',
     badge: 'DPI Hémodynamique',
     duration: 12,
-    subtitle: 'Prise en charge instantanée : constantes vitales en temps réel, score de Glasgow et antécédents médicaux centralisés.',
-    voiceText: "Bonjour, je suis le Docteur Éléonore Vance. Bienvenue dans SoftCare. Dès l'admission du patient, les constantes vitales sont acquises en temps réel avec calcul automatique du score de gravité pour un triage médical sans délai. Vous pouvez tester l'ajustement des constantes directement sur l'écran.",
-    visualType: 'dpi',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-female-doctor-explaining-a-diagnosis-to-a-patient-41846-large.mp4'
+    subtitle: 'Prise en charge instantanée : constantes vitales en temps réel, score de gravité et antécédents médicaux centralisés.',
+    voiceText: "Bienvenue dans SoftCare. Dès l'admission du patient, les constantes vitales sont acquises en temps réel avec calcul automatique du score de gravité pour un triage médical sans délai. Vous pouvez tester l'ajustement des constantes directement sur le simulateur.",
+    visualType: 'dpi'
   },
   {
     id: 2,
@@ -43,8 +41,7 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 12,
     subtitle: 'Scan GS1 à la douchette en moins de 5ms : vérification des lots, dates de péremption et sécurisation de la délivrance.',
     voiceText: "Dans le module de pharmacie hospitalière, la douchette code-barres identifie chaque boîte de médicament en moins de cinq millisecondes. Cliquez sur le bouton de scan pour déclencher la douchette et constater la déduction instantanée de stock.",
-    visualType: 'pharmacy',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-pharmacist-counting-pills-in-a-pharmacy-43469-large.mp4'
+    visualType: 'pharmacy'
   },
   {
     id: 3,
@@ -53,8 +50,7 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 14,
     subtitle: 'Interception automatique : détection du variant CYP2C19 *2/*2 et substitution préventive du Clopidogrel.',
     voiceText: "SoftCare intègre une innovation majeure : l'intercepteur pharmacogénomique. En croisant le profil génétique du patient, le système bloque immédiatement toute prescription toxique de Clopidogrel. Cliquez sur le bouton pour appliquer la substitution sécurisée.",
-    visualType: 'pgx',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dna-strand-in-a-scientific-presentation-43093-large.mp4'
+    visualType: 'pgx'
   },
   {
     id: 4,
@@ -63,8 +59,7 @@ const DEMO_CHAPTERS: DemoChapter[] = [
     duration: 13,
     subtitle: 'Hypothèses diagnostiques probabilistes, protocoles CDS Hooks et prescriptions assistées en temps réel.',
     voiceText: "Enfin, notre intelligence clinique assiste le praticien en calculant les probabilités diagnostiques différentielles en temps réel. Cliquez sur les biomarqueurs pour recalculer les probabilités algorithmiques.",
-    visualType: 'ai',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-human-heart-with-pulse-lines-43096-large.mp4'
+    visualType: 'ai'
   }
 ];
 
@@ -74,14 +69,9 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [chapterProgress, setChapterProgress] = useState(0); // 0 to 100
   const [isVoiceSpeaking, setIsVoiceSpeaking] = useState(false);
-  const [viewMode, setViewMode] = useState<'split' | 'presenter' | 'interface' | 'video-full'>('split');
-  const [videoPlaybackMode, setVideoPlaybackMode] = useState<'generative' | 'real-mp4'>('generative');
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showCustomVideoModal, setShowCustomVideoModal] = useState(false);
-  const [customVideoUrl, setCustomVideoUrl] = useState('');
   
-  const videoRef = useRef<HTMLVideoElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Interactive Playground States for Live Hands-on Testing
@@ -105,7 +95,7 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
   const [aiProbabilitySCA, setAiProbabilitySCA] = useState(92);
   const [isCalculatingAI, setIsCalculatingAI] = useState(false);
 
-  // Doctor Vance Live Q&A State
+  // Live Q&A State
   const [activeQAAnswer, setActiveQAAnswer] = useState<string | null>(null);
 
   const currentChapter = DEMO_CHAPTERS[currentChapterIndex];
@@ -171,17 +161,9 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
     };
   }, [currentChapterIndex, isMuted, isPlaying, playbackSpeed]);
 
-  // Main video timer progression loop
+  // Main timer progression loop
   useEffect(() => {
-    if (!isPlaying) {
-      if (videoRef.current) videoRef.current.pause();
-      return;
-    }
-
-    if (videoRef.current) {
-      videoRef.current.playbackRate = playbackSpeed;
-      videoRef.current.play().catch(() => {});
-    }
+    if (!isPlaying) return;
 
     const intervalTime = 100; // updates every 100ms
     const stepIncrement = (intervalTime / (currentChapter.duration * 1000)) * 100 * playbackSpeed;
@@ -216,7 +198,7 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
       setIsLaserScanning(false);
       setStockQuantity(prev => Math.max(0, prev - 1));
       setScannedCount(prev => prev + 1);
-    }, 600);
+    }, 500);
   };
 
   // Trigger Interactive AI Recalculation
@@ -225,24 +207,21 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
     setTimeout(() => {
       setIsCalculatingAI(false);
       setAiProbabilitySCA(prev => prev === 92 ? 97 : 92);
-    }, 800);
+    }, 700);
   };
 
-  // Trigger Dr. Vance Q&A Answer
   const handleAskDoctor = (question: string, answer: string) => {
     setActiveQAAnswer(answer);
     speakVoiceOver(answer);
   };
-
-  const activeVideoSrc = customVideoUrl || currentChapter.videoUrl;
 
   const containerContent = (
     <div className={`relative w-full rounded-3xl overflow-hidden border border-cyan-500/40 shadow-2xl bg-slate-950 text-white select-none transition-all duration-300 ${
       isFullscreen ? 'max-w-7xl mx-auto h-[94vh] flex flex-col justify-between' : 'max-w-6xl mx-auto'
     }`}>
       
-      {/* Top Video Header / HUD Bar */}
-      <div className="px-4 sm:px-6 py-3 bg-slate-900/95 backdrop-blur-md border-b border-white/10 flex flex-wrap items-center justify-between gap-3">
+      {/* Top Header / HUD Bar */}
+      <div className="px-4 sm:px-6 py-3.5 bg-slate-900/95 backdrop-blur-md border-b border-white/10 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-red-500 inline-block animate-pulse" />
@@ -251,84 +230,38 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full">
-              <Film className="w-3.5 h-3.5 text-cyan-400" />
-              <span>DÉMO VIDÉO &amp; SIMULATEUR CLINIQUES</span>
+              <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span>STUDIO INTERACTIF &bull; VOIX OFF CLINIQUE</span>
             </span>
-            <span className="hidden lg:inline text-xs text-gray-400 font-sans">
-              &bull; Présentée par le <strong>Dr. Éléonore Vance</strong>
+            <span className="hidden sm:inline text-xs text-gray-400">
+              Simulation hospitalière en direct
             </span>
           </div>
         </div>
 
-        {/* Video Mode, View Mode & Speed Controls */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          
-          {/* Real MP4 Video vs Generative Canvas Mode */}
-          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-white/10 text-xs">
-            <button
-              onClick={() => setVideoPlaybackMode('generative')}
-              className={`px-2.5 py-1 rounded-lg transition-all font-semibold flex items-center gap-1 ${
-                videoPlaybackMode === 'generative' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>Génératif Studio</span>
-            </button>
-            <button
-              onClick={() => setVideoPlaybackMode('real-mp4')}
-              className={`px-2.5 py-1 rounded-lg transition-all font-semibold flex items-center gap-1 ${
-                videoPlaybackMode === 'real-mp4' ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30 shadow-sm' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Video className="w-3 h-3" />
-              <span>Vidéo MP4 HD</span>
-            </button>
-          </div>
-
-          {/* View Mode Switcher */}
-          <div className="hidden sm:flex items-center bg-slate-950 p-1 rounded-xl border border-white/10 text-xs">
-            <button
-              onClick={() => setViewMode('split')}
-              className={`px-2.5 py-1 rounded-lg transition-all font-semibold ${
-                viewMode === 'split' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Mixte
-            </button>
-            <button
-              onClick={() => setViewMode('presenter')}
-              className={`px-2.5 py-1 rounded-lg transition-all font-semibold ${
-                viewMode === 'presenter' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Docteur
-            </button>
-            <button
-              onClick={() => setViewMode('interface')}
-              className={`px-2.5 py-1 rounded-lg transition-all font-semibold ${
-                viewMode === 'interface' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Écran
-            </button>
-          </div>
+        {/* Audio & Speed Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Voice Over Audio Toggle */}
+          <button
+            onClick={toggleMute}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all text-xs font-semibold ${
+              isMuted
+                ? 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'
+                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
+            }`}
+            title={isMuted ? 'Activer la voix off' : 'Couper la voix off'}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
+            <span>{isMuted ? 'Voix coupée' : 'Voix active'}</span>
+          </button>
 
           {/* Speed Selector */}
           <button
             onClick={() => setPlaybackSpeed(s => s === 1.0 ? 1.25 : s === 1.25 ? 1.5 : 1.0)}
-            className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-mono font-bold text-cyan-300 border border-white/10"
+            className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-mono font-bold text-cyan-300 border border-white/10 transition-colors"
             title="Vitesse de lecture"
           >
             {playbackSpeed}x
-          </button>
-
-          {/* Voice Over Audio Toggle */}
-          <button
-            onClick={toggleMute}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-300 transition-colors border border-white/10 text-xs font-semibold"
-            title={isMuted ? 'Activer la voix off' : 'Couper la voix off'}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
           </button>
 
           {/* Fullscreen / Theater Toggle */}
@@ -342,639 +275,459 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
         </div>
       </div>
 
-      {/* Main Video Viewport Display Canvas */}
+      {/* Main Viewport Display Canvas */}
       <div className={`relative bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 p-4 sm:p-8 flex flex-col justify-between overflow-hidden ${
-        isFullscreen ? 'flex-1 overflow-y-auto' : 'min-h-[480px] sm:min-h-[540px]'
+        isFullscreen ? 'flex-1 overflow-y-auto' : 'min-h-[480px] sm:min-h-[520px]'
       }`}>
-        {/* Ambient Glows */}
+        {/* Ambient Medical Glow Orbs */}
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Real MP4 Video Mode Background Player */}
-        {videoPlaybackMode === 'real-mp4' && (
-          <div className="absolute inset-0 z-0 overflow-hidden">
-            <video
-              ref={videoRef}
-              key={activeVideoSrc}
-              src={activeVideoSrc}
-              autoPlay={isPlaying}
-              loop={true}
-              muted={isMuted}
-              playsInline
-              className="w-full h-full object-cover filter brightness-[0.65] contrast-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-slate-950/70" />
-          </div>
-        )}
 
         {/* Dynamic Display Grid */}
         <div className="relative z-10 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           
-          {/* LEFT: Generative Video Presenter (Dr. Vance) */}
-          {(viewMode === 'split' || viewMode === 'presenter') && (
-            <div className={`${viewMode === 'presenter' ? 'lg:col-span-12 max-w-2xl mx-auto' : 'lg:col-span-5'} flex flex-col items-center justify-center`}>
-              <div className="relative w-full max-w-md aspect-[4/3] rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-2xl bg-slate-900 group">
-                
-                {/* Visual Presenter Media (Generated Doctor or MP4 Video Stream) */}
-                {videoPlaybackMode === 'real-mp4' ? (
-                  <video
-                    src={activeVideoSrc}
-                    autoPlay={isPlaying}
-                    loop={true}
-                    muted={true}
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <img
-                    src="/demo-doctor.jpg"
-                    alt="Dr. Éléonore Vance - Présentatrice Démo Médicale"
-                    className={`w-full h-full object-cover transition-transform duration-700 ${
-                      isPlaying ? 'scale-105 filter brightness-105' : 'scale-100 filter brightness-95'
-                    }`}
-                  />
-                )}
-                
-                {/* Live Presenter Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-transparent to-black/30 pointer-events-none" />
-                
-                {/* Top Live Badge */}
-                <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-slate-950/85 backdrop-blur-md rounded-full border border-red-500/40 shadow-lg">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                  <span className="text-[11px] font-bold text-red-300 uppercase tracking-wider">Direct Vidéo</span>
-                </div>
-
-                {/* Voice Equalizer status */}
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-slate-950/85 backdrop-blur-md rounded-full border border-cyan-500/40 shadow-lg">
-                  <Mic className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                  <span className="text-[11px] font-mono text-cyan-300 font-bold">
-                    {isVoiceSpeaking ? 'Voix active' : 'Prête'}
-                  </span>
-                </div>
-
-                {/* Bottom Presenter Credentials & Interactive Speak Trigger */}
-                <div className="absolute bottom-4 left-4 right-4 p-3.5 bg-slate-950/90 backdrop-blur-md rounded-2xl border border-white/15 shadow-xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <span>Dr. Éléonore Vance</span>
-                        <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                      </p>
-                      <p className="text-xs text-cyan-300 font-medium">Directrice Médicale &bull; SoftCare Hospital OS</p>
-                    </div>
-                    <button
-                      onClick={() => speakVoiceOver(currentChapter.voiceText)}
-                      className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all flex items-center gap-1"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Écouter</span>
-                    </button>
-                  </div>
-                </div>
+          {/* LEFT: Context Summary & Voice Ticker (5 cols) */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="p-6 bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-cyan-500/30 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>{currentChapter.badge}</span>
+                </span>
+                <span className="text-xs font-mono text-gray-400 font-bold">
+                  Chapitre {currentChapterIndex + 1}/4
+                </span>
               </div>
 
-              {/* Interactive Doctor Q&A Quick Chips */}
-              <div className="w-full max-w-md mt-3 space-y-1.5">
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Poser une question au Dr. Vance :</span>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-black text-white leading-tight mb-2">
+                  {currentChapter.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  {currentChapter.subtitle}
                 </p>
-                <div className="flex flex-wrap gap-1.5">
+              </div>
+
+              {/* Subtitle Audio Voice Ticker */}
+              <div className="p-4 bg-slate-950/80 rounded-2xl border border-cyan-500/20 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-cyan-400 flex items-center gap-1.5">
+                    <Mic className={`w-3.5 h-3.5 ${isVoiceSpeaking ? 'animate-bounce text-emerald-400' : 'text-cyan-400'}`} />
+                    <span>Narration Vocale</span>
+                  </span>
                   <button
-                    onClick={() => handleAskDoctor(
-                      "Sécurité HDS",
-                      "Toutes les données de santé traitées par SoftCare sont chiffrées de bout en bout et hébergées exclusivement sur des infrastructures certifiées HDS et conformes au RGPD."
-                    )}
-                    className="px-2.5 py-1 bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 rounded-lg text-[11px] text-gray-300 hover:text-cyan-200 transition-all text-left"
+                    onClick={() => speakVoiceOver(currentChapter.voiceText)}
+                    className="text-[11px] text-cyan-300 hover:text-white font-semibold flex items-center gap-1 transition-colors"
                   >
-                    🔒 Sécurité HDS & RGPD ?
-                  </button>
-                  <button
-                    onClick={() => handleAskDoctor(
-                      "Douchette",
-                      "Notre moteur de lecture GS1 DataMatrix répond en moins de 5 millisecondes, compatible avec toutes les douchettes USB et Bluetooth du marché hospitalier."
-                    )}
-                    className="px-2.5 py-1 bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 rounded-lg text-[11px] text-gray-300 hover:text-teal-200 transition-all text-left"
-                  >
-                    ⚡ Vitesse douchette &lt;5ms ?
-                  </button>
-                  <button
-                    onClick={() => handleAskDoctor(
-                      "PGx",
-                      "L'intercepteur pharmacogénomique croise les biomarqueurs du patient avec les recommandations CPIC pour bloquer les prescriptions inadaptées comme le Clopidogrel."
-                    )}
-                    className="px-2.5 py-1 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-400/40 rounded-lg text-[11px] text-gray-300 hover:text-purple-200 transition-all text-left"
-                  >
-                    🧬 Blocage génétique PGx ?
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Réécouter</span>
                   </button>
                 </div>
-
-                {activeQAAnswer && (
-                  <div className="p-3 bg-cyan-950/80 border border-cyan-500/40 rounded-2xl text-xs text-cyan-100 mt-2 animate-in fade-in duration-200">
-                    <p className="font-bold text-cyan-300 mb-0.5 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Réponse du Dr. Vance :</span>
-                    </p>
-                    <p className="leading-relaxed">{activeQAAnswer}</p>
-                  </div>
-                )}
+                <p className="text-xs text-cyan-100 italic leading-relaxed">
+                  "{currentChapter.voiceText}"
+                </p>
               </div>
             </div>
-          )}
 
-          {/* RIGHT: High-Tech Software Interactive Screen */}
-          {(viewMode === 'split' || viewMode === 'interface') && (
-            <div className={`${viewMode === 'interface' ? 'lg:col-span-12 max-w-4xl mx-auto' : 'lg:col-span-7'} space-y-4`}>
+            {/* Quick Interactive Clinical Chips */}
+            <div className="p-4 bg-slate-900/60 backdrop-blur-md rounded-2xl border border-white/10 space-y-2">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Points Clés du Système Hospitalier :</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleAskDoctor(
+                    "Sécurité HDS",
+                    "Toutes les données de santé traitées par SoftCare sont chiffrées de bout en bout et hébergées conformément aux normes HDS et RGPD Santé."
+                  )}
+                  className="px-2.5 py-1 bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 rounded-xl text-[11px] text-gray-300 hover:text-cyan-200 transition-all text-left"
+                >
+                  🔒 Sécurité HDS & RGPD
+                </button>
+                <button
+                  onClick={() => handleAskDoctor(
+                    "Douchette GS1",
+                    "Le moteur de lecture GS1 DataMatrix valide les boîtes de médicaments en moins de 5 millisecondes avec traçabilité unitaire des lots."
+                  )}
+                  className="px-2.5 py-1 bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-400/40 rounded-xl text-[11px] text-gray-300 hover:text-teal-200 transition-all text-left"
+                >
+                  ⚡ Douchette GS1 &lt;5ms
+                </button>
+                <button
+                  onClick={() => handleAskDoctor(
+                    "PGx Génomique",
+                    "L'intercepteur pharmacogénomique croise les directives internationales CPIC pour stopper net toute prescription inadaptée au profil génétique."
+                  )}
+                  className="px-2.5 py-1 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-400/40 rounded-xl text-[11px] text-gray-300 hover:text-purple-200 transition-all text-left"
+                >
+                  🧬 Blocage PGx CPIC
+                </button>
+              </div>
+
+              {activeQAAnswer && (
+                <div className="mt-2 p-3 bg-cyan-950/70 border border-cyan-500/40 rounded-xl text-xs text-cyan-100 animate-in fade-in">
+                  <p className="font-semibold text-cyan-300 mb-0.5">Réponse système :</p>
+                  <p className="italic">{activeQAAnswer}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT: Live Interactive Clinical Simulator Console (7 cols) */}
+          <div className="lg:col-span-7">
+            <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-cyan-400/40 shadow-2xl p-5 sm:p-6 space-y-5">
               
-              {/* SCENE 1: DPI & Interactive Triage */}
+              {/* Simulator Screen Top HUD Bar */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                    Console Clinique Temps Réel
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <span className="px-2 py-0.5 bg-white/10 rounded-md font-mono text-[10px]">
+                    INTERACTIF
+                  </span>
+                  <span className="text-cyan-400 font-bold">● LIVE</span>
+                </div>
+              </div>
+
+              {/* CHAPTER 1 : DPI & TRIAGE URGENCE */}
               {currentChapter.visualType === 'dpi' && (
-                <div className="bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-cyan-500/40 space-y-4 shadow-2xl animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                        <Stethoscope className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">Jean-Marc DUPONT &middot; 58 ans</p>
-                        <p className="text-xs text-gray-400 font-mono">IPP : PAT-2026-08492 &middot; Lit Urgences #04</p>
-                      </div>
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="p-4 bg-slate-950/80 rounded-2xl border border-cyan-500/30 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-gray-400">PATIENT ADMIS :</p>
+                      <p className="text-sm font-bold text-white">Jean-Paul V. (64 ans) &bull; Lit Urgences 04</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                      triageLevel === 1 ? 'bg-red-500/30 text-red-200 border-red-500 animate-ping' :
-                      triageLevel === 2 ? 'bg-red-500/20 text-red-300 border-red-500/40' :
-                      triageLevel === 3 ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' :
-                      'bg-green-500/20 text-green-300 border-green-500/40'
-                    }`}>
-                      Niveau de Triage {triageLevel} ({triageLevel === 1 ? 'Urgence Vitale' : triageLevel === 2 ? 'Très Urgent' : 'Stable'})
+                    <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      Triage Niveau {triageLevel} (Urgence Majeure)
                     </span>
                   </div>
 
-                  {/* Live Interactive Telemetry Cards */}
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="p-3 bg-slate-950/80 rounded-2xl border border-white/10 hover:border-cyan-500/50 transition-colors">
-                      <p className="text-xs text-gray-400">Pouls Cardiaque</p>
-                      <p className="text-xl font-black text-cyan-400 mt-1">{patientHR} <span className="text-xs font-normal text-gray-400">bpm</span></p>
-                      <div className="flex justify-center gap-1 mt-2">
+                  {/* Interactive Telemetry Sliders */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3.5 bg-slate-950/90 rounded-2xl border border-cyan-500/30 text-center space-y-1">
+                      <p className="text-[11px] font-bold text-cyan-400">Fréquence Cardiaque</p>
+                      <p className="text-2xl font-black font-mono text-emerald-400">{patientHR} <span className="text-xs font-normal">bpm</span></p>
+                      <input
+                        type="range"
+                        min="60"
+                        max="160"
+                        value={patientHR}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setPatientHR(val);
+                          if (val > 130) setTriageLevel(1);
+                          else if (val > 100) setTriageLevel(2);
+                          else setTriageLevel(3);
+                        }}
+                        className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                      />
+                    </div>
+
+                    <div className="p-3.5 bg-slate-950/90 rounded-2xl border border-teal-500/30 text-center space-y-1">
+                      <p className="text-[11px] font-bold text-teal-400">Tension Artérielle</p>
+                      <p className="text-2xl font-black font-mono text-teal-300">{patientBP} <span className="text-xs font-normal">mmHg</span></p>
+                      <div className="flex justify-center gap-1 pt-1">
                         <button
-                          onClick={() => setPatientHR(76)}
-                          className="px-2 py-0.5 bg-white/10 hover:bg-cyan-500/20 rounded text-[10px] text-gray-300"
+                          onClick={() => { setPatientBP('120/80'); setPatientHR(76); setTriageLevel(3); }}
+                          className="px-2 py-0.5 bg-white/10 hover:bg-white/20 rounded text-[10px] text-gray-300 font-semibold"
                         >
-                          76 bpm
+                          Normale
                         </button>
                         <button
-                          onClick={() => setPatientHR(142)}
-                          className="px-2 py-0.5 bg-red-500/20 hover:bg-red-500/30 rounded text-[10px] text-red-300"
+                          onClick={() => { setPatientBP('165/105'); setPatientHR(138); setTriageLevel(1); }}
+                          className="px-2 py-0.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded text-[10px] text-rose-300 font-bold"
                         >
-                          142 bpm
+                          Crise HTA
                         </button>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-slate-950/80 rounded-2xl border border-white/10 hover:border-emerald-500/50 transition-colors">
-                      <p className="text-xs text-gray-400">Tension Artérielle</p>
-                      <p className="text-xl font-black text-emerald-400 mt-1">{patientBP} <span className="text-xs font-normal text-gray-400">mmHg</span></p>
-                      <div className="flex justify-center gap-1 mt-2">
-                        <button
-                          onClick={() => setPatientBP('120/80')}
-                          className="px-2 py-0.5 bg-white/10 hover:bg-emerald-500/20 rounded text-[10px] text-gray-300"
-                        >
-                          120/80
-                        </button>
-                        <button
-                          onClick={() => setPatientBP('165/105')}
-                          className="px-2 py-0.5 bg-red-500/20 hover:bg-red-500/30 rounded text-[10px] text-red-300"
-                        >
-                          165/105
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-slate-950/80 rounded-2xl border border-white/10 hover:border-teal-500/50 transition-colors">
-                      <p className="text-xs text-gray-400">SpO2 / O2</p>
-                      <p className="text-xl font-black text-teal-400 mt-1">{patientSpO2} <span className="text-xs font-normal text-gray-400">%</span></p>
-                      <div className="flex justify-center gap-1 mt-2">
-                        <button
-                          onClick={() => setPatientSpO2(99)}
-                          className="px-2 py-0.5 bg-white/10 hover:bg-teal-500/20 rounded text-[10px] text-gray-300"
-                        >
-                          99%
-                        </button>
-                        <button
-                          onClick={() => setPatientSpO2(91)}
-                          className="px-2 py-0.5 bg-red-500/20 hover:bg-red-500/30 rounded text-[10px] text-red-300"
-                        >
-                          91%
-                        </button>
-                      </div>
+                    <div className="p-3.5 bg-slate-950/90 rounded-2xl border border-emerald-500/30 text-center space-y-1">
+                      <p className="text-[11px] font-bold text-emerald-400">Saturation O2</p>
+                      <p className="text-2xl font-black font-mono text-cyan-300">{patientSpO2}%</p>
+                      <input
+                        type="range"
+                        min="85"
+                        max="100"
+                        value={patientSpO2}
+                        onChange={(e) => setPatientSpO2(Number(e.target.value))}
+                        className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                      />
                     </div>
                   </div>
 
-                  {/* Interactive Triage Simulator Button */}
-                  <div className="p-3.5 bg-teal-500/10 rounded-2xl border border-teal-500/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 text-xs text-teal-200">
-                      <Activity className="w-4 h-4 text-cyan-400 shrink-0 animate-pulse" />
-                      <span>Échelle de Triage Dynamique :</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4].map(lvl => (
-                        <button
-                          key={lvl}
-                          onClick={() => setTriageLevel(lvl)}
-                          className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                            triageLevel === lvl
-                              ? 'bg-cyan-500 text-slate-950 shadow-md scale-110'
-                              : 'bg-white/10 hover:bg-white/20 text-gray-300'
-                          }`}
-                        >
-                          {lvl}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Glasgow & Shock index */}
+                  <div className="p-3 bg-slate-950/60 rounded-xl border border-white/10 flex items-center justify-between text-xs text-gray-300">
+                    <span>Score de Glasgow : <strong className="text-white">15/15 (Conscience normale)</strong></span>
+                    <span>Index de Choc : <strong className={patientHR > 120 ? 'text-rose-400' : 'text-emerald-400'}>{(patientHR / 120).toFixed(2)}</strong></span>
                   </div>
                 </div>
               )}
 
-              {/* SCENE 2: Pharmacie & Interactive Barcode Scanner */}
+              {/* CHAPTER 2 : PHARMACIE & GS1 SCANNER */}
               {currentChapter.visualType === 'pharmacy' && (
-                <div className="bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-teal-500/40 space-y-4 shadow-2xl animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">
-                        <QrCode className="w-5 h-5" />
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-4 bg-slate-950/90 rounded-2xl border border-teal-500/30 space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-400 font-bold">MÉDICAMENT SÉLECTIONNÉ</span>
+                        <span className="px-2 py-0.5 bg-teal-500/20 text-teal-300 rounded-md font-mono text-[10px]">GS1-128</span>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">Scanner Douchette GS1 DataMatrix</p>
-                        <p className="text-xs text-gray-400 font-mono">Latence matérielle &lt; 5 millisecondes</p>
-                      </div>
+                      <p className="text-base font-bold text-white">Amoxicilline 500mg Gélules</p>
+                      <p className="text-xs text-gray-400">Lot : <strong className="text-cyan-300 font-mono">LOT-2026-AMX42</strong> &bull; Exp : 11/2028</p>
                     </div>
+
+                    <div className="p-4 bg-slate-950/90 rounded-2xl border border-cyan-500/30 flex flex-col justify-between">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-400 font-bold">STOCK EN PHARMACIE</span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      </div>
+                      <p className="text-3xl font-black font-mono text-cyan-400 my-1">{stockQuantity} <span className="text-xs font-normal text-gray-400">boîtes</span></p>
+                      <p className="text-[11px] text-gray-400">Unités délivrées ce jour : <strong className="text-white">{scannedCount}</strong></p>
+                    </div>
+                  </div>
+
+                  {/* Interactive Laser Scan Trigger Button */}
+                  <div className="p-4 bg-slate-950/80 rounded-2xl border border-cyan-400/40 text-center space-y-3">
                     <button
                       onClick={triggerLaserScan}
                       disabled={isLaserScanning}
-                      className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-teal-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                      className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2 ${
+                        isLaserScanning
+                          ? 'bg-red-600 text-white animate-pulse'
+                          : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 shadow-teal-500/25'
+                      }`}
                     >
-                      <Scan className="w-4 h-4 animate-bounce" />
-                      <span>{isLaserScanning ? 'Scan en cours...' : 'BIP ! Tester le Scan'}</span>
+                      <Scan className="w-5 h-5" />
+                      <span>{isLaserScanning ? 'SCAN LASER EN COURS (< 5ms)...' : 'DÉCLENCHER LE SCAN GS1 À LA DOUCHETTE'}</span>
                     </button>
-                  </div>
-
-                  {/* Medication Display with simulated Laser Scan */}
-                  <div className="relative p-4 bg-slate-950/90 rounded-2xl border border-white/10 overflow-hidden">
-                    {/* Laser Beam Animation */}
-                    {isLaserScanning && (
-                      <div className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center">
-                        <div className="w-full h-1 bg-red-500 shadow-[0_0_15px_#ef4444] animate-pulse" />
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded font-mono text-[10px] font-bold">
-                            CIP: 3400936284920
-                          </span>
-                          <span className="text-xs text-gray-400 font-mono">Lot #BX-84920</span>
-                        </div>
-                        <p className="text-base font-bold text-white">
-                          {selectedMedication === 'amox' ? 'Amoxicilline 1g Comprimés' :
-                           selectedMedication === 'morph' ? 'Morphine Sulfate 10mg/ml' : 'Plavix Clopidogrel 75mg'}
-                        </p>
-                        <p className="text-xs text-gray-400">Emplacement : Rayon Officine A-14 &bull; Péremption : 12/2028</p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-xs text-gray-400">Stock Hospitalier</p>
-                        <p className="text-2xl font-black text-emerald-400">{stockQuantity} <span className="text-xs font-normal text-gray-300">unités</span></p>
-                        <p className="text-[10px] text-cyan-300 font-mono">Scans effectués : {scannedCount}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Interactive Medicine Chooser */}
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-xs text-gray-400">Changer de produit à scanner :</span>
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => setSelectedMedication('amox')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                          selectedMedication === 'amox' ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40' : 'bg-white/5 text-gray-400'
-                        }`}
-                      >
-                        Amoxicilline 1g
-                      </button>
-                      <button
-                        onClick={() => setSelectedMedication('morph')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                          selectedMedication === 'morph' ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40' : 'bg-white/5 text-gray-400'
-                        }`}
-                      >
-                        Morphine 10mg
-                      </button>
-                    </div>
+                    <p className="text-[11px] text-gray-400">
+                      Cliquez pour simuler le passage d'une boîte sous le faisceau laser de la douchette.
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* SCENE 3: PGx Interceptor Interactive Alert */}
+              {/* CHAPTER 3 : BIOTECHNOLOGIES & INTERCEPTEUR PGx */}
               {currentChapter.visualType === 'pgx' && (
-                <div className="bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-red-500/50 space-y-4 shadow-2xl animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold">
-                        <Dna className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">Intercepteur PGx &middot; CYP2C19 *2/*2</p>
-                        <p className="text-xs text-red-300 font-mono">Recommandations CPIC &amp; DPWG Niveau 1A</p>
-                      </div>
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="p-4 bg-slate-950/90 rounded-2xl border border-purple-500/40 space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-purple-300 font-bold flex items-center gap-1.5">
+                        <Dna className="w-4 h-4 text-purple-400" />
+                        <span>PROFIL GÉNOMIQUE PATIENT (CPIC)</span>
+                      </span>
+                      <span className="px-2 py-0.5 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-full font-mono text-[10px] font-bold">
+                        Variant CYP2C19 *2/*2
+                      </span>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                      isSubstituted
-                        ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400'
-                        : 'bg-red-500/30 text-red-200 border-red-500 animate-pulse'
-                    }`}>
-                      {isSubstituted ? 'SÉCURISÉ - SUBSTITUTION VALIDÉE' : 'ALERTE ROUGE BLOQUANTE'}
-                    </span>
+                    <p className="text-xs text-gray-300">
+                      Statut métabolique : <strong className="text-rose-400">Métaboliseur Lent (Poor Metabolizer)</strong>. Incapacité hépatique à activer le Clopidogrel (Plavix).
+                    </p>
                   </div>
 
-                  {!isSubstituted ? (
-                    <div className="p-4 bg-red-950/60 rounded-2xl border border-red-500/40 space-y-3">
-                      <div className="flex items-center gap-2 text-red-300 text-sm font-bold">
-                        <ShieldAlert className="w-5 h-5 text-red-400 animate-bounce" />
-                        <span>Prescription de Clopidogrel (Plavix 75mg) Interdite</span>
+                  {/* Red Alert / Interception Notice */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    isSubstituted
+                      ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-100'
+                      : 'bg-rose-950/70 border-rose-500/70 text-rose-100'
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className={`w-6 h-6 flex-shrink-0 mt-0.5 ${isSubstituted ? 'text-emerald-400' : 'text-rose-400 animate-bounce'}`} />
+                      <div className="flex-1 text-xs space-y-1">
+                        <p className="font-bold text-sm">
+                          {isSubstituted
+                            ? '✅ Substitution Thérapeutique Sécurisée Appliquée'
+                            : '🛑 ALERTE BLOQUANTE PHARMACOGÉNOMIQUE (PGx)'}
+                        </p>
+                        <p className="leading-relaxed">
+                          {isSubstituted
+                            ? 'Prescription actualisée vers Prasugrel 10mg. Efficacité antiagrégante optimale garantie.'
+                            : 'Tentative de prescription de Clopidogrel 75mg interrompue. Risque majeur de thrombose de stent.'}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-300 leading-relaxed">
-                        Le patient est <strong>métaboliseur lent CYP2C19 *2/*2</strong>. Incapacité à bioactiver le Clopidogrel : risque majeur de thrombose de stent et récidive d'infarctus.
-                      </p>
-                      
-                      <div className="pt-2 flex flex-wrap gap-2 items-center justify-between border-t border-red-500/30">
-                        <span className="text-xs text-cyan-200">Alternative CPIC recommandée : <strong>Prasugrel 10mg</strong></span>
+                    </div>
+
+                    <div className="mt-3 pt-3 border-t border-white/10 flex justify-end gap-2">
+                      {!isSubstituted ? (
                         <button
                           onClick={() => {
                             setIsSubstituted(true);
-                            speakVoiceOver("Substitution validée avec succès. Le Prasugrel 10mg a été inscrit au dossier.");
+                            speakVoiceOver("Substitution sécurisée appliquée avec succès vers le Prasugrel dix milligrammes.");
                           }}
-                          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs shadow-lg transition-all hover:scale-105"
+                          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5"
                         >
-                          Appliquer Substitution Sécurisée
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>Appliquer Substitution Sécurisée (Prasugrel 10mg)</span>
                         </button>
-                      </div>
+                      ) : (
+                        <button
+                          onClick={() => setIsSubstituted(false)}
+                          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 font-semibold rounded-xl text-xs transition-colors"
+                        >
+                          Réinitialiser l'alerte
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/40 space-y-2 animate-in zoom-in-95 duration-200">
-                      <div className="flex items-center gap-2 text-emerald-300 text-sm font-bold">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        <span>Prescription Sécurisée : Prasugrel 10mg / jour</span>
-                      </div>
-                      <p className="text-xs text-gray-300">
-                        Remplacement automatique effectué dans le plan de soins du patient avec traçabilité auditable conforme HDS.
-                      </p>
+                  </div>
+                </div>
+              )}
+
+              {/* CHAPTER 4 : INTELLIGENCE CLINIQUE & CDS */}
+              {currentChapter.visualType === 'ai' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="p-4 bg-slate-950/90 rounded-2xl border border-cyan-500/30 space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-cyan-300 font-bold flex items-center gap-1.5">
+                        <Brain className="w-4 h-4 text-cyan-400" />
+                        <span>MOTEUR PROBABILISTE CDS HOOKS</span>
+                      </span>
                       <button
-                        onClick={() => setIsSubstituted(false)}
-                        className="text-xs text-cyan-300 underline pt-1"
+                        onClick={triggerAIRecalculation}
+                        disabled={isCalculatingAI}
+                        className="px-2.5 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
                       >
-                        Réinitialiser l'intercepteur pour tester à nouveau
+                        <RefreshCw className={`w-3 h-3 ${isCalculatingAI ? 'animate-spin' : ''}`} />
+                        <span>Recalculer IA</span>
                       </button>
                     </div>
-                  )}
-                </div>
-              )}
 
-              {/* SCENE 4: Clinical AI & CDS Hooks */}
-              {currentChapter.visualType === 'ai' && (
-                <div className="bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-cyan-500/40 space-y-4 shadow-2xl animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                        <Brain className="w-5 h-5" />
-                      </div>
+                    {/* Probabilities Bars */}
+                    <div className="space-y-2.5 pt-1">
                       <div>
-                        <p className="text-sm font-bold text-white">Diagnostic Différentiel IA &middot; CDS Hooks</p>
-                        <p className="text-xs text-cyan-300 font-mono">Modèle Hybride Validé Haute Précision</p>
+                        <div className="flex justify-between text-xs font-bold mb-1">
+                          <span className="text-white">Syndrome Coronarien Aigu (SCA)</span>
+                          <span className="text-rose-400 font-mono">{aiProbabilitySCA}% (Critique)</span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-rose-500 to-red-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${aiProbabilitySCA}%` }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <button
-                      onClick={triggerAIRecalculation}
-                      disabled={isCalculatingAI}
-                      className="px-3.5 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${isCalculatingAI ? 'animate-spin' : ''}`} />
-                      <span>Recalculer IA</span>
-                    </button>
-                  </div>
 
-                  {/* Probabilities Bars */}
-                  <div className="space-y-3">
-                    <div className="p-3 bg-slate-950/80 rounded-2xl border border-white/5 space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-white">1. Syndrome Coronarien Aigu (SCA ST+)</span>
-                        <span className="text-red-400 font-mono">{aiProbabilitySCA}%</span>
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold mb-1">
+                          <span className="text-gray-300">Dissection Aortique</span>
+                          <span className="text-amber-400 font-mono">28% (Modérée)</span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                          <div className="bg-amber-500 h-full rounded-full" style={{ width: '28%' }} />
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-500"
-                          style={{ width: `${aiProbabilitySCA}%` }}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="p-3 bg-slate-950/80 rounded-2xl border border-white/5 space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-gray-300">2. Dissection Aortique Type A</span>
-                        <span className="text-yellow-400 font-mono">24%</span>
-                      </div>
-                      <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-yellow-500 h-full rounded-full transition-all duration-500"
-                          style={{ width: '24%' }}
-                        />
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold mb-1">
+                          <span className="text-gray-300">Embolie Pulmonaire</span>
+                          <span className="text-cyan-400 font-mono">24% (Basse)</span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                          <div className="bg-cyan-500 h-full rounded-full" style={{ width: '24%' }} />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-3.5 bg-cyan-500/10 rounded-2xl border border-cyan-500/30 text-xs text-cyan-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
-                      <span>Recommandation CDS : Dosage Troponine hs-cTnI &amp; Coronarographie</span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 rounded text-[10px] font-bold">Priorité 1</span>
+                  <div className="p-3 bg-cyan-950/60 rounded-xl border border-cyan-500/30 text-xs text-cyan-200">
+                    ⚡ <strong>Recommandation CDS :</strong> ECG 18 dérivations immédiat, Troponine hs-cTnI à H0 et H+1, admission cardiologie interventionnelle.
                   </div>
                 </div>
               )}
+
             </div>
-          )}
-
-        </div>
-
-        {/* Subtitle Caption & CTA Bar */}
-        <div className="relative z-10 mt-5 p-4 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 font-bold text-xs rounded-xl border border-cyan-500/40 uppercase tracking-wider shrink-0">
-              {currentChapter.badge}
-            </span>
-            <p className="text-xs sm:text-sm text-gray-200 leading-snug">
-              {currentChapter.subtitle}
-            </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto justify-end">
-            <button
-              onClick={() => setShowCustomVideoModal(true)}
-              className="px-3 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-xl text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-colors"
-              title="Configurer une vidéo MP4 ou URL personnalisée"
-            >
-              <Settings className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">Source Vidéo</span>
-            </button>
-            <button
-              onClick={onRequestDemo}
-              className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow-lg shadow-teal-500/25 transition-all hover:scale-105 flex items-center justify-center gap-2"
-            >
-              <span>Demander une Démo Complète</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Video Controls & Chapter Navigation Footer */}
-      <div className="p-4 sm:p-5 bg-slate-900 border-t border-white/10 space-y-3.5">
-        {/* Interactive Timeline Progress Scrubber */}
-        <div
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const clickPos = (e.clientX - rect.left) / rect.width;
-            const targetChapterIndex = Math.min(DEMO_CHAPTERS.length - 1, Math.floor(clickPos * DEMO_CHAPTERS.length));
-            handleSelectChapter(targetChapterIndex);
-          }}
-          className="w-full bg-slate-800 h-2 rounded-full overflow-hidden cursor-pointer relative hover:h-2.5 transition-all group"
-          title="Cliquez pour naviguer dans la démo"
-        >
-          <div
-            className="bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 h-full rounded-full transition-all duration-100 ease-linear"
-            style={{ width: `${((currentChapterIndex * 100) + chapterProgress) / DEMO_CHAPTERS.length}%` }}
-          />
         </div>
 
-        {/* 4 Interactive Chapters Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {DEMO_CHAPTERS.map((chapter, idx) => {
-            const isSelected = currentChapterIndex === idx;
-            return (
-              <button
-                key={chapter.id}
-                onClick={() => handleSelectChapter(idx)}
-                className={`p-3 rounded-2xl text-left transition-all border ${
-                  isSelected
-                    ? 'bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border-cyan-400 text-cyan-200 shadow-lg shadow-cyan-500/15 scale-[1.02]'
-                    : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-mono text-cyan-400 font-bold">0{chapter.id}</span>
-                  {isSelected && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />}
-                </div>
-                <p className="text-xs font-bold truncate text-white">{chapter.title}</p>
-                <p className="text-[10px] text-gray-400 truncate">{chapter.badge}</p>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Controls Row */}
-        <div className="flex items-center justify-between pt-1 text-xs text-gray-400">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={togglePlay}
-              className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-extrabold hover:bg-cyan-400 transition-colors flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
-            >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-              <span>{isPlaying ? 'Pause' : 'Lecture'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setChapterProgress(0);
-                setCurrentChapterIndex(0);
-                setIsPlaying(true);
-              }}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-colors"
-              title="Recommencer depuis le début"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-
-            <span className="text-xs font-mono text-gray-400">
-              Chapitre {currentChapterIndex + 1} / {DEMO_CHAPTERS.length} &bull; {currentChapter.title}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onGoToLogin}
-              className="text-xs text-gray-300 hover:text-cyan-300 font-semibold transition-colors flex items-center gap-1"
-            >
-              <span>Accéder à l'espace praticien</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Custom Video URL Source Modal */}
-      {showCustomVideoModal && (
-        <div className="fixed inset-0 z-[999999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <Video className="w-4 h-4 text-cyan-400" />
-                <span>Source Vidéo Personnalisée</span>
-              </h3>
-              <button onClick={() => setShowCustomVideoModal(false)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-300">
-              Collez l'URL directe d'un fichier vidéo MP4 ou WebM pour la diffuser dans le lecteur :
-            </p>
-
-            <input
-              type="url"
-              value={customVideoUrl}
-              onChange={(e) => setCustomVideoUrl(e.target.value)}
-              placeholder="https://exemple.com/video-demo.mp4"
-              className="w-full px-4 py-2.5 bg-slate-950 border border-white/15 rounded-xl text-xs text-white focus:border-cyan-400 focus:outline-none"
+        {/* Bottom Timeline & Controls */}
+        <div className="relative z-10 pt-6 mt-4 border-t border-white/10 space-y-3">
+          {/* Progress Bar */}
+          <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full transition-all duration-100 ease-linear"
+              style={{ width: `${chapterProgress}%` }}
             />
+          </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+          {/* Chapter Selector Tabs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {DEMO_CHAPTERS.map((chapter, idx) => {
+              const isSelected = currentChapterIndex === idx;
+              return (
+                <button
+                  key={chapter.id}
+                  onClick={() => handleSelectChapter(idx)}
+                  className={`p-3 rounded-2xl text-left transition-all border ${
+                    isSelected
+                      ? 'bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border-cyan-400 text-cyan-200 shadow-lg shadow-cyan-500/15 scale-[1.02]'
+                      : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-mono text-cyan-400 font-bold">0{chapter.id}</span>
+                    {isSelected && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />}
+                  </div>
+                  <p className="text-xs font-bold truncate text-white">{chapter.title}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{chapter.badge}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Controls Row */}
+          <div className="flex items-center justify-between pt-1 text-xs text-gray-400">
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => { setCustomVideoUrl(''); setShowCustomVideoModal(false); }}
-                className="px-3 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-xl text-xs font-semibold"
+                onClick={togglePlay}
+                className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-extrabold hover:bg-cyan-400 transition-colors flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
               >
-                Réinitialiser
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                <span>{isPlaying ? 'Pause' : 'Lecture'}</span>
               </button>
+
               <button
                 onClick={() => {
-                  if (customVideoUrl) setVideoPlaybackMode('real-mp4');
-                  setShowCustomVideoModal(false);
+                  setChapterProgress(0);
+                  setCurrentChapterIndex(0);
+                  setIsPlaying(true);
                 }}
-                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl text-xs font-bold"
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-colors"
+                title="Recommencer depuis le début"
               >
-                Appliquer la vidéo
+                <RotateCcw className="w-4 h-4" />
+              </button>
+
+              <span className="text-xs font-mono text-gray-400">
+                Chapitre {currentChapterIndex + 1} / {DEMO_CHAPTERS.length} &bull; {currentChapter.title}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={onGoToLogin}
+                className="text-xs text-gray-300 hover:text-cyan-300 font-semibold transition-colors flex items-center gap-1"
+              >
+                <span>Accéder à l'espace praticien</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
-      )}
+
+      </div>
     </div>
   );
 
   return (
     <>
-      {/* Normal in-page layout */}
       {!isFullscreen && containerContent}
 
-      {/* Fullscreen Theater Modal Mode */}
       {isFullscreen && (
         <div className="fixed inset-0 z-[99999] bg-slate-950/95 backdrop-blur-xl p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-200">
           {containerContent}

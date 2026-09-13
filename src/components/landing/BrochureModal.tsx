@@ -23,20 +23,20 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
   const handleDownloadBrochure = async () => {
     const brochureHtml = `
       <div style="font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; max-width: 800px; margin: 0 auto; line-height: 1.5;">
-        ${generateDocumentHeader(organizationSettings, 'report', 'BROCHURE-SOFTCARE-2026')}
+        ${generateDocumentHeader(organizationSettings, 'report', 'BROCHURE-MEDICALE-2026')}
         
         <!-- PAGE 1 -->
-        <div style="page-break-after: always; padding: 30px 0;">
-          <div style="background: linear-gradient(135deg, #0891b2 0%, #0d9488 100%); color: white; padding: 40px; border-radius: 12px; text-align: center; margin-bottom: 25px;">
-            <h1 style="font-size: 28px; margin: 0 0 10px 0; font-weight: 800;">SoftCare Hospital System</h1>
-            <p style="font-size: 16px; margin: 0; opacity: 0.9;">Système d'Information Hospitalier (HIS) & Pôle Biotechnologies de Précision</p>
+        <div style="page-break-after: always; padding: 25px 0;">
+          <div style="background: linear-gradient(135deg, ${organizationSettings.primaryColor || '#0891b2'} 0%, #0d9488 100%); color: white; padding: 35px; border-radius: 12px; text-align: center; margin-bottom: 25px;">
+            <h1 style="font-size: 26px; margin: 0 0 10px 0; font-weight: 800;">${organizationSettings.name}</h1>
+            <p style="font-size: 15px; margin: 0; opacity: 0.95;">Système d'Information Hospitalier (HIS) & Dossier Patient Informatisé</p>
             <div style="margin-top: 15px; display: inline-block; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;">
-              Édition Médicale & Institutionnelle 2026
+              Édition Médicale & Institutionnelle ${new Date().getFullYear()}
             </div>
           </div>
 
-          <h2 style="color: #0891b2; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">1. Vision Stratégique & Excellence des Soins</h2>
-          <p><strong>SoftCare</strong> est une plateforme hospitalière unifiée de nouvelle génération conçue pour décloisonner les services médicaux, sécuriser la dispensation pharmaceutique et intégrer la médecine génomique personnalisée au lit du patient.</p>
+          <h2 style="color: ${organizationSettings.primaryColor || '#0891b2'}; border-bottom: 2px solid #06b6d4; padding-bottom: 8px;">1. Vision Stratégique & Excellence des Soins</h2>
+          <p>La plateforme hospitalière unifiée de <strong>${organizationSettings.name}</strong> est conçue pour décloisonner les services médicaux, sécuriser la dispensation pharmaceutique et intégrer la médecine de précision au lit du patient.</p>
 
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tr style="background: #ecfeff;">

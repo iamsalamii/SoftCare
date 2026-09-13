@@ -219,16 +219,16 @@ const InvoiceList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Revenus</p>
-              <p className="text-2xl font-bold text-green-600">{totalRevenue.toFixed(2)} €</p>
+              <p className="text-2xl font-bold text-green-600">{totalRevenue.toFixed(2)} {organizationSettings?.currencySymbol || '€'}</p>
             </div>
-            <Euro className="w-8 h-8 text-green-500" />
+            <CreditCard className="w-8 h-8 text-green-500" />
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">En attente</p>
-              <p className="text-2xl font-bold text-yellow-600">{pendingAmount.toFixed(2)} €</p>
+              <p className="text-2xl font-bold text-yellow-600">{pendingAmount.toFixed(2)} {organizationSettings?.currencySymbol || '€'}</p>
             </div>
             <CreditCard className="w-8 h-8 text-yellow-500" />
           </div>
@@ -329,10 +329,10 @@ const InvoiceList: React.FC = () => {
                         {new Date(invoice.dueDate).toLocaleDateString('fr-FR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                        {invoice.total.toFixed(2)} €
+                        {invoice.total.toFixed(2)} {organizationSettings?.currencySymbol || '€'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-green-600">
-                        {paidAmount.toFixed(2)} €
+                        {paidAmount.toFixed(2)} {organizationSettings?.currencySymbol || '€'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
@@ -383,9 +383,10 @@ const InvoiceList: React.FC = () => {
 
 // Composant Détails Facture
 const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint: () => void }> = ({ invoice, onClose, onPrint }) => {
-  const { patients, insurances } = useApp();
+  const { patients, organizationSettings } = useApp();
   const patient = patients.find(p => p.id === invoice.patientId);
   const paidAmount = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
+  const currencySymbol = organizationSettings?.currencySymbol || '€';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -407,10 +408,10 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint:
               <p className="text-sm text-gray-500">{patient?.phone}</p>
             </div>
             <div className="text-right">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Hôpital</h3>
-              <p className="text-gray-700">HospitalCare Pro</p>
-              <p className="text-sm text-gray-500">123 Avenue de la Santé</p>
-              <p className="text-sm text-gray-500">75000 Paris</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">{organizationSettings?.name || 'Hôpital'}</h3>
+              <p className="text-gray-700">{organizationSettings?.address || '123 Avenue de la Santé'}</p>
+              <p className="text-sm text-gray-500">{organizationSettings?.phone || '01 23 45 67 89'}</p>
+              <p className="text-sm text-gray-500">{organizationSettings?.email || 'contact@hopital.fr'}</p>
             </div>
           </div>
 
@@ -452,9 +453,9 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint:
                   {invoice.items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-4 py-3 text-gray-900">{item.description}</td>
-                      <td className="px-4 py-3 text-right text-gray-600">{item.unitPrice.toFixed(2)} €</td>
+                      <td className="px-4 py-3 text-right text-gray-600">{item.unitPrice.toFixed(2)} {currencySymbol}</td>
                       <td className="px-4 py-3 text-right text-gray-600">{item.quantity}</td>
-                      <td className="px-4 py-3 text-right font-medium text-gray-900">{item.total.toFixed(2)} €</td>
+                      <td className="px-4 py-3 text-right font-medium text-gray-900">{item.total.toFixed(2)} {currencySymbol}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -467,25 +468,25 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint:
             <div className="w-64 space-y-2">
               <div className="flex justify-between text-gray-600">
                 <span>Sous-total</span>
-                <span>{invoice.subtotal.toFixed(2)} €</span>
+                <span>{invoice.subtotal.toFixed(2)} {currencySymbol}</span>
               </div>
               {invoice.discount > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Remise</span>
-                  <span>-{invoice.discount.toFixed(2)} €</span>
+                  <span>-{invoice.discount.toFixed(2)} {currencySymbol}</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold text-gray-900 border-t pt-2">
                 <span>Total</span>
-                <span>{invoice.total.toFixed(2)} €</span>
+                <span>{invoice.total.toFixed(2)} {currencySymbol}</span>
               </div>
               <div className="flex justify-between text-green-600">
                 <span>Payé</span>
-                <span>{paidAmount.toFixed(2)} €</span>
+                <span>{paidAmount.toFixed(2)} {currencySymbol}</span>
               </div>
               <div className="flex justify-between text-red-600 font-medium">
                 <span>Reste à payer</span>
-                <span>{(invoice.total - paidAmount).toFixed(2)} €</span>
+                <span>{(invoice.total - paidAmount).toFixed(2)} {currencySymbol}</span>
               </div>
             </div>
           </div>
@@ -498,7 +499,7 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint:
                 {invoice.payments.map((payment) => (
                   <div key={payment.id} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
                     <div>
-                      <span className="font-medium text-green-800">{payment.amount.toFixed(2)} €</span>
+                      <span className="font-medium text-green-800">{payment.amount.toFixed(2)} {currencySymbol}</span>
                       <span className="text-green-600 ml-2">par {payment.method}</span>
                     </div>
                     <div className="text-sm text-green-600">
