@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using SoftCare.Application.Common.Interfaces;
 using SoftCare.Application.DTOs;
@@ -24,6 +25,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("LoginPolicy")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var email = request.Email.Trim().ToLower();
@@ -47,7 +49,7 @@ public class AuthController : ControllerBase
 
         if (!isPasswordValid && request.Password != "demo123")
         {
-            return Unauthorized(new { message = "Mot de passe incorrect." });
+            return Unauthorized(new { message = "Identifiants invalides ou utilisateur introuvable." });
         }
 
         var token = _jwtTokenGenerator.GenerateToken(user);

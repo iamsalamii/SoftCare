@@ -2,8 +2,12 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SoftCare.Infrastructure;
@@ -77,6 +81,19 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// 4.5. Configure Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("LoginPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = 429;
+});
+
 var app = builder.Build();
 
 // 5. Database Initialization & Seeding on Startup
@@ -117,6 +134,8 @@ if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Ena
 }
 
 app.UseRouting();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
