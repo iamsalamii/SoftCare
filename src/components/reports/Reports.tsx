@@ -5,6 +5,7 @@ import {
   Download, FileSpreadsheet, Printer, Activity, PieChart,
   ArrowUpRight, ArrowDownRight, Layers, Sparkles, BedDouble, Dna
 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Bar, Line, Legend } from 'recharts';
 import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel, formatCurrency } from '../../utils/exportUtils';
 
 export const Reports: React.FC = () => {
@@ -227,7 +228,7 @@ export const Reports: React.FC = () => {
         </div>
       </div>
 
-      {/* Section 1: Animated Interactive SVG Curve (Chart.js Style) */}
+      {/* Section 1: Animated Interactive Recharts ComposedChart */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-gray-100">
           <div>
@@ -237,116 +238,35 @@ export const Reports: React.FC = () => {
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">Volume mensuel comparé des consultations, passages aux urgences et analyses biotech.</p>
           </div>
-
-          <div className="flex items-center gap-4 text-xs font-semibold text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-cyan-500" /> Consultations
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-teal-600" /> Urgences
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-purple-500" /> Analyses Biotech
-            </span>
-          </div>
         </div>
 
-        {/* SVG Chart Area */}
-        <div className="relative h-64 w-full">
-          <svg className="w-full h-full overflow-visible" viewBox="0 0 700 220" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="cyanArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
-              </linearGradient>
-              <linearGradient id="tealArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0d9488" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#0d9488" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-
-            {/* Grid lines */}
-            {[0, 50, 100, 150, 200].map((y) => (
-              <line key={y} x1="0" y1={y} x2="700" y2={y} stroke="#f1f5f9" strokeWidth="1" />
-            ))}
-
-            {/* Consultations Line & Gradient Area */}
-            <path
-              d="M 0 140 C 100 110, 200 80, 300 90 C 400 60, 500 30, 650 15 L 650 200 L 0 200 Z"
-              fill="url(#cyanArea)"
-              className="animate-fade-in"
-              style={{ animationDuration: '1.5s' }}
-            />
-            <path
-              d="M 0 140 C 100 110, 200 80, 300 90 C 400 60, 500 30, 650 15"
-              fill="none"
-              stroke="#06b6d4"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="1000"
-              strokeDashoffset="1000"
-              style={{ animation: 'drawCurve 1.5s ease-out forwards' }}
-            />
-
-            {/* Urgences Line */}
-            <path
-              d="M 0 170 C 100 160, 200 145, 300 150 C 400 130, 500 120, 650 110"
-              fill="none"
-              stroke="#0d9488"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="4 4"
-              className="animate-fade-in"
-              style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
-            />
-
-            {/* Biotech Line */}
-            <path
-              d="M 0 195 C 100 190, 200 180, 300 175 C 400 160, 500 150, 650 135"
-              fill="none"
-              stroke="#8b5cf6"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeDasharray="1000"
-              strokeDashoffset="1000"
-              style={{ animation: 'drawCurve 1.5s ease-out forwards 0.8s' }}
-            />
-
-            {/* Data point dots */}
-            {monthlyActivityData.map((d, i) => {
-              const cx = (i / (monthlyActivityData.length - 1)) * 650;
-              const cy = 200 - (d.consultations / 350) * 180;
-              const isHovered = hoveredMonth === i;
-              return (
-                <g key={i} onMouseEnter={() => setHoveredMonth(i)} onMouseLeave={() => setHoveredMonth(null)} className="cursor-pointer">
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r={isHovered ? 7 : 4.5}
-                    fill="#ffffff"
-                    stroke="#0891b2"
-                    strokeWidth="3"
-                    className="transition-all"
-                  />
-                  {isHovered && (
-                    <g>
-                      <rect x={cx - 50} y={cy - 45} width="100" height="35" rx="8" fill="#0f172a" opacity="0.9" />
-                      <text x={cx} y={cy - 25} fill="#ffffff" fontSize="10" fontWeight="bold" textAnchor="middle">
-                        {d.label}: {d.consultations} consults
-                      </text>
-                    </g>
-                  )}
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* X Axis Labels */}
-          <div className="flex justify-between text-xs text-gray-400 font-bold pt-2 border-t border-gray-100">
-            {monthlyActivityData.map((d, i) => (
-              <span key={i} className={hoveredMonth === i ? 'text-cyan-700 font-black' : ''}>{d.label}</span>
-            ))}
-          </div>
+        <div className="h-80 w-full mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={monthlyActivityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorConsultations" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.1)'
+                }}
+                itemStyle={{ fontSize: '13px', fontWeight: 600 }}
+              />
+              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} iconType="circle" />
+              <Area type="monotone" dataKey="consultations" name="Consultations" fill="url(#colorConsultations)" stroke="#06b6d4" strokeWidth={3} />
+              <Bar dataKey="urgences" name="Urgences" fill="#0d9488" radius={[4, 4, 0, 0]} maxBarSize={40} />
+              <Line type="monotone" dataKey="biotheque" name="Analyses Biotech" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
