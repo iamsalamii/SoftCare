@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from './ToastContext';
+import { apiService } from '../services/apiService';
 import {
   User, Patient, MedicalRecord, Medication, Appointment,
   Invoice, Bed, Admission, LabOrder, LabTest,
@@ -157,14 +158,14 @@ const genId = () => Date.now().toString() + Math.random().toString(36).substring
 
 const defaultOrgSettings: OrganizationSettings = {
   id: '1',
-  name: 'SoftCare',
+  name: 'Mon Établissement de Santé',
   type: 'hospital',
   address: '123 Avenue de la Santé',
   city: 'Paris',
   country: 'France',
   phone: '+33 1 23 45 67 89',
-  email: 'contact@softcare.fr',
-  website: 'www.softcare.fr',
+  email: 'contact@etablissement.fr',
+  website: 'www.etablissement.fr',
   taxId: 'FR12345678901',
   registrationNumber: 'HOSP-2024-001',
   bankName: 'Banque Nationale',
@@ -648,101 +649,123 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, [currentUser]);
 
-  // Secure sign in with dynamic users & fallback
+  // Secure sign in with API
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
-    const cleanEmail = email.toLowerCase().trim();
-    const user = users.find(u => u.email.toLowerCase() === cleanEmail) || mockUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    const genericAuthError = 'Identifiant ou mot de passe incorrect.';
-
-    if (!user) return { error: genericAuthError };
-    if (user.status === 'inactive' || user.active === false) {
-      return { error: 'Ce compte utilisateur a été désactivé. Contactez votre administrateur.' };
-    }
-    
-    let isValid = false;
-    if (user.passwordHash) {
-      isValid = (password === user.passwordHash);
-    }
-    if (!isValid) {
-      if (cleanEmail === 'admin@hopital.com') {
-        isValid = (password === 'Admin123!');
-      } else {
-        isValid = (password === 'demo123' || password === 'Admin123!');
+    try {
+      const response = await apiService.auth.login(email, password);
+      
+      const user = response.user;
+      if (!user) return { error: 'Utilisateur introuvable.' };
+      
+      if (user.status === 'inactive' || user.active === false) {
+        return { error: 'Ce compte utilisateur a été désactivé. Contactez votre administrateur.' };
       }
+
+      localStorage.setItem('softcare_token', response.token);
+      setCurrentUser(user);
+      localStorage.setItem('softcare_current_user', JSON.stringify(user));
+      return { error: null };
+    } catch (err: any) {
+      return { error: err.message || 'Identifiant ou mot de passe incorrect.' };
     }
-
-    if (!isValid) return { error: genericAuthError };
-
-    setCurrentUser(user);
-    localStorage.setItem('softcare_current_user', JSON.stringify(user));
-    return { error: null };
   };
 
   const signOut = async () => {
     setCurrentUser(null);
     localStorage.removeItem('softcare_current_user');
+    localStorage.removeItem('softcare_token');
   };
 
   // === PATIENTS ===
   const addPatient = async (patient: Partial<Patient>) => {
-    const newPatient: Patient = {
-      id: genId(),
-      firstName: patient.firstName || '',
-      lastName: patient.lastName || '',
-      dateOfBirth: patient.dateOfBirth || '',
-      gender: patient.gender || 'male',
-      phone: patient.phone || '',
-      email: patient.email || '',
-      address: patient.address || '',
-      city: patient.city || '',
-      bloodType: patient.bloodType || '',
-      allergies: patient.allergies || [],
-      insuranceId: patient.insuranceId || '',
-      insuranceName: patient.insuranceName || '',
-      emergencyContact: patient.emergencyContact,
-      emergencyContactName: patient.emergencyContactName,
-      emergencyContactPhone: patient.emergencyContactPhone,
-      socialSecurityNumber: patient.socialSecurityNumber,
-      maritalStatus: patient.maritalStatus,
-      occupation: patient.occupation,
-      primaryDoctorId: patient.primaryDoctorId,
-      status: patient.status || 'active',
-      active: true,
-      createdAt: new Date().toISOString(),
-    };
-    setPatients(prev => [newPatient, ...prev]);
-    success('Patient créé', 'Le dossier patient a été enregistré');
+    try {
+      const newPatient = await apiService.patients.create(patient);
+      setPatients(prev => [newPatient, ...prev]);
+      success('Patient créé via API', 'Le dossier patient a été enregistré');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de créer le patient');
+      // Fallback local
+      const fallbackPatient: Patient = {
+        id: genId(),
+        firstName: patient.firstName || '',
+        lastName: patient.lastName || '',
+        dateOfBirth: patient.dateOfBirth || '',
+        gender: patient.gender || 'male',
+        phone: patient.phone || '',
+        email: patient.email || '',
+        address: patient.address || '',
+        city: patient.city || '',
+        bloodType: patient.bloodType || '',
+        allergies: patient.allergies || [],
+        insuranceId: patient.insuranceId || '',
+        insuranceName: patient.insuranceName || '',
+        emergencyContact: patient.emergencyContact,
+        emergencyContactName: patient.emergencyContactName,
+        emergencyContactPhone: patient.emergencyContactPhone,
+        socialSecurityNumber: patient.socialSecurityNumber,
+        maritalStatus: patient.maritalStatus,
+        occupation: patient.occupation,
+        primaryDoctorId: patient.primaryDoctorId,
+        status: patient.status || 'active',
+        active: true,
+        createdAt: new Date().toISOString(),
+      };
+      setPatients(prev => [fallbackPatient, ...prev]);
+      success('Patient créé (Mode Local)', 'Le dossier patient a été enregistré localement');
+    }
   };
 
   const updatePatient = async (id: string, updates: Partial<Patient>) => {
-    setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    success('Patient mis à jour');
+    try {
+      const updatedPatient = await apiService.patients.update(id, updates);
+      setPatients(prev => prev.map(p => p.id === id ? updatedPatient : p));
+      success('Patient mis à jour via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de mettre à jour le patient');
+      setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+      success('Patient mis à jour (Mode Local)');
+    }
   };
 
   const deletePatient = async (id: string) => {
-    setPatients(prev => prev.filter(p => p.id !== id));
-    success('Patient supprimé');
+    try {
+      await apiService.patients.delete(id);
+      setPatients(prev => prev.filter(p => p.id !== id));
+      success('Patient supprimé via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de supprimer le patient');
+      setPatients(prev => prev.filter(p => p.id !== id));
+      success('Patient supprimé (Mode Local)');
+    }
   };
 
   // === USERS ===
   const addUser = async (user: Partial<User>) => {
-    const newUser: User = {
-      id: genId(),
-      name: user.name || '',
-      email: user.email || '',
-      role: user.role || 'doctor',
-      department: user.department || '',
-      phone: user.phone || '',
-      specialization: user.specialization,
-      licenseNumber: user.licenseNumber,
-      status: user.status || 'active',
-      active: true,
-      passwordHash: user.passwordHash || 'demo123',
-      permissions: user.permissions || [],
-      createdAt: new Date().toISOString(),
-    };
-    setUsers(prev => [...prev, newUser]);
-    success('Utilisateur créé');
+    try {
+      const newUser = await apiService.auth.register(user);
+      setUsers(prev => [...prev, newUser]);
+      success('Utilisateur créé via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de créer l\'utilisateur');
+      // Fallback local pour la démo si l'API échoue
+      const fallbackUser: User = {
+        id: genId(),
+        name: user.name || '',
+        email: user.email || '',
+        role: user.role || 'doctor',
+        department: user.department || '',
+        phone: user.phone || '',
+        specialization: user.specialization,
+        licenseNumber: user.licenseNumber,
+        status: user.status || 'active',
+        active: true,
+        passwordHash: user.passwordHash || 'demo123',
+        permissions: user.permissions || [],
+        createdAt: new Date().toISOString(),
+      };
+      setUsers(prev => [...prev, fallbackUser]);
+      success('Utilisateur créé (Mode Local)');
+    }
   };
 
   const updateUser = async (id: string, updates: Partial<User>) => {
@@ -791,40 +814,61 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === MEDICATIONS ===
   const addMedication = async (medication: Partial<Medication>) => {
-    const newMed: Medication = {
-      id: genId(),
-      name: medication.name || '',
-      genericName: medication.genericName || '',
-      category: medication.category || '',
-      manufacturer: medication.manufacturer || '',
-      stock: medication.stock || 0,
-      minStock: medication.minStock || 10,
-      maxStock: medication.maxStock || 100,
-      price: medication.price || medication.unitPrice || 0,
-      unitPrice: medication.unitPrice || medication.price || 0,
-      expiryDate: medication.expiryDate || '',
-      batchNumber: medication.batchNumber || '',
-      barcode: medication.barcode || '',
-      description: medication.description || '',
-      dosageForm: medication.dosageForm || 'tablet',
-      requiresPrescription: medication.requiresPrescription || false,
-      location: medication.location || '',
-      supplier: medication.supplier || '',
-      status: medication.status || 'active',
-      createdAt: new Date().toISOString(),
-    };
-    setMedications(prev => [...prev, newMed]);
-    success('Médicament ajouté');
+    try {
+      const newMed = await apiService.medications.create(medication);
+      setMedications(prev => [...prev, newMed]);
+      success('Médicament ajouté via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible d\'ajouter le médicament');
+      const fallbackMed: Medication = {
+        id: genId(),
+        name: medication.name || '',
+        genericName: medication.genericName || '',
+        category: medication.category || '',
+        manufacturer: medication.manufacturer || '',
+        stock: medication.stock || 0,
+        minStock: medication.minStock || 10,
+        maxStock: medication.maxStock || 100,
+        price: medication.price || medication.unitPrice || 0,
+        unitPrice: medication.unitPrice || medication.price || 0,
+        expiryDate: medication.expiryDate || '',
+        batchNumber: medication.batchNumber || '',
+        barcode: medication.barcode || '',
+        description: medication.description || '',
+        dosageForm: medication.dosageForm || 'tablet',
+        requiresPrescription: medication.requiresPrescription || false,
+        location: medication.location || '',
+        supplier: medication.supplier || '',
+        status: medication.status || 'active',
+        createdAt: new Date().toISOString(),
+      };
+      setMedications(prev => [...prev, fallbackMed]);
+      success('Médicament ajouté (Mode Local)');
+    }
   };
 
   const updateMedication = async (id: string, updates: Partial<Medication>) => {
-    setMedications(prev => prev.map(m => m.id === id ? { ...m, ...updates, unitPrice: updates.unitPrice || updates.price || m.unitPrice, price: updates.price || updates.unitPrice || m.price } : m));
-    success('Médicament mis à jour');
+    try {
+      const updatedMed = await apiService.medications.update(id, updates);
+      setMedications(prev => prev.map(m => m.id === id ? updatedMed : m));
+      success('Médicament mis à jour via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de mettre à jour le médicament');
+      setMedications(prev => prev.map(m => m.id === id ? { ...m, ...updates, unitPrice: updates.unitPrice || updates.price || m.unitPrice, price: updates.price || updates.unitPrice || m.price } : m));
+      success('Médicament mis à jour (Mode Local)');
+    }
   };
 
   const deleteMedication = async (id: string) => {
-    setMedications(prev => prev.filter(m => m.id !== id));
-    success('Médicament supprimé');
+    try {
+      await apiService.medications.delete(id);
+      setMedications(prev => prev.filter(m => m.id !== id));
+      success('Médicament supprimé via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de supprimer le médicament');
+      setMedications(prev => prev.filter(m => m.id !== id));
+      success('Médicament supprimé (Mode Local)');
+    }
   };
 
   // === LAB ORDERS ===
@@ -989,8 +1033,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateBed = async (id: string, updates: Partial<Bed>) => {
-    setBeds(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
-    success('Lit mis à jour');
+    try {
+      const updatedBed = await apiService.beds.update(id, updates);
+      setBeds(prev => prev.map(b => b.id === id ? updatedBed : b));
+      success('Lit mis à jour via API');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de mettre à jour le lit via API');
+      setBeds(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+      success('Lit mis à jour (Mode Local)');
+    }
   };
 
   const deleteBed = async (id: string) => {
