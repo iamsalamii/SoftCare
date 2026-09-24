@@ -7,7 +7,15 @@ declare global {
 }
 
 export const formatCurrency = (amount: number, organization?: OrganizationSettings): string => {
-  const symbol = organization?.currencySymbol || '€';
+  let org = organization;
+  if (!org) {
+    try {
+      const saved = localStorage.getItem('softcare_org_settings');
+      if (saved) org = JSON.parse(saved);
+    } catch (e) {}
+  }
+  
+  const symbol = org?.currencySymbol || '€';
   const formattedNumber = new Intl.NumberFormat('fr-FR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -28,7 +36,8 @@ export const formatDate = (date: string | Date, format: string = 'DD/MM/YYYY'): 
 export const generateDocumentHeader = (
   organization: OrganizationSettings,
   docType: 'invoice' | 'receipt' | 'report' | 'prescription' | 'lab_result',
-  docNumber: string
+  docNumber: string,
+  includeLogo: boolean = true
 ): string => {
   const docLabels: Record<string, string> = {
     invoice: 'Facture',
@@ -41,7 +50,7 @@ export const generateDocumentHeader = (
   return `
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid ${organization.primaryColor || '#0891b2'};">
       <div style="display: flex; align-items: center; gap: 15px;">
-        ${organization.logo ? `<img src="${organization.logo}" alt="${organization.name}" style="max-height: 55px; max-width: 140px; object-fit: contain;">` : ''}
+        ${includeLogo && organization.logo ? `<img src="${organization.logo}" alt="${organization.name}" style="max-height: 55px; max-width: 140px; object-fit: contain;">` : '<div style="width: 140px; height: 55px; border: 1px dashed transparent;"></div>'}
         <div>
           <h1 style="margin: 0; font-size: 20px; color: ${organization.primaryColor || '#0891b2'}; font-weight: bold;">${organization.name}</h1>
           <p style="margin: 3px 0 0; color: #475569; font-size: 11px;">${organization.address}, ${organization.city}</p>

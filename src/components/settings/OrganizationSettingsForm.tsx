@@ -351,14 +351,14 @@ const OrganizationSettingsForm: React.FC = () => {
                 onChange={(e) => {
                   const currency = e.target.value;
                   const symbols: Record<string, string> = {
-                    'EUR': 'E',
+                    'EUR': '€',
                     'USD': '$',
                     'XOF': 'FCFA',
                     'XAF': 'FCFA',
                     'MAD': 'DH',
                     'DZD': 'DA',
                     'TND': 'DT',
-                    'GBP': 'L',
+                    'GBP': '£',
                     'CHF': 'CHF'
                   };
                   setFormData(prev => ({
@@ -375,7 +375,7 @@ const OrganizationSettingsForm: React.FC = () => {
                 <option value="XOF">Franc CFA (XOF)</option>
                 <option value="XAF">Franc CFA (XAF)</option>
                 <option value="MAD">Dirham Marocain (MAD)</option>
-                <option value="DZD">Dinar Algerien (DZD)</option>
+                <option value="DZD">Dinar Algérien (DZD)</option>
                 <option value="TND">Dinar Tunisien (TND)</option>
                 <option value="GBP">Livre Sterling (GBP)</option>
                 <option value="CHF">Franc Suisse (CHF)</option>
@@ -385,7 +385,7 @@ const OrganizationSettingsForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Symbole</label>
               <input
                 type="text"
-                value={formData.currencySymbol || 'E'}
+                value={formData.currencySymbol || '€'}
                 onChange={(e) => handleChange('currencySymbol', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
