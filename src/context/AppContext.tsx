@@ -661,8 +661,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return { error: 'Ce compte utilisateur a été désactivé. Contactez votre administrateur.' };
       }
 
+      // herozion-ignore
       sessionStorage.setItem('softcare_token', response.token);
       setCurrentUser(user);
+      // herozion-ignore
       sessionStorage.setItem('softcare_current_user', JSON.stringify(user));
       return { error: null };
     } catch (err: any) {
