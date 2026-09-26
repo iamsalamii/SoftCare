@@ -60,7 +60,7 @@ interface AppContextType {
   setDepartments: (departments: Department[]) => void;
   invoices: Invoice[];
   setInvoices: (invoices: Invoice[]) => void;
-  addInvoice: (invoice: Partial<Invoice>, items: Partial<Invoice['items']>[number][]) => Promise<void>;
+  addInvoice: (invoice: Partial<Invoice>, items: Partial<Invoice['items']>[number][]) => Promise<Invoice>;
   updateInvoice: (id: string, invoice: Partial<Invoice>) => Promise<void>;
   deleteInvoice: (id: string) => Promise<void>;
   beds: Bed[];
@@ -604,10 +604,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Restore session from localStorage
+  // Restore session from sessionStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('softcare_current_user');
+      const saved = sessionStorage.getItem('softcare_current_user');
       if (saved) {
         const user = JSON.parse(saved) as User;
         setCurrentUser(user);
@@ -628,7 +628,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (!currentUser) return;
 
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 minutes
 
     const resetTimer = () => {
@@ -661,19 +661,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return { error: 'Ce compte utilisateur a été désactivé. Contactez votre administrateur.' };
       }
 
-      localStorage.setItem('softcare_token', response.token);
+      sessionStorage.setItem('softcare_token', response.token);
       setCurrentUser(user);
-      localStorage.setItem('softcare_current_user', JSON.stringify(user));
+      sessionStorage.setItem('softcare_current_user', JSON.stringify(user));
       return { error: null };
     } catch (err: any) {
-      return { error: err.message || 'Identifiant ou mot de passe incorrect.' };
+      console.error('Login error:', err);
+      return { error: 'Identifiant ou mot de passe incorrect.' };
     }
   };
 
   const signOut = async () => {
     setCurrentUser(null);
-    localStorage.removeItem('softcare_current_user');
-    localStorage.removeItem('softcare_token');
+    sessionStorage.removeItem('softcare_current_user');
+    sessionStorage.removeItem('softcare_token');
   };
 
   // === PATIENTS ===
@@ -954,13 +955,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       date: invoice.date || new Date().toISOString().split('T')[0],
       dueDate: invoice.dueDate || '',
       items: items.map((item, idx) => ({
-        id: item.id || (idx + 1).toString(),
-        description: item.description || '',
-        type: item.type,
-        category: item.category,
-        quantity: item.quantity || 1,
-        unitPrice: item.unitPrice || 0,
-        total: item.total || 0,
+        id: item?.id || (idx + 1).toString(),
+        description: item?.description || '',
+        type: item?.type || 'other',
+        category: item?.category || 'other',
+        quantity: item?.quantity || 1,
+        unitPrice: item?.unitPrice || 0,
+        total: item?.total || 0,
       })),
       subtotal: invoice.subtotal || 0,
       tax: invoice.tax || 0,

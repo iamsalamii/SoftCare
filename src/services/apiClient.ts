@@ -8,7 +8,7 @@ class ApiClient {
   }
 
   private getAuthHeader(): Record<string, string> {
-    const token = localStorage.getItem('softcare_token');
+    const token = sessionStorage.getItem('softcare_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 

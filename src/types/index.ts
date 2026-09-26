@@ -256,18 +256,33 @@ export interface Bed {
 export interface Admission {
   id: string;
   patientId: string;
-  bedId: string;
-  doctorId: string;
-  type: 'planned' | 'emergency' | 'transfer';
-  reason: string;
+  patientName?: string;
+  bedId?: string;
+  bedNumber?: string;
+  roomId?: string;
+  roomNumber?: string;
+  doctorId?: string;
+  attendingDoctorId?: string;
+  attendingDoctorName?: string;
+  type?: 'planned' | 'emergency' | 'transfer';
+  reason?: string;
+  diagnosis?: string;
   admissionDate: string;
+  dischargeDate?: string;
   expectedDischargeDate?: string;
   actualDischargeDate?: string;
   status: 'pending' | 'admitted' | 'discharged' | 'transferred';
   departmentId: string;
+  departmentName?: string;
   notes?: string;
   dischargeSummary?: string;
   dischargeBy?: string;
+  insuranceProvider?: string;
+  insurancePolicyNumber?: string;
+  dailyRate?: number;
+  totalAmount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Room {
