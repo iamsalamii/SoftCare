@@ -13,8 +13,8 @@ import {
   mockUsers, mockDepartments, mockPatients, mockMedications, mockMedicationMovements,
   mockAppointments, mockMedicalRecords, mockInsurances, mockPatientInsurances,
   mockInvoices, mockBeds, mockRooms, mockAdmissions, mockLabTests, mockLabOrders,
-  mockVitalSigns, mockCarePlans, mockEmergencyVisits, mockOperatingRooms, mockSurgeries,
-  mockWorkSchedules, mockNotifications, mockGenomicProfiles, mockPGxInteractions,
+  mockVitalSigns, mockCarePlans, mockEmergencyVisits,
+  mockNotifications, mockGenomicProfiles, mockPGxInteractions,
   mockBioSamples, mockBiobankFreezers, mockClinicalTrials
 } from '../data/mockData';
 
