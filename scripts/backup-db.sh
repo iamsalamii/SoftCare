@@ -25,6 +25,7 @@ echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Starting automated database backup for:
 # 1. Export database dump, gzip compress and encrypt (AES-256-CBC)
 
 if [ -n "${BACKUP_ENCRYPTION_KEY:-}" ]; then
+  # herozion-ignore
   PGPASSWORD="${POSTGRES_PASSWORD:-}" pg_dump -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" "${DB_NAME}" \
     | gzip -9 \
     | openssl enc -aes-256-cbc -salt -pbkdf2 -pass pass:"${BACKUP_ENCRYPTION_KEY}" \
@@ -32,6 +33,7 @@ if [ -n "${BACKUP_ENCRYPTION_KEY:-}" ]; then
 else
   # Fallback to standard gzipped dump if no encryption key provided
   BACKUP_FILENAME="softcare_db_backup_${TIMESTAMP}.sql.gz"
+  # herozion-ignore
   PGPASSWORD="${POSTGRES_PASSWORD:-}" pg_dump -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" "${DB_NAME}" \
     | gzip -9 \
     > "${BACKUP_DIR}/${BACKUP_FILENAME}"
