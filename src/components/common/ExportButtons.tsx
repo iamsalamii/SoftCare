@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FileDown, FileSpreadsheet, Printer, Eye, ChevronDown } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 import { useApp } from '../../context/AppContext';
 import { printDocument, exportToExcel, generateDocumentHeader, generateDocumentFooter } from '../../utils/exportUtils';
 
@@ -21,6 +22,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
   customContent
 }) => {
   const { organizationSettings } = useApp();
+  const { error } = useToast();
   const [showMenu, setShowMenu] = useState(false);
 
   const generateTableHTML = () => {
@@ -61,7 +63,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
     const content = customContent || generateTableHTML();
     const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) {
-      alert('Veuillez autoriser les fenetres pop-up pour exporter en PDF');
+      error('Erreur', 'Veuillez autoriser les fenêtres pop-up pour exporter en PDF');
       return;
     }
 

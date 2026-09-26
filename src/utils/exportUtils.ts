@@ -182,8 +182,7 @@ export const exportToPDF = async (
 ): Promise<void> => {
   const printWindow = window.open('', '_blank', 'noopener,noreferrer');
   if (!printWindow) {
-    alert('Veuillez autoriser les fenetres pop-up pour exporter en PDF');
-    return;
+    throw new Error('Veuillez autoriser les fenêtres pop-up pour exporter en PDF');
   }
 
   printWindow.document.title = filename;
