@@ -23,11 +23,11 @@ export const PharmacySalesHistory: React.FC = () => {
   const fetchSales = async () => {
     try {
       setLoading(true);
-      const data = await apiService.get<PharmacySale[]>('/pharmacysales');
+      const data = await apiService.pharmacySales.getAll();
       setSales(data);
     } catch (err) {
       console.error('Failed to fetch sales', err);
-      error('Erreur', 'Impossible de charger l\\'historique des ventes.');
+      error('Erreur', "Impossible de charger l'historique des ventes.");
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export const PharmacySalesHistory: React.FC = () => {
       await printDocument(receiptContent, organizationSettings, `Ticket-${sale.receiptNumber}`);
     } catch (err) {
       console.error(err);
-      error('Erreur', 'Impossible d\\'imprimer le ticket.');
+      error('Erreur', "Impossible d'imprimer le ticket.");
     }
   };
 

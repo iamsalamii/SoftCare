@@ -110,7 +110,7 @@ interface AppContextType {
   updateDropdownOption: (id: string, updates: Partial<DropdownOption>) => void;
   deleteDropdownOption: (id: string) => void;
   pharmacySales: PharmacySale[];
-  addPharmacySale: (sale: PharmacySale) => void;
+  addPharmacySale: (sale: PharmacySale) => Promise<void>;
   quickInvoiceItems: QuickInvoiceItem[];
   addQuickInvoiceItem: (item: Partial<QuickInvoiceItem>) => Promise<void>;
   updateQuickInvoiceItem: (id: string, item: Partial<QuickInvoiceItem>) => Promise<void>;
@@ -448,8 +448,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const addPharmacySale = (sale: PharmacySale) => {
-    setPharmacySales(prev => [sale, ...prev]);
+  const addPharmacySale = async (sale: PharmacySale) => {
+    try {
+      const createdSale = await apiService.pharmacySales.create(sale);
+      setPharmacySales(prev => [createdSale, ...prev]);
+    } catch (err) {
+      console.error('Failed to create pharmacy sale API call', err);
+      // Fallback for UI if API fails? Better to throw so UI can show error.
+      throw err;
+    }
   };
 
   const [rooms] = useState<Room[]>(mockRooms);

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import BrochureModal from './BrochureModal';
 import DemoRequestModal from './DemoRequestModal';
-import HeroVideoDemo from './HeroVideoDemo';
+import { InteractiveHospitalMap } from './InteractiveHospitalMap';
 
 interface LandingPageProps {
   onGoToLogin: () => void;
@@ -194,9 +194,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </button>
             <button
               onClick={() => setShowDemoModal(true)}
-              className="text-cyan-700 hover:text-cyan-900 font-bold flex items-center gap-1.5 transition-colors"
+              className="text-cyan-700 hover:text-cyan-900 font-bold transition-colors"
             >
-              <Sparkles className="w-4 h-4 text-cyan-600" />
               <span>Demander une Démo</span>
             </button>
           </nav>
@@ -272,9 +271,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
                 setShowDemoModal(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-cyan-700 hover:bg-cyan-50 transition-colors text-left"
+              className="w-full px-4 py-3 rounded-xl text-sm font-bold text-cyan-700 hover:bg-cyan-50 transition-colors text-left"
             >
-              <Sparkles className="w-4 h-4 text-cyan-600" />
               <span>Demander une Démo Personnalisée</span>
             </button>
           </div>
@@ -297,7 +295,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-cyan-400/40 shadow-lg shadow-cyan-500/10">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
             <span className="text-xs font-bold text-cyan-200 uppercase tracking-wider">
               Système d'Information Hospitalier (HIS) & Médecine de Précision
             </span>
@@ -317,11 +314,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               onClick={() => setShowDemoModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-2xl font-bold text-base shadow-xl shadow-teal-500/30 transition-all hover:scale-[1.03] flex items-center justify-center gap-3"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-2xl font-bold text-base shadow-xl shadow-teal-500/30 transition-all hover:scale-[1.03]"
             >
-              <Sparkles className="w-5 h-5" />
               <span>Demander une Démo</span>
-              <ArrowRight className="w-5 h-5" />
             </button>
 
             <button
@@ -341,12 +336,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </button>
           </div>
 
-          {/* Video Demo Player in Hero */}
+          {/* Interactive Hospital Simulation */}
           <div className="pt-8 pb-4">
-            <HeroVideoDemo
-              onRequestDemo={() => setShowDemoModal(true)}
-              onGoToLogin={onGoToLogin}
-            />
+            <InteractiveHospitalMap />
           </div>
 
           {/* Quick Metrics */}
@@ -1149,9 +1141,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowDemoModal(true)}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition-all shadow-md"
             >
-              <Sparkles className="w-4 h-4" />
               <span>Demander une Démo</span>
             </button>
             <button

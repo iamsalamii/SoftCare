@@ -44,6 +44,13 @@ export const apiService = {
     addMovement: (movement: any) => apiClient.post<any>('/medications/movements', movement),
   },
 
+  // === PHARMACY SALES ===
+  pharmacySales: {
+    getAll: () => apiClient.get<any[]>('/pharmacysales'),
+    getById: (id: string) => apiClient.get<any>(`/pharmacysales/${id}`),
+    create: (sale: any) => apiClient.post<any>('/pharmacysales', sale),
+  },
+
   // === BIOTECHNOLOGY & PGx ===
   biotech: {
     getGenomicProfiles: () => apiClient.get<GenomicProfile[]>('/biotech/genomics'),
