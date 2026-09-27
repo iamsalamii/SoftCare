@@ -553,38 +553,61 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setDataLoading(true);
     setDataError(null);
     try {
-      const savedPatients = localStorage.getItem('softcare_patients');
-      if (savedPatients) {
-        setPatientsState(JSON.parse(savedPatients));
-      } else {
-        setPatientsState([...mockPatients]);
+      try {
+        const apiPatients = await apiService.patients.getAll();
+        setPatientsState(apiPatients);
+      } catch {
+        const savedPatients = localStorage.getItem('softcare_patients');
+        if (savedPatients) setPatientsState(JSON.parse(savedPatients));
+        else setPatientsState([...mockPatients]);
       }
 
       const savedUsers = localStorage.getItem('softcare_users');
-      if (savedUsers) {
-        setUsersState(JSON.parse(savedUsers));
-      } else {
-        setUsersState([...mockUsers]);
+      if (savedUsers) setUsersState(JSON.parse(savedUsers));
+      else setUsersState([...mockUsers]);
+
+      try {
+        const apiBeds = await apiService.beds.getAll();
+        setBedsState(apiBeds);
+      } catch {
+        const savedBeds = localStorage.getItem('softcare_beds');
+        if (savedBeds) setBedsState(JSON.parse(savedBeds));
+        else setBedsState([...mockBeds]);
       }
 
-      const savedBeds = localStorage.getItem('softcare_beds');
-      if (savedBeds) {
-        setBedsState(JSON.parse(savedBeds));
-      } else {
-        setBedsState([...mockBeds]);
+      try {
+        const apiInvoices = await apiService.invoices.getAll();
+        setInvoicesState(apiInvoices);
+      } catch {
+        const savedInvoices = localStorage.getItem('softcare_invoices');
+        if (savedInvoices) setInvoicesState(JSON.parse(savedInvoices));
+        else setInvoicesState([...mockInvoices]);
       }
 
-      const savedInvoices = localStorage.getItem('softcare_invoices');
-      if (savedInvoices) {
-        setInvoicesState(JSON.parse(savedInvoices));
-      } else {
-        setInvoicesState([...mockInvoices]);
+      try {
+        const apiMeds = await apiService.medications.getAll();
+        setMedications(apiMeds);
+      } catch {
+        setMedications([...mockMedications]);
+      }
+
+      try {
+        const apiMovements = await apiService.medications.getMovements();
+        setMedicationMovements(apiMovements);
+      } catch {
+        setMedicationMovements([...mockMedicationMovements]);
+      }
+
+      try {
+        const apiSales = await apiService.pharmacySales.getAll();
+        setPharmacySalesState(apiSales);
+      } catch {
+        const savedSales = localStorage.getItem('softcare_pharmacy_sales');
+        if (savedSales) setPharmacySalesState(JSON.parse(savedSales));
       }
 
       setDepartments([...mockDepartments]);
       setAppointments([...mockAppointments]);
-      setMedications([...mockMedications]);
-      setMedicationMovements([...mockMedicationMovements]);
       setMedicalRecords([...mockMedicalRecords]);
       setAdmissions([...mockAdmissions]);
       setLabOrders([...mockLabOrders]);

@@ -208,7 +208,12 @@ const PharmacyPOS: React.FC = () => {
       receiptNumber: `REC-${Date.now().toString().slice(-8)}`
     };
 
-    addPharmacySale(sale);
+    try {
+      await addPharmacySale(sale);
+    } catch (err) {
+      toast.error('Erreur', 'Impossible de sauvegarder la vente.');
+      return;
+    }
 
     // Also synchronize with billing invoice
     try {
