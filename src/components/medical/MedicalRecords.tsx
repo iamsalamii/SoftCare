@@ -9,6 +9,7 @@ const MedicalRecordsList: React.FC = () => {
   const { medicalRecords, patients, users, medications, organizationSettings } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editRecordId, setEditRecordId] = useState<string | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
   const [filterType, setFilterType] = useState('all');
@@ -59,11 +60,19 @@ const MedicalRecordsList: React.FC = () => {
 
   const handleNewRecord = () => {
     setSelectedPatientId(null);
+    setEditRecordId(null);
     setShowForm(true);
   };
 
   const handleNewRecordForPatient = (patientId: string) => {
     setSelectedPatientId(patientId);
+    setEditRecordId(null);
+    setShowForm(true);
+  };
+
+  const handleEditRecord = (record: MedicalRecord) => {
+    setSelectedPatientId(record.patientId);
+    setEditRecordId(record.id);
     setShowForm(true);
   };
 
@@ -220,7 +229,11 @@ const MedicalRecordsList: React.FC = () => {
     return (
       <MedicalRecordForm
         patientId={selectedPatientId || patients[0]?.id || ''}
-        onClose={() => setShowForm(false)}
+        recordId={editRecordId || undefined}
+        onClose={() => {
+          setShowForm(false);
+          setEditRecordId(null);
+        }}
       />
     );
   }
@@ -402,6 +415,16 @@ const MedicalRecordsList: React.FC = () => {
                         title="Voir"
                       >
                         <Eye className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditRecord(record);
+                        }}
+                        className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                        title="Modifier"
+                      >
+                        <Edit className="w-5 h-5" />
                       </button>
                       <button
                         onClick={(e) => {

@@ -71,6 +71,7 @@ export const apiService = {
     getAll: (patientId?: string) => apiClient.get<MedicalRecord[]>('/medicalrecords', patientId ? { patientId } : undefined),
     getById: (id: string) => apiClient.get<MedicalRecord>(`/medicalrecords/${id}`),
     create: (record: Partial<MedicalRecord>) => apiClient.post<MedicalRecord>('/medicalrecords', record),
+    update: (id: string, record: Partial<MedicalRecord>) => apiClient.put<MedicalRecord>(`/medicalrecords/${id}`, record),
   },
 
   // === APPOINTMENTS ===
@@ -91,6 +92,12 @@ export const apiService = {
   beds: {
     getAll: () => apiClient.get<Bed[]>('/beds'),
     update: (id: string, bed: Partial<Bed>) => apiClient.put<Bed>(`/beds/${id}`, bed),
+  },
+  admissions: {
+    getAll: (patientId?: string) => apiClient.get<Admission[]>('/admissions', patientId ? { patientId } : undefined),
+    create: (admission: Partial<Admission>) => apiClient.post<Admission>('/admissions', admission),
+    update: (id: string, admission: Partial<Admission>) => apiClient.put<Admission>(`/admissions/${id}`, admission),
+    delete: (id: string) => apiClient.delete(`/admissions/${id}`),
   },
 
   // === SETTINGS ===

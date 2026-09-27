@@ -103,7 +103,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.EnsureCreated();
+        await context.Database.MigrateAsync();
         await DatabaseSeeder.SeedAsync(context);
         Console.WriteLine("--> [SoftCare] Base de données initialisée et données de référence insérées avec succès.");
     }

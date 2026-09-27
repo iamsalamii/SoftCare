@@ -12,7 +12,7 @@ interface MedicalRecordFormProps {
 }
 
 export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({ patientId, recordId, onClose }) => {
-  const { patients, users, medications, addMedicalRecord, currentUser } = useApp();
+  const { patients, users, medications, addMedicalRecord, updateMedicalRecord, medicalRecords, currentUser } = useApp();
   const [loading, setLoading] = useState(false);
 
   const [selectedPatientId, setSelectedPatientId] = useState<string>(
@@ -48,7 +48,9 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({ patientId,
     badge: `Stock: ${m.stock}`
   }));
 
-  const [formData, setFormData] = useState<Partial<MedicalRecord>>({
+  const existingRecord = recordId ? medicalRecords.find(r => r.id === recordId) : null;
+
+  const [formData, setFormData] = useState<Partial<MedicalRecord>>(existingRecord ? { ...existingRecord } : {
     patientId: selectedPatientId,
     doctorId: currentUser?.id || users.find(u => u.role === 'doctor')?.id || '1',
     date: new Date().toISOString().split('T')[0],
@@ -83,7 +85,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({ patientId,
     setLoading(true);
 
     const record: MedicalRecord = {
-      id: `REC-${Date.now()}`,
+      id: recordId || `REC-${Date.now()}`,
       patientId: selectedPatientId,
       doctorId: formData.doctorId || '1',
       date: formData.date || new Date().toISOString().split('T')[0],
@@ -100,9 +102,18 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({ patientId,
       status: 'active'
     };
 
-    addMedicalRecord(record);
-    setLoading(false);
-    onClose();
+    try {
+      if (recordId) {
+        await updateMedicalRecord(recordId, record);
+      } else {
+        await addMedicalRecord(record);
+      }
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addSymptom = () => {

@@ -93,6 +93,30 @@ public class MedicalRecordsController : ControllerBase
         return CreatedAtAction(nameof(GetMedicalRecord), new { id = record.Id }, MapToDto(record));
     }
 
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateMedicalRecord(string id, [FromBody] JsonElement payload)
+    {
+        var record = await _context.MedicalRecords
+            .Include(m => m.Prescriptions)
+            .FirstOrDefaultAsync(m => m.Id == id && m.IsActive);
+
+        if (record == null) return NotFound(new { message = "Dossier médical introuvable." });
+
+        if (payload.TryGetProperty("type", out var tp)) record.Type = tp.GetString() ?? record.Type;
+        if (payload.TryGetProperty("title", out var tt)) record.Title = tt.GetString() ?? record.Title;
+        if (payload.TryGetProperty("description", out var ds)) record.Description = ds.GetString() ?? record.Description;
+        if (payload.TryGetProperty("symptoms", out var sym)) record.SymptomsJson = sym.GetRawText();
+        if (payload.TryGetProperty("diagnosis", out var diag)) record.Diagnosis = diag.GetString() ?? record.Diagnosis;
+        if (payload.TryGetProperty("treatment", out var trt)) record.Treatment = trt.GetString() ?? record.Treatment;
+        if (payload.TryGetProperty("followUp", out var fu)) record.FollowUp = fu.GetString();
+        if (payload.TryGetProperty("notes", out var nt)) record.Notes = nt.GetString();
+        if (payload.TryGetProperty("status", out var st)) record.Status = st.GetString() ?? record.Status;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(MapToDto(record));
+    }
+
     private static object MapToDto(MedicalRecord r)
     {
         object symptoms = new string[] { };

@@ -38,6 +38,7 @@ interface AppContextType {
   medicalRecords: MedicalRecord[];
   setMedicalRecords: (records: MedicalRecord[]) => void;
   addMedicalRecord: (record: Partial<MedicalRecord>) => Promise<void>;
+  updateMedicalRecord: (id: string, updates: Partial<MedicalRecord>) => Promise<void>;
   medications: Medication[];
   setMedications: (medications: Medication[]) => void;
   addMedication: (medication: Partial<Medication>) => Promise<void>;
@@ -352,23 +353,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const [admissions, setAdmissionsState] = useState<Admission[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_admissions');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockAdmissions;
-  });
-
-  const setAdmissions = (val: Admission[] | ((prev: Admission[]) => Admission[])) => {
-    setAdmissionsState(prev => {
-      const next = typeof val === 'function' ? val(prev) : val;
-      try {
-        localStorage.setItem('softcare_admissions', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
+  const [admissions, setAdmissions] = useState<Admission[]>([]);
 
   const [labOrders, setLabOrders] = useState<LabOrder[]>([]);
   const [labTests, setLabTests] = useState<LabTest[]>([]);
@@ -593,14 +578,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const apiMeds = await apiService.medications.getAll();
         setMedications(apiMeds);
       } catch {
-        setMedications([...mockMedications]);
+        setMedications([]);
       }
 
       try {
         const apiMovements = await apiService.medications.getMovements();
         setMedicationMovements(apiMovements);
       } catch {
-        setMedicationMovements([...mockMedicationMovements]);
+        setMedicationMovements([]);
       }
 
       try {
@@ -612,9 +597,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       setDepartments([...mockDepartments]);
-      setAppointments([...mockAppointments]);
-      setMedicalRecords([...mockMedicalRecords]);
-      setAdmissions([...mockAdmissions]);
+      try {
+        const apiAppointments = await apiService.appointments.getAll();
+        setAppointments(apiAppointments);
+      } catch {
+        setAppointments([]);
+      }
+      try {
+        const records = await apiService.medicalRecords.getAll();
+        setMedicalRecords(records);
+      } catch (err) {
+        setMedicalRecords([]);
+      }
+      try {
+        const apiAdmissions = await apiService.admissions.getAll();
+        setAdmissions(apiAdmissions);
+      } catch {
+        setAdmissions([]);
+      }
       setLabOrders([...mockLabOrders]);
       setLabTests([...mockLabTests]);
       setEmergencyVisits([...mockEmergencyVisits]);
@@ -822,32 +822,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === APPOINTMENTS ===
   const addAppointment = async (appointment: Partial<Appointment>) => {
-    const newAppt: Appointment = {
-      id: genId(),
-      patientId: appointment.patientId || '',
-      doctorId: appointment.doctorId || appointment.doctor || '',
-      doctor: appointment.doctor || appointment.doctorId || '',
-      date: appointment.date || new Date().toISOString().split('T')[0],
-      time: appointment.time || '',
-      duration: appointment.duration || 30,
-      type: appointment.type || 'consultation',
-      status: appointment.status || 'scheduled',
-      notes: appointment.notes || '',
-      reason: appointment.reason || '',
-      createdAt: new Date().toISOString(),
-    };
-    setAppointments(prev => [newAppt, ...prev]);
-    success('Rendez-vous créé');
+    try {
+      const newAppt = await apiService.appointments.create(appointment);
+      setAppointments(prev => [newAppt, ...prev]);
+      success('Rendez-vous créé');
+    } catch (err: any) {
+      error('Erreur', 'Impossible de créer le rendez-vous');
+      throw err;
+    }
   };
 
   const updateAppointment = async (id: string, updates: Partial<Appointment>) => {
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
-    success('Rendez-vous mis à jour');
+    try {
+      const updatedAppt = await apiService.appointments.update(id, updates);
+      setAppointments(prev => prev.map(a => a.id === id ? { ...a, ...updatedAppt } : a));
+      success('Rendez-vous mis à jour');
+    } catch (err: any) {
+      error('Erreur', 'Impossible de mettre à jour le rendez-vous');
+      throw err;
+    }
   };
 
   const deleteAppointment = async (id: string) => {
-    setAppointments(prev => prev.filter(a => a.id !== id));
-    success('Rendez-vous supprimé');
+    try {
+      await apiService.appointments.delete(id);
+      setAppointments(prev => prev.filter(a => a.id !== id));
+      success('Rendez-vous supprimé');
+    } catch (err: any) {
+      error('Erreur', 'Impossible de supprimer le rendez-vous');
+      throw err;
+    }
   };
 
   // === MEDICATIONS ===
@@ -939,47 +943,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === ADMISSIONS ===
   const addAdmission = async (admission: Partial<Admission>) => {
-    const newAdmission: Admission = {
-      id: genId(),
-      patientId: admission.patientId || '',
-      patientName: admission.patientName || '',
-      departmentId: admission.departmentId || '1',
-      departmentName: admission.departmentName || 'Médecine',
-      roomId: admission.roomId,
-      roomNumber: admission.roomNumber,
-      bedId: admission.bedId,
-      bedNumber: admission.bedNumber,
-      admissionDate: admission.admissionDate || new Date().toISOString(),
-      dischargeDate: admission.dischargeDate,
-      reason: admission.reason || '',
-      diagnosis: admission.diagnosis,
-      attendingDoctorId: admission.attendingDoctorId || '1',
-      attendingDoctorName: admission.attendingDoctorName || 'Dr. Marie Dubois',
-      status: admission.status || 'admitted',
-      insuranceProvider: admission.insuranceProvider,
-      insurancePolicyNumber: admission.insurancePolicyNumber,
-      dailyRate: admission.dailyRate || 150,
-      totalAmount: admission.totalAmount || 0,
-      notes: admission.notes,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    setAdmissions(prev => [newAdmission, ...prev]);
-    if (admission.bedId) {
-      await updateBed(admission.bedId, {
-        status: 'occupied',
-        patientId: admission.patientId,
-        currentPatientId: admission.patientId,
-        currentAdmissionId: newAdmission.id,
-        admissionDate: newAdmission.admissionDate
-      });
+    try {
+      const newAdmission = await apiService.admissions.create(admission);
+      setAdmissions(prev => [newAdmission, ...prev]);
+      if (admission.bedId) {
+        await updateBed(admission.bedId, {
+          status: 'occupied',
+          patientId: admission.patientId,
+          currentPatientId: admission.patientId,
+          currentAdmissionId: newAdmission.id,
+          admissionDate: newAdmission.admissionDate
+        });
+      }
+      success('Admission enregistrée', `Patient admis avec succès`);
+    } catch (err: any) {
+      error('Erreur', 'Impossible d\'ajouter l\'admission');
+      throw err;
     }
-    success('Admission enregistrée', `Patient admis avec succès`);
   };
 
   const updateAdmission = async (id: string, updates: Partial<Admission>) => {
-    setAdmissions(prev => prev.map(a => a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a));
-    success('Admission mise à jour');
+    try {
+      const updated = await apiService.admissions.update(id, updates);
+      setAdmissions(prev => prev.map(a => a.id === id ? { ...a, ...updated } : a));
+      success('Admission mise à jour');
+    } catch (err: any) {
+      error('Erreur', 'Impossible de mettre à jour l\'admission');
+      throw err;
+    }
   };
 
   // === INVOICES ===
@@ -1216,46 +1207,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === MEDICAL RECORDS ===
   const addMedicalRecord = async (record: Partial<MedicalRecord>) => {
-    const newRecord: MedicalRecord = {
-      id: record.id || genId(),
-      patientId: record.patientId || '',
-      doctorId: record.doctorId || '',
-      date: record.date || new Date().toISOString().split('T')[0],
-      type: record.type || 'consultation',
-      title: record.title || '',
-      description: record.description || '',
-      symptoms: record.symptoms || [],
-      diagnosis: record.diagnosis || '',
-      treatment: record.treatment || '',
-      prescriptions: record.prescriptions || [],
-      attachments: record.attachments || [],
-      followUp: record.followUp,
-      notes: record.notes,
-      status: record.status || 'active',
-    };
-    setMedicalRecords(prev => [newRecord, ...prev]);
-    success('Dossier médical créé');
+    try {
+      const newRecord = await apiService.medicalRecords.create(record);
+      setMedicalRecords(prev => [newRecord, ...prev]);
+      success('Dossier médical créé');
+    } catch (err: any) {
+      error('Erreur', 'Impossible de créer le dossier médical.');
+      throw err;
+    }
+  };
+
+  const updateMedicalRecord = async (id: string, updates: Partial<MedicalRecord>) => {
+    try {
+      const updatedRecord = await apiService.medicalRecords.update(id, updates);
+      setMedicalRecords(prev => prev.map(r => r.id === id ? { ...r, ...updatedRecord } : r));
+      success('Dossier médical mis à jour');
+    } catch (err: any) {
+      error('Erreur', 'Impossible de mettre à jour le dossier médical.');
+      throw err;
+    }
   };
 
   // === MEDICATION MOVEMENTS ===
   const addMedicationMovement = async (movement: Partial<MedicationMovement>) => {
-    const newMovement: MedicationMovement = {
-      id: movement.id || genId(),
-      medicationId: movement.medicationId || '',
-      type: movement.type || 'out',
-      quantity: movement.quantity || 0,
-      reason: movement.reason || '',
-      performedBy: movement.performedBy || '',
-      date: movement.date || new Date().toISOString(),
-      referenceId: movement.referenceId,
-    };
-    setMedicationMovements(prev => [newMovement, ...prev]);
-    if (movement.medicationId) {
-      const med = medications.find(m => m.id === movement.medicationId);
-      if (med) {
-        const stockChange = movement.type === 'in' ? movement.quantity : movement.type === 'out' ? -(movement.quantity || 0) : movement.quantity;
-        await updateMedication(movement.medicationId, { stock: Math.max(0, med.stock + (stockChange || 0)) });
+    try {
+      const newMovement = await apiService.medications.addMovement(movement);
+      setMedicationMovements(prev => [newMovement, ...prev]);
+      if (movement.medicationId) {
+        setMedications(prev => prev.map(m => {
+          if (m.id === movement.medicationId) {
+            const stockChange = movement.type === 'in' ? (movement.quantity || 0) : movement.type === 'out' ? -(movement.quantity || 0) : (movement.quantity || 0);
+            return { ...m, stock: Math.max(0, m.stock + stockChange) };
+          }
+          return m;
+        }));
       }
+    } catch (err: any) {
+      error('Erreur', 'Impossible d\'enregistrer le mouvement');
+      throw err;
     }
   };
 
@@ -1363,7 +1352,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     sidebarCollapsed, setSidebarCollapsed,
     currentUser, setCurrentUser, signIn, signOut, authLoading,
     patients, setPatients, addPatient, updatePatient, deletePatient,
-    medicalRecords, setMedicalRecords, addMedicalRecord,
+    medicalRecords, setMedicalRecords, addMedicalRecord, updateMedicalRecord,
     medications, setMedications, addMedication, updateMedication, deleteMedication,
     medicationMovements, setMedicationMovements, addMedicationMovement,
     appointments, setAppointments, addAppointment, updateAppointment, deleteAppointment,

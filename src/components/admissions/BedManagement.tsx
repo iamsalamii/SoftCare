@@ -528,11 +528,6 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
     };
 
     await addAdmission(admission);
-    await updateBed(bed.id, {
-      status: 'occupied',
-      currentPatientId: selectedPatient,
-      currentAdmissionId: admissionId
-    });
     onClose();
   };
 
