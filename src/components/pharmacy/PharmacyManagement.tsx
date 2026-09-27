@@ -310,34 +310,34 @@ const PharmacyManagement: React.FC = () => {
         {/* Search & Filters */}
         <div className="p-5 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="relative flex-1 max-w-3xl">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Rechercher par nom, code-barres, n° lot, DCI..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2.5 w-full bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all font-medium"
+                className="pl-12 pr-4 py-3 w-full bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all duration-200 text-sm shadow-sm"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setFilterBiotechOnly(!filterBiotechOnly)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                className={`px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm ${
                   filterBiotechOnly
-                    ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20'
+                    ? 'bg-purple-600 text-white shadow-purple-500/20'
                     : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Dna className="w-3.5 h-3.5" />
+                <Dna className="w-5 h-5" />
                 <span>Biotech & PGx</span>
               </button>
 
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all"
+                className="px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all duration-200 shadow-sm"
               >
                 {categories.map(category => (
                   <option key={category} value={category}>
