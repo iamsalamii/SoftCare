@@ -4,7 +4,7 @@ import {
   Home, Users, FileText, Pill, Calendar, UserCog, BarChart3,
   LogOut, FlaskConical, Heart, AlertTriangle, Dna,
   Scissors, Clock, CreditCard, BedDouble, Settings, ShoppingCart, ChevronLeft, ChevronRight,
-  Video, ShieldCheck
+  Video, ShieldCheck, Receipt
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -19,6 +19,7 @@ const Sidebar: React.FC = () => {
     { id: 'admissions', label: 'Admissions & Lits', icon: BedDouble, roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
     { id: 'pharmacy', label: 'Pharmacie (Stock)', icon: Pill, roles: ['admin', 'pharmacist', 'doctor'] },
     { id: 'pharmacy-pos', label: 'Pharmacie (Vente)', icon: ShoppingCart, roles: ['admin', 'pharmacist'] },
+    { id: 'pharmacy-history', label: 'Historique des Ventes', icon: Receipt, roles: ['admin', 'pharmacist'] },
     { id: 'lab', label: 'Laboratoire', icon: FlaskConical, roles: ['admin', 'doctor', 'lab_tech', 'nurse'] },
     { id: 'biotech', label: 'Biotech & PGx', icon: Dna, roles: ['admin', 'doctor', 'lab_tech', 'pharmacist'] },
     { id: 'nursing', label: 'Soins infirmiers', icon: Heart, roles: ['admin', 'nurse', 'doctor'] },

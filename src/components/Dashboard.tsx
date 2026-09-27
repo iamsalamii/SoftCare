@@ -10,6 +10,7 @@ import PharmacyManagement from './pharmacy/PharmacyManagement';
 import PharmacyPOS from './pharmacy/PharmacyPOS';
 import AppointmentManagement from './appointments/AppointmentManagement';
 import AppointmentForm from './appointments/AppointmentForm';
+import { PharmacySalesHistory } from './pharmacy/PharmacySalesHistory';
 import UserManagement from './admin/UserManagement';
 import Reports from './reports/Reports';
 import InvoiceList from './billing/InvoiceList';
@@ -50,6 +51,8 @@ const Dashboard: React.FC = () => {
         return <PharmacyManagement />;
       case 'pharmacy-pos':
         return <PharmacyPOS />;
+      case 'pharmacy-history':
+        return <PharmacySalesHistory />;
       case 'lab':
         return <LabManagement />;
       case 'biotech':

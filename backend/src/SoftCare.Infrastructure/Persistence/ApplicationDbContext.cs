@@ -35,6 +35,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<OrganizationSetting> OrganizationSettings => Set<OrganizationSetting>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<PharmacySale> PharmacySales => Set<PharmacySale>();
+    public DbSet<PharmacySaleItem> PharmacySaleItems => Set<PharmacySaleItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +70,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasMany(i => i.Items)
             .WithOne()
             .HasForeignKey(item => item.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PharmacySale>()
+            .HasMany(p => p.Items)
+            .WithOne(i => i.PharmacySale)
+            .HasForeignKey(i => i.PharmacySaleId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

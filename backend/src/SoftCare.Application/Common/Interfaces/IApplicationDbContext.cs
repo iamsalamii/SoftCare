@@ -29,6 +29,8 @@ public interface IApplicationDbContext
     DbSet<Department> Departments { get; }
     DbSet<OrganizationSetting> OrganizationSettings { get; }
     DbSet<AuditLog> AuditLogs { get; }
+    DbSet<PharmacySale> PharmacySales { get; }
+    DbSet<PharmacySaleItem> PharmacySaleItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
