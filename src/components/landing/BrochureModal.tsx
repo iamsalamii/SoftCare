@@ -23,7 +23,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
   const handleDownloadBrochure = async () => {
     const brochureHtml = `
       <div style="font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; max-width: 800px; margin: 0 auto; line-height: 1.5;">
-        ${generateDocumentHeader(organizationSettings, 'report', 'BROCHURE-MEDICALE-2026')}
+        ${generateDocumentHeader(organizationSettings, 'report', 'BROCHURE-MEDICALE-2026', false)}
         
         <!-- PAGE 1 -->
         <div style="page-break-after: always; padding: 25px 0;">

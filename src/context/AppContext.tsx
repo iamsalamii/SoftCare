@@ -562,9 +562,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         else setPatientsState([...mockPatients]);
       }
 
-      const savedUsers = localStorage.getItem('softcare_users');
-      if (savedUsers) setUsersState(JSON.parse(savedUsers));
-      else setUsersState([...mockUsers]);
+      try {
+        const apiUsers = await apiService.auth.getUsers();
+        setUsersState(apiUsers);
+      } catch {
+        const savedUsers = localStorage.getItem('softcare_users');
+        if (savedUsers) setUsersState(JSON.parse(savedUsers));
+        else setUsersState([...mockUsers]);
+      }
 
       try {
         const apiBeds = await apiService.beds.getAll();
