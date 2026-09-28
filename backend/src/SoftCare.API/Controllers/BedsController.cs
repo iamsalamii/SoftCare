@@ -51,4 +51,27 @@ public class BedsController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(bed);
     }
+
+    [HttpPost]
+    public async Task<ActionResult> CreateBed([FromBody] Bed payload)
+    {
+        payload.Id = Guid.NewGuid().ToString();
+        payload.CreatedAt = DateTime.UtcNow;
+        payload.IsActive = true;
+        _context.Beds.Add(payload);
+        await _context.SaveChangesAsync();
+        return Ok(payload);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteBed(string id)
+    {
+        var bed = await _context.Beds.FirstOrDefaultAsync(b => b.Id == id);
+        if (bed == null) return NotFound();
+
+        bed.IsActive = false;
+        bed.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 }

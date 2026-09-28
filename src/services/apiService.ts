@@ -5,6 +5,30 @@ import {
 } from '../types';
 
 export const apiService = {
+
+  // === NURSING (Soins) ===
+  vitals: {
+    getAll: () => apiClient.get<any[]>('/nursing/vitals'),
+    getByPatient: (patientId: string) => apiClient.get<any[]>(`/nursing/vitals/patient/${patientId}`),
+    create: (vital: any) => apiClient.post<any>('/nursing/vitals', vital),
+    update: (id: string, vital: any) => apiClient.put<any>(`/nursing/vitals/${id}`, vital),
+    delete: (id: string) => apiClient.delete(`/nursing/vitals/${id}`),
+  },
+  carePlans: {
+    getAll: () => apiClient.get<any[]>('/nursing/care-plans'),
+    getByPatient: (patientId: string) => apiClient.get<any[]>(`/nursing/care-plans/patient/${patientId}`),
+    create: (carePlan: any) => apiClient.post<any>('/nursing/care-plans', carePlan),
+    update: (id: string, carePlan: any) => apiClient.put<any>(`/nursing/care-plans/${id}`, carePlan),
+    delete: (id: string) => apiClient.delete(`/nursing/care-plans/${id}`),
+  },
+  nursingNotes: {
+    getAll: () => apiClient.get<any[]>('/nursing/notes'),
+    getByPatient: (patientId: string) => apiClient.get<any[]>(`/nursing/notes/patient/${patientId}`),
+    create: (note: any) => apiClient.post<any>('/nursing/notes', note),
+    update: (id: string, note: any) => apiClient.put<any>(`/nursing/notes/${id}`, note),
+    delete: (id: string) => apiClient.delete(`/nursing/notes/${id}`),
+  },
+
   // === HEALTH & SYSTEM ===
   health: {
     check: () => apiClient.checkHealth(),
@@ -16,7 +40,15 @@ export const apiService = {
       apiClient.post<{ token: string; user: User }>('/auth/login', { email, password }),
     register: (userData: Partial<User> & { password?: string }) =>
       apiClient.post<User>('/auth/register', userData),
-    getUsers: () => apiClient.get<User[]>('/auth/users'),
+  },
+
+  // === USERS ===
+  users: {
+    getAll: () => apiClient.get<User[]>('/users'),
+    getById: (id: string) => apiClient.get<User>(`/users/${id}`),
+    create: (user: Partial<User>) => apiClient.post<User>('/users', user),
+    update: (id: string, user: Partial<User>) => apiClient.put<User>(`/users/${id}`, user),
+    delete: (id: string) => apiClient.delete(`/users/${id}`),
   },
 
   // === PATIENTS ===
@@ -91,7 +123,9 @@ export const apiService = {
   // === BEDS & ADMISSIONS ===
   beds: {
     getAll: () => apiClient.get<Bed[]>('/beds'),
+    create: (bed: Partial<Bed>) => apiClient.post<Bed>('/beds', bed),
     update: (id: string, bed: Partial<Bed>) => apiClient.put<Bed>(`/beds/${id}`, bed),
+    delete: (id: string) => apiClient.delete(`/beds/${id}`),
   },
   admissions: {
     getAll: (patientId?: string) => apiClient.get<Admission[]>('/admissions', patientId ? { patientId } : undefined),
@@ -104,6 +138,15 @@ export const apiService = {
   settings: {
     getOrganization: () => apiClient.get<OrganizationSettings>('/settings/organization'),
     updateOrganization: (settings: Partial<OrganizationSettings>) => apiClient.put<OrganizationSettings>('/settings/organization', settings),
+  },
+
+  // === DEPARTMENTS ===
+  departments: {
+    getAll: () => apiClient.get<any[]>('/departments'),
+    getById: (id: string) => apiClient.get<any>(`/departments/${id}`),
+    create: (dept: any) => apiClient.post<any>('/departments', dept),
+    update: (id: string, dept: any) => apiClient.put<any>(`/departments/${id}`, dept),
+    delete: (id: string) => apiClient.delete(`/departments/${id}`),
   }
 };
 

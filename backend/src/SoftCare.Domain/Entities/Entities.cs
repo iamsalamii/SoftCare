@@ -344,3 +344,41 @@ public class AuditLog : BaseEntity
     public string DetailsJson { get; set; } = "{}";
 }
 
+
+
+public class VitalRecord : BaseEntity
+{
+    public string PatientId { get; set; } = string.Empty;
+    public string NurseId { get; set; } = string.Empty;
+    public string NurseName { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    
+    public int BloodPressureSys { get; set; }
+    public int BloodPressureDia { get; set; }
+    public int HeartRate { get; set; }
+    public decimal Temperature { get; set; }
+    public int SpO2 { get; set; }
+    public int RespiratoryRate { get; set; }
+    public int PainScale { get; set; }
+    public decimal? BloodGlucose { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class CarePlan : BaseEntity
+{
+    public string PatientId { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Frequency { get; set; } = string.Empty;
+    public string Instructions { get; set; } = string.Empty;
+    public string Status { get; set; } = "active"; // active, completed, paused
+}
+
+public class NursingNote : BaseEntity
+{
+    public string PatientId { get; set; } = string.Empty;
+    public string NurseId { get; set; } = string.Empty;
+    public string NurseName { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string Category { get; set; } = "observation"; // observation, transmission, incident
+    public string Content { get; set; } = string.Empty;
+}

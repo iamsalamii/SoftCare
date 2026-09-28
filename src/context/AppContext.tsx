@@ -272,13 +272,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const [patients, setPatientsState] = useState<Patient[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_patients');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockPatients;
-  });
+  const [patients, setPatientsState] = useState<Patient[]>([]);
 
   const setPatients = (val: Patient[] | ((prev: Patient[]) => Patient[])) => {
     setPatientsState(prev => {
@@ -295,13 +289,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [medicationMovements, setMedicationMovements] = useState<MedicationMovement[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const [users, setUsersState] = useState<User[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_users');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockUsers;
-  });
+  const [users, setUsersState] = useState<User[]>([]);
 
   const setUsers = (val: User[] | ((prev: User[]) => User[])) => {
     setUsersState(prev => {
@@ -315,13 +303,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [departments, setDepartments] = useState<Department[]>([]);
 
-  const [invoices, setInvoicesState] = useState<Invoice[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_invoices');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockInvoices;
-  });
+  const [invoices, setInvoicesState] = useState<Invoice[]>([]);
 
   const setInvoices = (val: Invoice[] | ((prev: Invoice[]) => Invoice[])) => {
     setInvoicesState(prev => {
@@ -335,13 +317,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [quickInvoiceItems, setQuickInvoiceItems] = useState<QuickInvoiceItem[]>([]);
 
-  const [beds, setBedsState] = useState<Bed[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_beds');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockBeds;
-  });
+  const [beds, setBedsState] = useState<Bed[]>([]);
 
   const setBeds = (val: Bed[] | ((prev: Bed[]) => Bed[])) => {
     setBedsState(prev => {
@@ -362,13 +338,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [operatingRooms, setOperatingRooms] = useState<OperatingRoom[]>([]);
   const [workSchedules, setWorkSchedules] = useState<any[]>([]);
 
-  const [notifications, setNotificationsState] = useState<Notification[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_notifications');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockNotifications;
-  });
+  const [notifications, setNotificationsState] = useState<Notification[]>([]);
 
   const setNotifications = (val: Notification[] | ((prev: Notification[]) => Notification[])) => {
     setNotificationsState(prev => {
@@ -379,83 +349,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return next;
     });
   };
-  const [organizationSettings, setOrganizationSettingsState] = useState<OrganizationSettings>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_org_settings');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return defaultOrgSettings;
-  });
-
-  const setOrganizationSettings = (settings: OrganizationSettings | ((prev: OrganizationSettings) => OrganizationSettings)) => {
-    setOrganizationSettingsState(prev => {
-      const next = typeof settings === 'function' ? settings(prev) : settings;
-      try {
-        localStorage.setItem('softcare_org_settings', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const [dropdownOptions, setDropdownOptionsState] = useState<DropdownOption[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_dropdown_options');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return defaultDropdownOptions;
-  });
-
-  const setDropdownOptions = (opts: DropdownOption[] | ((prev: DropdownOption[]) => DropdownOption[])) => {
-    setDropdownOptionsState(prev => {
-      const next = typeof opts === 'function' ? opts(prev) : opts;
-      try {
-        localStorage.setItem('softcare_dropdown_options', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const [pharmacySales, setPharmacySalesState] = useState<PharmacySale[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_pharmacy_sales');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [];
-  });
-
-  const setPharmacySales = (val: PharmacySale[] | ((prev: PharmacySale[]) => PharmacySale[])) => {
-    setPharmacySalesState(prev => {
-      const next = typeof val === 'function' ? val(prev) : val;
-      try {
-        localStorage.setItem('softcare_pharmacy_sales', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const addPharmacySale = async (sale: PharmacySale) => {
-    try {
-      const createdSale = await apiService.pharmacySales.create(sale);
-      setPharmacySales(prev => [createdSale, ...prev]);
-    } catch (err) {
-      console.error('Failed to create pharmacy sale API call', err);
-      // Fallback for UI if API fails? Better to throw so UI can show error.
-      throw err;
-    }
-  };
-
-  const [rooms] = useState<Room[]>(mockRooms);
-  const [insurances] = useState<Insurance[]>(mockInsurances);
-  const [patientInsurances] = useState<PatientInsurance[]>(mockPatientInsurances);
-  const [vitalSigns] = useState<VitalSigns[]>(mockVitalSigns);
-
-  const [carePlans, setCarePlansState] = useState<CarePlan[]>(() => {
-    try {
-      const saved = localStorage.getItem('softcare_care_plans');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return mockCarePlans;
-  });
+  const [organizationSettings, setOrganizationSettingsState] = useState<OrganizationSettings>([]);
 
   const setCarePlans = (val: CarePlan[] | ((prev: CarePlan[]) => CarePlan[])) => {
     setCarePlansState(prev => {
@@ -542,36 +436,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const apiPatients = await apiService.patients.getAll();
         setPatientsState(apiPatients);
       } catch {
-        const savedPatients = localStorage.getItem('softcare_patients');
-        if (savedPatients) setPatientsState(JSON.parse(savedPatients));
-        else setPatientsState([...mockPatients]);
+        setPatientsState([]);
       }
 
       try {
-        const apiUsers = await apiService.auth.getUsers();
+        const apiUsers = await apiService.users.getAll();
         setUsersState(apiUsers);
       } catch {
-        const savedUsers = localStorage.getItem('softcare_users');
-        if (savedUsers) setUsersState(JSON.parse(savedUsers));
-        else setUsersState([...mockUsers]);
+        setUsersState([]);
+      }
+
+      try {
+        const apiDepartments = await apiService.departments.getAll();
+        setDepartments(apiDepartments);
+      } catch {
+        setDepartments([]);
       }
 
       try {
         const apiBeds = await apiService.beds.getAll();
         setBedsState(apiBeds);
       } catch {
-        const savedBeds = localStorage.getItem('softcare_beds');
-        if (savedBeds) setBedsState(JSON.parse(savedBeds));
-        else setBedsState([...mockBeds]);
+        setBedsState([]);
       }
 
       try {
         const apiInvoices = await apiService.invoices.getAll();
         setInvoicesState(apiInvoices);
       } catch {
-        const savedInvoices = localStorage.getItem('softcare_invoices');
-        if (savedInvoices) setInvoicesState(JSON.parse(savedInvoices));
-        else setInvoicesState([...mockInvoices]);
+        setInvoicesState([]);
       }
 
       try {
@@ -592,44 +485,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const apiSales = await apiService.pharmacySales.getAll();
         setPharmacySalesState(apiSales);
       } catch {
-        const savedSales = localStorage.getItem('softcare_pharmacy_sales');
-        if (savedSales) setPharmacySalesState(JSON.parse(savedSales));
+        setPharmacySalesState([]);
       }
 
-      setDepartments([...mockDepartments]);
       try {
         const apiAppointments = await apiService.appointments.getAll();
         setAppointments(apiAppointments);
       } catch {
         setAppointments([]);
       }
+
       try {
         const records = await apiService.medicalRecords.getAll();
         setMedicalRecords(records);
-      } catch (err) {
+      } catch {
         setMedicalRecords([]);
       }
+
       try {
         const apiAdmissions = await apiService.admissions.getAll();
         setAdmissions(apiAdmissions);
       } catch {
         setAdmissions([]);
       }
-      setLabOrders([...mockLabOrders]);
-      setLabTests([...mockLabTests]);
-      setEmergencyVisits([...mockEmergencyVisits]);
-      const savedNotifications = localStorage.getItem('softcare_notifications');
-      if (savedNotifications) {
-        setNotificationsState(JSON.parse(savedNotifications));
-      } else {
-        setNotificationsState([...mockNotifications]);
-      }
-      setGenomicProfiles([...mockGenomicProfiles]);
-      setPgxInteractions([...mockPGxInteractions]);
-      setBioSamples([...mockBioSamples]);
-      setBiobankFreezers([...mockBiobankFreezers]);
-      setClinicalTrials([...mockClinicalTrials]);
-      setQuickInvoiceItems([...defaultOrgSettings.quickInvoiceItems]);
+
+      setLabOrders([]);
+      setLabTests([]);
+      setEmergencyVisits([]);
+      setNotificationsState([]);
+      setGenomicProfiles([]);
+      setPgxInteractions([]);
+      setBioSamples([]);
+      setBiobankFreezers([]);
+      setClinicalTrials([]);
+      setQuickInvoiceItems([]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de chargement';
       setDataError(message);
@@ -719,37 +608,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const newPatient = await apiService.patients.create(patient);
       setPatients(prev => [newPatient, ...prev]);
-      success('Patient créé via API', 'Le dossier patient a été enregistré');
+      success('Patient créé', 'Le dossier patient a été enregistré');
     } catch (err: any) {
       showError('Erreur', err.message || 'Impossible de créer le patient');
-      // Fallback local
-      const fallbackPatient: Patient = {
-        id: genId(),
-        firstName: patient.firstName || '',
-        lastName: patient.lastName || '',
-        dateOfBirth: patient.dateOfBirth || '',
-        gender: patient.gender || 'male',
-        phone: patient.phone || '',
-        email: patient.email || '',
-        address: patient.address || '',
-        city: patient.city || '',
-        bloodType: patient.bloodType || '',
-        allergies: patient.allergies || [],
-        insuranceId: patient.insuranceId || '',
-        insuranceName: patient.insuranceName || '',
-        emergencyContact: patient.emergencyContact,
-        emergencyContactName: patient.emergencyContactName,
-        emergencyContactPhone: patient.emergencyContactPhone,
-        socialSecurityNumber: patient.socialSecurityNumber,
-        maritalStatus: patient.maritalStatus,
-        occupation: patient.occupation,
-        primaryDoctorId: patient.primaryDoctorId,
-        status: patient.status || 'active',
-        active: true,
-        createdAt: new Date().toISOString(),
-      };
-      setPatients(prev => [fallbackPatient, ...prev]);
-      success('Patient créé (Mode Local)', 'Le dossier patient a été enregistré localement');
+      throw err;
     }
   };
 
@@ -757,11 +619,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const updatedPatient = await apiService.patients.update(id, updates);
       setPatients(prev => prev.map(p => p.id === id ? updatedPatient : p));
-      success('Patient mis à jour via API');
+      success('Patient mis à jour');
     } catch (err: any) {
       showError('Erreur', err.message || 'Impossible de mettre à jour le patient');
-      setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-      success('Patient mis à jour (Mode Local)');
+      throw err;
     }
   };
 
@@ -769,46 +630,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       await apiService.patients.delete(id);
       setPatients(prev => prev.filter(p => p.id !== id));
-      success('Patient supprimé via API');
+      success('Patient supprimé');
     } catch (err: any) {
       showError('Erreur', err.message || 'Impossible de supprimer le patient');
-      setPatients(prev => prev.filter(p => p.id !== id));
-      success('Patient supprimé (Mode Local)');
+      throw err;
     }
   };
 
   // === USERS ===
   const addUser = async (user: Partial<User>) => {
     try {
-      const newUser = await apiService.auth.register(user);
+      const newUser = await apiService.users.create(user);
       setUsers(prev => [...prev, newUser]);
-      success('Utilisateur créé via API');
+      success('Utilisateur créé');
     } catch (err: any) {
       showError('Erreur', err.message || 'Impossible de créer l\'utilisateur');
-      // Fallback local pour la démo si l'API échoue
-      const fallbackUser: User = {
-        id: genId(),
-        name: user.name || '',
-        email: user.email || '',
-        role: user.role || 'doctor',
-        department: user.department || '',
-        phone: user.phone || '',
-        specialization: user.specialization,
-        licenseNumber: user.licenseNumber,
-        status: user.status || 'active',
-        active: true,
-        passwordHash: user.passwordHash || 'demo123',
-        permissions: user.permissions || [],
-        createdAt: new Date().toISOString(),
-      };
-      setUsers(prev => [...prev, fallbackUser]);
-      success('Utilisateur créé (Mode Local)');
+      throw err;
     }
   };
 
   const updateUser = async (id: string, updates: Partial<User>) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-    success('Utilisateur mis à jour');
+    try {
+      const updatedUser = await apiService.users.update(id, updates);
+      setUsers(prev => prev.map(u => u.id === id ? updatedUser : u));
+      success('Utilisateur mis à jour');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de mettre à jour l\'utilisateur');
+      throw err;
+    }
   };
 
   const deleteUser = async (id: string) => {
@@ -816,8 +665,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       showError('Action interdite', 'Le compte Super-Administrateur système ne peut pas être supprimé.');
       return;
     }
-    setUsers(prev => prev.filter(u => u.id !== id));
-    success('Utilisateur supprimé');
+    try {
+      await apiService.users.delete(id);
+      setUsers(prev => prev.filter(u => u.id !== id));
+      success('Utilisateur supprimé');
+    } catch (err: any) {
+      showError('Erreur', err.message || 'Impossible de supprimer l\'utilisateur');
+      throw err;
+    }
   };
 
   // === APPOINTMENTS ===
@@ -827,7 +682,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setAppointments(prev => [newAppt, ...prev]);
       success('Rendez-vous créé');
     } catch (err: any) {
-      error('Erreur', 'Impossible de créer le rendez-vous');
+      showError('Erreur', 'Impossible de créer le rendez-vous');
       throw err;
     }
   };
@@ -838,7 +693,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setAppointments(prev => prev.map(a => a.id === id ? { ...a, ...updatedAppt } : a));
       success('Rendez-vous mis à jour');
     } catch (err: any) {
-      error('Erreur', 'Impossible de mettre à jour le rendez-vous');
+      showError('Erreur', 'Impossible de mettre à jour le rendez-vous');
       throw err;
     }
   };
@@ -968,7 +823,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setAdmissions(prev => prev.map(a => a.id === id ? { ...a, ...updated } : a));
       success('Admission mise à jour');
     } catch (err: any) {
-      error('Erreur', 'Impossible de mettre à jour l\'admission');
+      showError('Erreur', 'Impossible de mettre à jour l\'admission');
       throw err;
     }
   };
@@ -1080,41 +935,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === NURSING / SOINS ===
   const addVitalRecord = async (record: any) => {
-    const newRecord = {
-      id: `VIT-${Date.now().toString().slice(-6)}`,
-      timestamp: new Date().toISOString(),
-      nurseName: currentUser?.name || 'Infirmier(e)',
-      ...record
-    };
-    setVitalsList(prev => [newRecord, ...prev]);
-    success('Constantes enregistrées');
+    try {
+      if (!record.nurseName) record.nurseName = currentUser?.name || 'Infirmier(e)';
+      const created = await apiService.vitals.create(record);
+      setVitalsList(prev => [created, ...prev]);
+      success('Constantes enregistrées');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const addCarePlan = async (plan: any) => {
-    const newPlan = {
-      id: `PLAN-${Date.now().toString().slice(-6)}`,
-      createdAt: new Date().toISOString(),
-      status: 'active',
-      ...plan
-    };
-    setCarePlans(prev => [newPlan, ...prev]);
-    success('Plan de soins créé');
+    try {
+      const created = await apiService.carePlans.create(plan);
+      setCarePlans(prev => [created, ...prev]);
+      success('Plan de soins créé');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const updateCarePlan = async (id: string, updates: any) => {
-    setCarePlans(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    success('Plan de soins mis à jour');
+    try {
+      const updated = await apiService.carePlans.update(id, updates);
+      setCarePlans(prev => prev.map(p => p.id === id ? updated : p));
+      success('Plan de soins mis à jour');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const addNursingNote = async (note: any) => {
-    const newNote = {
-      id: `NOTE-${Date.now().toString().slice(-6)}`,
-      timestamp: new Date().toISOString(),
-      nurseName: currentUser?.name || 'Infirmier(e)',
-      ...note
-    };
-    setNursingNotes(prev => [newNote, ...prev]);
-    success('Transmission enregistrée');
+    try {
+      if (!note.nurseName) note.nurseName = currentUser?.name || 'Infirmier(e)';
+      const created = await apiService.nursingNotes.create(note);
+      setNursingNotes(prev => [created, ...prev]);
+      success('Transmission enregistrée');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   // === ORGANIZATION SETTINGS ===
@@ -1212,7 +1071,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setMedicalRecords(prev => [newRecord, ...prev]);
       success('Dossier médical créé');
     } catch (err: any) {
-      error('Erreur', 'Impossible de créer le dossier médical.');
+      showError('Erreur', 'Impossible de créer le dossier médical.');
       throw err;
     }
   };
@@ -1223,7 +1082,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setMedicalRecords(prev => prev.map(r => r.id === id ? { ...r, ...updatedRecord } : r));
       success('Dossier médical mis à jour');
     } catch (err: any) {
-      error('Erreur', 'Impossible de mettre à jour le dossier médical.');
+      showError('Erreur', 'Impossible de mettre à jour le dossier médical.');
       throw err;
     }
   };

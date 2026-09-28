@@ -37,6 +37,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<PharmacySale> PharmacySales => Set<PharmacySale>();
     public DbSet<PharmacySaleItem> PharmacySaleItems => Set<PharmacySaleItem>();
+    public DbSet<VitalRecord> VitalRecords => Set<VitalRecord>();
+    public DbSet<CarePlan> CarePlans => Set<CarePlan>();
+    public DbSet<NursingNote> NursingNotes => Set<NursingNote>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +54,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<Patient>()
             .HasIndex(p => p.SocialSecurityNumber);
 
+        modelBuilder.Entity<VitalRecord>()
+            .HasIndex(v => v.PatientId);
+
+        modelBuilder.Entity<CarePlan>()
+            .HasIndex(c => c.PatientId);
+
+        modelBuilder.Entity<NursingNote>()
+            .HasIndex(n => n.PatientId);
+
+
         modelBuilder.Entity<Medication>()
             .HasIndex(m => m.Barcode);
 
@@ -59,6 +73,25 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<BioSample>()
             .HasIndex(b => b.SampleCode)
             .IsUnique();
+
+
+        modelBuilder.Entity<VitalRecord>()
+            .HasOne<Patient>()
+            .WithMany()
+            .HasForeignKey(v => v.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CarePlan>()
+            .HasOne<Patient>()
+            .WithMany()
+            .HasForeignKey(c => c.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NursingNote>()
+            .HasOne<Patient>()
+            .WithMany()
+            .HasForeignKey(n => n.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<MedicalRecord>()
             .HasMany(m => m.Prescriptions)

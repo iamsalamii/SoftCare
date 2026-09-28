@@ -1,15 +1,22 @@
 using System;
 using Npgsql;
-using System.IO;
 
 class Program {
     static void Main() {
         var connStr = "Host=localhost;Port=5432;Database=softcare_db;Username=postgres;Password=Salamsafe52@$";
         using var conn = new NpgsqlConnection(connStr);
         conn.Open();
-        var sql = File.ReadAllText(@"c:\Users\DELL\ALL_PROJECTS\Future-Projects\project-softcare\backend\pharmacy-sales-migration.sql");
-        using var cmd = new NpgsqlCommand(sql, conn);
-        cmd.ExecuteNonQuery();
-        Console.WriteLine("Tables created successfully!");
+
+        var tablesToCount = new[] { "Patients", "Admissions", "MedicalRecords", "Medications", "PharmacySales", "Users" };
+        Console.WriteLine("--- RECORD COUNTS ---");
+        foreach(var t in tablesToCount) {
+            try {
+                using var cmd = new NpgsqlCommand($"SELECT COUNT(*) FROM \"{t}\"", conn);
+                var count = cmd.ExecuteScalar();
+                Console.WriteLine($"{t}: {count}");
+            } catch (Exception ex) {
+                Console.WriteLine($"{t}: ERROR - {ex.Message}");
+            }
+        }
     }
 }
