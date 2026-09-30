@@ -28,6 +28,73 @@ public class SurgeryController : ControllerBase
             .ToListAsync();
         return Ok(surgeries);
     }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetSurgery(string id)
+    {
+        var surgery = await _context.Surgeries.FindAsync(id);
+        if (surgery == null || !surgery.IsActive)
+            return NotFound();
+        return Ok(surgery);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> CreateSurgery([FromBody] Surgery surgery)
+    {
+        surgery.Id = Guid.NewGuid().ToString();
+        surgery.CreatedAt = DateTime.UtcNow;
+        surgery.UpdatedAt = DateTime.UtcNow;
+        surgery.IsActive = true;
+
+        _context.Surgeries.Add(surgery);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetSurgery), new { id = surgery.Id }, surgery);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateSurgery(string id, [FromBody] Surgery updates)
+    {
+        var surgery = await _context.Surgeries.FindAsync(id);
+        if (surgery == null || !surgery.IsActive)
+            return NotFound();
+
+        surgery.PatientId = updates.PatientId;
+        surgery.AdmissionId = updates.AdmissionId;
+        surgery.ScheduledDate = updates.ScheduledDate;
+        surgery.ScheduledTime = updates.ScheduledTime;
+        surgery.DurationMinutes = updates.DurationMinutes;
+        surgery.Type = updates.Type;
+        surgery.Procedure = updates.Procedure;
+        surgery.SurgeonId = updates.SurgeonId;
+        surgery.AnesthesiologistId = updates.AnesthesiologistId;
+        surgery.OperatingRoomId = updates.OperatingRoomId;
+        surgery.Status = updates.Status;
+        surgery.AnesthesiaType = updates.AnesthesiaType;
+        surgery.PreOpDiagnosis = updates.PreOpDiagnosis;
+        surgery.PostOpDiagnosis = updates.PostOpDiagnosis;
+        surgery.StartTime = updates.StartTime;
+        surgery.EndTime = updates.EndTime;
+        
+        surgery.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return Ok(surgery);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteSurgery(string id)
+    {
+        var surgery = await _context.Surgeries.FindAsync(id);
+        if (surgery == null || !surgery.IsActive)
+            return NotFound();
+
+        surgery.IsActive = false;
+        surgery.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
 
 [ApiController]

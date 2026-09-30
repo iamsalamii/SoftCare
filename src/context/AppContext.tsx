@@ -9,14 +9,7 @@ import {
   Room, VitalSigns, CarePlan, Insurance, PatientInsurance,
   GenomicProfile, PGxDrugInteraction, BioSample, BiobankFreezer, ClinicalTrial
 } from '../types';
-import {
-  mockUsers, mockDepartments, mockPatients, mockMedications, mockMedicationMovements,
-  mockAppointments, mockMedicalRecords, mockInsurances, mockPatientInsurances,
-  mockInvoices, mockBeds, mockRooms, mockAdmissions, mockLabTests, mockLabOrders,
-  mockVitalSigns, mockCarePlans, mockEmergencyVisits,
-  mockNotifications, mockGenomicProfiles, mockPGxInteractions,
-  mockBioSamples, mockBiobankFreezers, mockClinicalTrials
-} from '../data/mockData';
+
 
 interface AppContextType {
   dataLoading: boolean;
@@ -89,9 +82,7 @@ interface AppContextType {
   addSurgery: (surgery: Partial<Surgery>) => Promise<void>;
   updateSurgery: (id: string, surgery: Partial<Surgery>) => Promise<void>;
   deleteSurgery: (id: string) => Promise<void>;
-  operatingRooms: OperatingRoom[];
   setOperatingRooms: (rooms: OperatingRoom[]) => void;
-  addOperatingRoom: (room: Partial<OperatingRoom>) => Promise<void>;
   updateOperatingRoom: (id: string, room: Partial<OperatingRoom>) => Promise<void>;
   workSchedules: any[];
   setWorkSchedules: (schedules: any[]) => void;
@@ -154,8 +145,6 @@ export const useApp = () => {
   if (!context) throw new Error('useApp must be used within an AppProvider');
   return context;
 };
-
-const genId = () => Date.now().toString() + Math.random().toString(36).substring(2, 8);
 
 const defaultOrgSettings: OrganizationSettings = {
   id: '1',
@@ -278,7 +267,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setPatientsState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_patients', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -295,7 +283,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setUsersState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_users', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -309,7 +296,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setInvoicesState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_invoices', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -323,7 +309,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setBedsState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_beds', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -335,7 +320,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [labTests, setLabTests] = useState<LabTest[]>([]);
   const [emergencyVisits, setEmergencyVisits] = useState<EmergencyVisit[]>([]);
   const [surgeries, setSurgeries] = useState<Surgery[]>([]);
-  const [operatingRooms, setOperatingRooms] = useState<OperatingRoom[]>([]);
   const [workSchedules, setWorkSchedules] = useState<any[]>([]);
 
   const [notifications, setNotificationsState] = useState<Notification[]>([]);
@@ -344,7 +328,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNotificationsState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_notifications', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -355,7 +338,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCarePlansState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_care_plans', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -363,8 +345,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [vitalsList, setVitalsListState] = useState<any[]>(() => {
     try {
-      const saved = localStorage.getItem('softcare_nursing_vitals');
-      if (saved) return JSON.parse(saved);
     } catch {}
     return [
       {
@@ -389,7 +369,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setVitalsListState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_nursing_vitals', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -397,8 +376,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [nursingNotes, setNursingNotesState] = useState<any[]>(() => {
     try {
-      const saved = localStorage.getItem('softcare_nursing_notes');
-      if (saved) return JSON.parse(saved);
     } catch {}
     return [
       {
@@ -416,7 +393,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNursingNotesState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
       try {
-        localStorage.setItem('softcare_nursing_notes', JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -712,88 +688,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // === MEDICATIONS ===
   const addMedication = async (medication: Partial<Medication>) => {
     try {
-      const newMed = await apiService.medications.create(medication);
-      setMedications(prev => [...prev, newMed]);
-      success('Médicament ajouté via API');
-    } catch (err: any) {
-      showError('Erreur', err.message || 'Impossible d\'ajouter le médicament');
-      const fallbackMed: Medication = {
-        id: genId(),
-        name: medication.name || '',
-        genericName: medication.genericName || '',
-        category: medication.category || '',
-        manufacturer: medication.manufacturer || '',
-        stock: medication.stock || 0,
-        minStock: medication.minStock || 10,
-        maxStock: medication.maxStock || 100,
-        price: medication.price || medication.unitPrice || 0,
-        unitPrice: medication.unitPrice || medication.price || 0,
-        expiryDate: medication.expiryDate || '',
-        batchNumber: medication.batchNumber || '',
-        barcode: medication.barcode || '',
-        description: medication.description || '',
-        dosageForm: medication.dosageForm || 'tablet',
-        requiresPrescription: medication.requiresPrescription || false,
-        location: medication.location || '',
-        supplier: medication.supplier || '',
-        status: medication.status || 'active',
-        createdAt: new Date().toISOString(),
-      };
-      setMedications(prev => [...prev, fallbackMed]);
-      success('Médicament ajouté (Mode Local)');
+      const created = await apiService.medications.create(medication);
+      setMedications(prev => [created, ...prev]);
+      success('Médicament ajouté');
+    } catch (error: any) {
+      showError(error);
     }
-  };
-
-  const updateMedication = async (id: string, updates: Partial<Medication>) => {
-    try {
-      const updatedMed = await apiService.medications.update(id, updates);
-      setMedications(prev => prev.map(m => m.id === id ? updatedMed : m));
-      success('Médicament mis à jour via API');
-    } catch (err: any) {
-      showError('Erreur', err.message || 'Impossible de mettre à jour le médicament');
-      setMedications(prev => prev.map(m => m.id === id ? { ...m, ...updates, unitPrice: updates.unitPrice || updates.price || m.unitPrice, price: updates.price || updates.unitPrice || m.price } : m));
-      success('Médicament mis à jour (Mode Local)');
-    }
-  };
-
-  const deleteMedication = async (id: string) => {
-    try {
-      await apiService.medications.delete(id);
-      setMedications(prev => prev.filter(m => m.id !== id));
-      success('Médicament supprimé via API');
-    } catch (err: any) {
-      showError('Erreur', err.message || 'Impossible de supprimer le médicament');
-      setMedications(prev => prev.filter(m => m.id !== id));
-      success('Médicament supprimé (Mode Local)');
-    }
-  };
-
-  // === LAB ORDERS ===
-  const addLabOrder = async (order: Partial<LabOrder>) => {
-    const newOrder: LabOrder = {
-      id: genId(),
-      patientId: order.patientId || '',
-      doctorId: order.doctorId || '',
-      testName: order.testName || '',
-      testType: order.testType || '',
-      tests: order.tests || [],
-      priority: order.priority || 'normal',
-      status: order.status || 'pending',
-      notes: order.notes || '',
-      createdAt: new Date().toISOString(),
-    };
-    setLabOrders(prev => [newOrder, ...prev]);
-    success('Analyse demandée');
-  };
-
-  const updateLabOrder = async (id: string, updates: Partial<LabOrder>) => {
-    setLabOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
-    success('Analyse mise à jour');
-  };
-
-  const deleteLabOrder = async (id: string) => {
-    setLabOrders(prev => prev.filter(o => o.id !== id));
-    success('Analyse supprimée');
   };
 
   // === ADMISSIONS ===
@@ -830,65 +730,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === INVOICES ===
   const addInvoice = async (invoice: Partial<Invoice>, items: Partial<Invoice['items']>[number][]) => {
-    const invoiceNumber = `${organizationSettings.invoicePrefix}-${Date.now()}`;
-    const newInvoice: Invoice = {
-      id: genId(),
-      invoiceNumber,
-      patientId: invoice.patientId || '',
-      date: invoice.date || new Date().toISOString().split('T')[0],
-      dueDate: invoice.dueDate || '',
-      items: items.map((item, idx) => ({
-        id: item?.id || (idx + 1).toString(),
-        description: item?.description || '',
-        type: item?.type || 'other',
-        category: item?.category || 'other',
-        quantity: item?.quantity || 1,
-        unitPrice: item?.unitPrice || 0,
-        total: item?.total || 0,
-      })),
-      subtotal: invoice.subtotal || 0,
-      tax: invoice.tax || 0,
-      taxAmount: invoice.taxAmount || 0,
-      discount: invoice.discount || 0,
-      discountAmount: invoice.discountAmount || 0,
-      discountPercent: invoice.discountPercent || 0,
-      total: invoice.total || 0,
-      status: invoice.status || 'draft',
-      notes: invoice.notes || '',
-      payments: [],
-      createdAt: new Date().toISOString(),
-      createdBy: currentUser?.id,
-    };
-    setInvoices(prev => [newInvoice, ...prev]);
-    success('Facture créée', invoiceNumber);
-    return newInvoice;
-  };
-
-  const updateInvoice = async (id: string, updates: Partial<Invoice>) => {
-    setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates } : inv));
-    success('Facture mise à jour');
+    try {
+      const created = await apiService.invoices.create({ ...invoice, items: items as any });
+      setInvoicesState(prev => [created, ...prev]);
+      success('Facture créée');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const deleteInvoice = async (id: string) => {
-    setInvoices(prev => prev.filter(inv => inv.id !== id));
-    success('Facture supprimée');
+    try {
+      await apiService.invoices.delete(id);
+      setInvoicesState(prev => prev.filter(inv => inv.id !== id));
+      success('Facture supprimée');
+    } catch (err: any) {
+      showError(err);
+    }
   };
 
   // === QUICK INVOICE ITEMS ===
-  const addQuickInvoiceItem = async (item: Partial<QuickInvoiceItem>) => {
-    const newItem: QuickInvoiceItem = {
-      id: genId(),
-      category: item.category || 'other',
-      label: item.label || '',
-      price: item.price || 0,
-      active: item.active ?? true,
-      order: item.order || 0,
-    };
-    setQuickInvoiceItems(prev => [...prev, newItem]);
-    success('Item ajouté');
-  };
-
-  const updateQuickInvoiceItem = async (id: string, updates: Partial<QuickInvoiceItem>) => {
+const updateQuickInvoiceItem = async (id: string, updates: Partial<QuickInvoiceItem>) => {
     setQuickInvoiceItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     success('Item mis à jour');
   };
@@ -900,20 +762,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === BEDS ===
   const addBed = async (bed: Partial<Bed>) => {
-    const newBed: Bed = {
-      id: genId(),
-      roomNumber: bed.roomNumber || '101',
-      bedNumber: bed.bedNumber || 'A',
-      departmentId: bed.departmentId || '1',
-      department: bed.department || 'Médecine',
-      type: bed.type || 'standard',
-      status: bed.status || 'available',
-      features: bed.features || ['TV', 'Salle de bain'],
-      dailyRate: bed.dailyRate || 150,
-      createdAt: new Date().toISOString()
-    };
-    setBeds(prev => [newBed, ...prev]);
-    success('Lit créé', `Lit ${newBed.roomNumber}-${newBed.bedNumber} ajouté avec succès`);
+    try {
+      const created = await apiService.beds.create(bed);
+      setBedsState(prev => [created, ...prev]);
+      success('Lit ajouté');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const updateBed = async (id: string, updates: Partial<Bed>) => {
@@ -929,8 +784,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteBed = async (id: string) => {
-    setBeds(prev => prev.filter(b => b.id !== id));
-    success('Lit supprimé');
+    try {
+      await apiService.beds.delete(id);
+      setBedsState(prev => prev.filter(b => b.id !== id));
+      success('Lit supprimé');
+    } catch (err: any) {
+      showError(err);
+    }
   };
 
   // === NURSING / SOINS ===
@@ -984,199 +844,48 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === SURGERIES ===
   const addSurgery = async (surgery: Partial<Surgery>) => {
-    const newSurgery: Surgery = {
-      id: genId(),
-      patientId: surgery.patientId || '',
-      admissionId: surgery.admissionId,
-      scheduledDate: surgery.scheduledDate || new Date().toISOString().split('T')[0],
-      scheduledTime: surgery.scheduledTime || '',
-      duration: surgery.duration || 60,
-      type: surgery.type || 'elective',
-      procedure: surgery.procedure || '',
-      procedureCode: surgery.procedureCode,
-      surgeonId: surgery.surgeonId || '',
-      anesthesiologistId: surgery.anesthesiologistId,
-      assistantSurgeonId: surgery.assistantSurgeonId,
-      scrubNurseId: surgery.scrubNurseId,
-      operatingRoomId: surgery.operatingRoomId || '',
-      status: surgery.status || 'scheduled',
-      anesthesiaType: surgery.anesthesiaType || 'general',
-      preOpDiagnosis: surgery.preOpDiagnosis || '',
-      postOpDiagnosis: surgery.postOpDiagnosis,
-      complications: surgery.complications,
-      notes: surgery.notes,
-      startTime: surgery.startTime,
-      endTime: surgery.endTime,
-    };
-    setSurgeries(prev => [newSurgery, ...prev]);
-    success('Chirurgie planifiée');
+    try {
+      const created = await apiService.surgery.create(surgery);
+      setSurgeriesState(prev => [created, ...prev]);
+      success('Intervention programmée');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const updateSurgery = async (id: string, updates: Partial<Surgery>) => {
-    setSurgeries(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-    success('Chirurgie mise à jour');
+    try {
+      const updated = await apiService.surgery.update(id, updates);
+      setSurgeriesState(prev => prev.map(p => p.id === id ? updated : p));
+      success('Statut intervention mis à jour');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const deleteSurgery = async (id: string) => {
-    setSurgeries(prev => prev.filter(s => s.id !== id));
-    success('Chirurgie supprimée');
+    try {
+      await apiService.surgery.delete(id);
+      setSurgeriesState(prev => prev.filter(s => s.id !== id));
+      success('Chirurgie supprimée');
+    } catch (err: any) {
+      showError(err);
+    }
   };
 
   // === OPERATING ROOMS ===
-  const addOperatingRoom = async (room: Partial<OperatingRoom>) => {
-    const newRoom: OperatingRoom = {
-      id: genId(),
-      name: room.name || '',
-      number: room.number || '',
-      type: room.type || 'general',
-      status: room.status || 'available',
-      equipment: room.equipment || [],
-    };
-    setOperatingRooms(prev => [...prev, newRoom]);
-    success('Salle ajoutée');
-  };
+  
 
-  const updateOperatingRoom = async (id: string, updates: Partial<OperatingRoom>) => {
-    setOperatingRooms(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
-  };
-
-  // === EMERGENCY VISITS ===
-  const addEmergencyVisit = async (visit: Partial<EmergencyVisit>) => {
-    const newVisit: EmergencyVisit = {
-      id: visit.id || genId(),
-      patientId: visit.patientId || '',
-      arrivalTime: visit.arrivalTime || new Date().toISOString(),
-      arrivalMode: visit.arrivalMode || 'walking',
-      chiefComplaint: visit.chiefComplaint || '',
-      triageLevel: visit.triageLevel || 3,
-      triageTime: visit.triageTime || new Date().toISOString(),
-      triageBy: visit.triageBy || '',
-      status: visit.status || 'waiting',
-      assignedDoctorId: visit.assignedDoctorId,
-      assignedBedId: visit.assignedBedId,
-      notes: visit.notes,
-    };
-    setEmergencyVisits(prev => [newVisit, ...prev]);
-    success('Admission urgences enregistrée');
-  };
-
-  const updateEmergencyVisit = async (id: string, updates: Partial<EmergencyVisit>) => {
-    setEmergencyVisits(prev => prev.map(v => v.id === id ? { ...v, ...updates } : v));
-  };
-
-  // === MEDICAL RECORDS ===
-  const addMedicalRecord = async (record: Partial<MedicalRecord>) => {
-    try {
-      const newRecord = await apiService.medicalRecords.create(record);
-      setMedicalRecords(prev => [newRecord, ...prev]);
-      success('Dossier médical créé');
-    } catch (err: any) {
-      showError('Erreur', 'Impossible de créer le dossier médical.');
-      throw err;
-    }
-  };
-
-  const updateMedicalRecord = async (id: string, updates: Partial<MedicalRecord>) => {
-    try {
-      const updatedRecord = await apiService.medicalRecords.update(id, updates);
-      setMedicalRecords(prev => prev.map(r => r.id === id ? { ...r, ...updatedRecord } : r));
-      success('Dossier médical mis à jour');
-    } catch (err: any) {
-      showError('Erreur', 'Impossible de mettre à jour le dossier médical.');
-      throw err;
-    }
-  };
-
-  // === MEDICATION MOVEMENTS ===
-  const addMedicationMovement = async (movement: Partial<MedicationMovement>) => {
-    try {
-      const newMovement = await apiService.medications.addMovement(movement);
-      setMedicationMovements(prev => [newMovement, ...prev]);
-      if (movement.medicationId) {
-        setMedications(prev => prev.map(m => {
-          if (m.id === movement.medicationId) {
-            const stockChange = movement.type === 'in' ? (movement.quantity || 0) : movement.type === 'out' ? -(movement.quantity || 0) : (movement.quantity || 0);
-            return { ...m, stock: Math.max(0, m.stock + stockChange) };
-          }
-          return m;
-        }));
-      }
-    } catch (err: any) {
-      error('Erreur', 'Impossible d\'enregistrer le mouvement');
-      throw err;
-    }
-  };
-
-  // === DROPDOWN OPTIONS ===
-  const addDropdownOption = (option: DropdownOption) =>
-    setDropdownOptions(prev => [...prev, option]);
-  const updateDropdownOption = (id: string, updates: Partial<DropdownOption>) =>
-    setDropdownOptions(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
-  const deleteDropdownOption = (id: string) =>
-    setDropdownOptions(prev => prev.filter(o => o.id !== id));
-
-  // === NOTIFICATIONS ===
-  const addNotification = (notification: Notification) =>
-    setNotifications(prev => [notification, ...prev]);
-  const markNotificationRead = (id: string) =>
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    success('Notifications', 'Toutes les notifications ont été marquées comme lues.');
-  };
-
-  const getDropdownOptions = (category: string) =>
-    dropdownOptions.filter(o => o.category === category && o.active).sort((a, b) => a.order - b.order);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  // === BIOTECH & PGx ===
-  const addGenomicProfile = async (profile: Partial<GenomicProfile>) => {
-    const newProfile: GenomicProfile = {
-      id: genId(),
-      patientId: profile.patientId || '',
-      patientName: profile.patientName || '',
-      testDate: profile.testDate || new Date().toISOString().split('T')[0],
-      panelName: profile.panelName || 'Panel PGx Général',
-      genes: profile.genes || [],
-      phenotypes: profile.phenotypes || {},
-      recommendations: profile.recommendations || [],
-      status: profile.status || 'draft',
-      notes: profile.notes
-    };
-    setGenomicProfiles(prev => [newProfile, ...prev]);
-    success('Profil génomique enregistré');
-  };
-
-  const updateGenomicProfile = async (id: string, profile: Partial<GenomicProfile>) => {
-    setGenomicProfiles(prev => prev.map(p => p.id === id ? { ...p, ...profile } : p));
-    success('Profil génomique mis à jour');
-  };
+  
 
   const addBioSample = async (sample: Partial<BioSample>) => {
-    const newSample: BioSample = {
-      id: genId(),
-      sampleCode: sample.sampleCode || `BS-${Date.now().toString().slice(-6)}`,
-      patientId: sample.patientId || '',
-      patientName: sample.patientName || '',
-      sampleType: sample.sampleType || 'DNA',
-      collectionDate: sample.collectionDate || new Date().toISOString().split('T')[0],
-      volumeMl: sample.volumeMl || 1.0,
-      concentration: sample.concentration,
-      freezerId: sample.freezerId || 'FRZ-80-01',
-      freezerName: sample.freezerName,
-      rackNumber: sample.rackNumber || 'Rack-01',
-      boxNumber: sample.boxNumber || 'Boîte-01',
-      wellPosition: sample.wellPosition || 'A01',
-      storageTemp: sample.storageTemp || '-80°C',
-      consentSigned: sample.consentSigned ?? true,
-      consentType: sample.consentType || 'Research & Diagnostics',
-      qualityScore: sample.qualityScore || 'A',
-      status: sample.status || 'available',
-      notes: sample.notes
-    };
-    setBioSamples(prev => [newSample, ...prev]);
-    success('Échantillon biobanque répertorié');
+    try {
+      const created = await apiService.biotech.createBioSample(sample);
+      setBioSamples(prev => [created, ...prev]);
+      success('Échantillon enregistré');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const updateBioSample = async (id: string, sample: Partial<BioSample>) => {
@@ -1185,24 +894,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addClinicalTrial = async (trial: Partial<ClinicalTrial>) => {
-    const newTrial: ClinicalTrial = {
-      id: genId(),
-      code: trial.code || `CT-${Date.now().toString().slice(-6)}`,
-      title: trial.title || '',
-      phase: trial.phase || 'Phase II',
-      principalInvestigator: trial.principalInvestigator || '',
-      targetEnrollment: trial.targetEnrollment || 50,
-      currentEnrollment: trial.currentEnrollment || 0,
-      startDate: trial.startDate || new Date().toISOString().split('T')[0],
-      endDate: trial.endDate,
-      status: trial.status || 'recruiting',
-      description: trial.description || '',
-      inclusionCriteria: trial.inclusionCriteria || [],
-      exclusionCriteria: trial.exclusionCriteria || [],
-      participants: trial.participants || []
-    };
-    setClinicalTrials(prev => [newTrial, ...prev]);
-    success('Protocole d\'essai clinique créé');
+    try {
+      const created = await apiService.biotech.createTrial(trial);
+      setClinicalTrials(prev => [created, ...prev]);
+      success('Essai clinique enregistré');
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const value: AppContextType = {
@@ -1224,7 +922,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     labTests, setLabTests,
     emergencyVisits, setEmergencyVisits, addEmergencyVisit, updateEmergencyVisit,
     surgeries, setSurgeries, addSurgery, updateSurgery, deleteSurgery,
-    operatingRooms, setOperatingRooms, addOperatingRoom, updateOperatingRoom,
     workSchedules, setWorkSchedules,
     notifications, setNotifications, addNotification, markNotificationRead, markAllNotificationsRead, unreadCount,
     organizationSettings, setOrganizationSettings,

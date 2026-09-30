@@ -13,7 +13,6 @@ import { printDocument, generateDocumentHeader, generateDocumentFooter } from '.
 export const SurgeryModule: React.FC = () => {
   const {
     surgeries,
-    operatingRooms,
     patients,
     users,
     addSurgery,
@@ -37,11 +36,6 @@ export const SurgeryModule: React.FC = () => {
   const getUserName = (userId: string) => {
     const user = users.find(u => u.id === userId);
     return user ? user.name : 'Chirurgien de garde';
-  };
-
-  const getORName = (roomId: string) => {
-    const room = operatingRooms.find(r => r.id === roomId);
-    return room ? room.name : 'Bloc Polyvalent 1';
   };
 
   const getStatusBadge = (status: string) => {
@@ -74,7 +68,7 @@ export const SurgeryModule: React.FC = () => {
       <tr style="border-bottom: 1px solid #e2e8f0;">
         <td style="padding: 8px; font-weight: bold;">${getPatientName(s.patientId)}</td>
         <td style="padding: 8px;">${s.procedure}</td>
-        <td style="padding: 8px; text-align: center;">${getORName(s.operatingRoomId)}</td>
+        <td style="padding: 8px; text-align: center;">Bloc Polyvalent</td>
         <td style="padding: 8px; text-align: center;">${s.scheduledDate} ${s.scheduledTime || '08:30'}</td>
         <td style="padding: 8px;">Dr. ${getUserName(s.surgeonId)}</td>
         <td style="padding: 8px; text-align: center;">${s.status}</td>
@@ -294,7 +288,7 @@ const SurgeryFormModal: React.FC<{
   operatingRooms: any[];
   onClose: () => void;
   onSave: (surgery: Surgery) => void;
-}> = ({ patients, users, operatingRooms, onClose, onSave }) => {
+}> = ({ patients, users, onClose, onSave }) => {
   const { currentUser } = useApp();
 
   const [selectedPatientId, setSelectedPatientId] = useState<string>(patients[0]?.id || '');
@@ -520,7 +514,7 @@ const SurgeryDetailsModal: React.FC<{
   operatingRooms: any[];
   onClose: () => void;
   onUpdate: (updated: Surgery) => void;
-}> = ({ surgery, patients, users, operatingRooms, onClose, onUpdate }) => {
+}> = ({ surgery, patients, users, onClose, onUpdate }) => {
   const patient = patients.find(p => p.id === surgery.patientId);
 
   const [status, setStatus] = useState(surgery.status);

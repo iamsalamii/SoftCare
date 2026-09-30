@@ -64,4 +64,17 @@ public class InvoicesController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(invoice);
     }
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteInvoice(string id)
+    {
+        var invoice = await _context.Invoices.FindAsync(id);
+        if (invoice == null || !invoice.IsActive)
+            return NotFound();
+
+        invoice.IsActive = false;
+        invoice.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

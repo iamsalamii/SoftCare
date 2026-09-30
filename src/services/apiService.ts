@@ -6,6 +6,39 @@ import {
 
 export const apiService = {
 
+  // === SURGERY ===
+  surgery: {
+    getAll: () => apiClient.get<any[]>('/surgery'),
+    getById: (id: string) => apiClient.get<any>(`/surgery/${id}`),
+    create: (surgery: any) => apiClient.post<any>('/surgery', surgery),
+    update: (id: string, surgery: any) => apiClient.put<any>(`/surgery/${id}`, surgery),
+    delete: (id: string) => apiClient.delete(`/surgery/${id}`),
+  },
+
+
+  // === EMERGENCIES ===
+  emergencies: {
+    getAll: () => apiClient.get<any[]>('/emergency'),
+    getById: (id: string) => apiClient.get<any>(`/emergency/${id}`),
+    create: (visit: any) => apiClient.post<any>('/emergency', visit),
+    update: (id: string, visit: any) => apiClient.put<any>(`/emergency/${id}`, visit),
+    delete: (id: string) => apiClient.delete(`/emergency/${id}`),
+  },
+
+  // === LAB ===
+  lab: {
+    getTests: () => apiClient.get<any[]>('/lab/tests'),
+    createTest: (test: any) => apiClient.post<any>('/lab/tests', test),
+    updateTest: (id: string, test: any) => apiClient.put<any>(`/lab/tests/${id}`, test),
+    deleteTest: (id: string) => apiClient.delete(`/lab/tests/${id}`),
+    
+    getOrders: () => apiClient.get<any[]>('/lab/orders'),
+    createOrder: (order: any) => apiClient.post<any>('/lab/orders', order),
+    updateOrder: (id: string, order: any) => apiClient.put<any>(`/lab/orders/${id}`, order),
+    deleteOrder: (id: string) => apiClient.delete(`/lab/orders/${id}`),
+  },
+
+
   // === NURSING (Soins) ===
   vitals: {
     getAll: () => apiClient.get<any[]>('/nursing/vitals'),
