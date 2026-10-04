@@ -503,15 +503,53 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setAdmissions([]);
       }
 
-      setLabOrders([]);
-      setLabTests([]);
-      setEmergencyVisits([]);
+      try {
+        const apiLabOrders = await apiService.lab.getOrders();
+        setLabOrders(apiLabOrders);
+      } catch {
+        setLabOrders([]);
+      }
+      try {
+        const apiLabTests = await apiService.lab.getTests();
+        setLabTests(apiLabTests);
+      } catch {
+        setLabTests([]);
+      }
+      try {
+        const apiEmergencies = await apiService.emergencies.getAll();
+        setEmergencyVisits(apiEmergencies);
+      } catch {
+        setEmergencyVisits([]);
+      }
       setNotificationsState([]);
-      setGenomicProfiles([]);
+      try {
+        const apiGenomics = await apiService.biotech.getGenomicProfiles();
+        setGenomicProfiles(apiGenomics);
+      } catch {
+        setGenomicProfiles([]);
+      }
       setPgxInteractions([]);
-      setBioSamples([]);
+      try {
+        const apiBioSamples = await apiService.biotech.getBioSamples();
+        setBioSamples(apiBioSamples);
+      } catch {
+        setBioSamples([]);
+      }
       setBiobankFreezers([]);
-      setClinicalTrials([]);
+      try {
+        const apiTrials = await apiService.biotech.getTrials();
+        setClinicalTrials(apiTrials);
+      } catch {
+        setClinicalTrials([]);
+      }
+      try {
+        const apiOrg = await apiService.settings.getOrganization();
+        if (apiOrg && apiOrg.name) {
+          setOrganizationSettingsState(prev => ({ ...prev, ...apiOrg }));
+        }
+      } catch {
+        // preserve
+      }
       setQuickInvoiceItems([]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de chargement';
@@ -918,7 +956,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // === ORGANIZATION SETTINGS ===
   const updateOrganizationSettingsFn = async (updates: Partial<OrganizationSettings>) => {
-    setOrganizationSettings(prev => ({ ...prev, ...updates, updatedAt: new Date().toISOString() }));
+    try {
+      const updated = await apiService.settings.updateOrganization(updates);
+      setOrganizationSettings(prev => ({ ...prev, ...updated, updatedAt: new Date().toISOString() }));
+    } catch {
+      setOrganizationSettings(prev => ({ ...prev, ...updates, updatedAt: new Date().toISOString() }));
+    }
     success('Paramètres mis à jour');
   };
 

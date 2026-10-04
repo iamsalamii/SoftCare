@@ -57,15 +57,15 @@ const InvoiceList: React.FC = () => {
 
   const totalRevenue = invoices
     .filter(i => i.status === 'paid' || i.status === 'partial')
-    .reduce((sum, i) => sum + i.payments.reduce((s, p) => s + p.amount, 0), 0);
+    .reduce((sum, i) => sum + (i.payments || []).reduce((s, p) => s + p.amount, 0), 0);
 
   const pendingAmount = invoices
     .filter(i => i.status === 'sent' || i.status === 'partial' || i.status === 'overdue')
-    .reduce((sum, i) => sum + (i.total - i.payments.reduce((s, p) => s + p.amount, 0)), 0);
+    .reduce((sum, i) => sum + (i.total - (i.payments || []).reduce((s, p) => s + p.amount, 0)), 0);
 
   const generateInvoicesHTML = () => {
     const rows = filteredInvoices.map(inv => {
-      const paidAmount = inv.payments.reduce((sum, p) => sum + p.amount, 0);
+      const paidAmount = (inv.payments || []).reduce((sum, p) => sum + p.amount, 0);
       return `
         <tr>
           <td style="padding: 10px; border: 1px solid #ddd;">#${inv.id}</td>
@@ -110,7 +110,7 @@ const InvoiceList: React.FC = () => {
       patient: getPatientName(inv.patientId),
       date: new Date(inv.date).toLocaleDateString('fr-FR'),
       montant: inv.total,
-      paye: inv.payments.reduce((s, p) => s + p.amount, 0),
+      paye: (inv.payments || []).reduce((s, p) => s + p.amount, 0),
       statut: getStatusText(inv.status)
     }));
     exportToExcel(data, 'Liste-Factures', ['N Facture', 'Patient', 'Date', 'Montant', 'Paye', 'Statut']);
@@ -319,7 +319,7 @@ const InvoiceList: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredInvoices.map((invoice) => {
-                  const paidAmount = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
+                  const paidAmount = (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0);
                   return (
                     <tr key={invoice.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -329,10 +329,10 @@ const InvoiceList: React.FC = () => {
                         {getPatientName(invoice.patientId)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                        {new Date(invoice.date).toLocaleDateString('fr-FR')}
+                        {invoice.date ? new Date(invoice.date).toLocaleDateString('fr-FR') : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                        {new Date(invoice.dueDate).toLocaleDateString('fr-FR')}
+                        {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('fr-FR') : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                         {invoice.total.toFixed(2)} {organizationSettings?.currencySymbol || '€'}
@@ -395,7 +395,7 @@ const InvoiceList: React.FC = () => {
 const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint: () => void }> = ({ invoice, onClose, onPrint }) => {
   const { patients, organizationSettings } = useApp();
   const patient = patients.find(p => p.id === invoice.patientId);
-  const paidAmount = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
+  const paidAmount = (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0);
   const currencySymbol = organizationSettings?.currencySymbol || '€';
 
   return (
@@ -428,11 +428,11 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint:
           <div className="grid grid-cols-3 gap-4 py-4 border-t border-gray-200">
             <div>
               <p className="text-sm text-gray-500">Date</p>
-              <p className="font-medium">{new Date(invoice.date).toLocaleDateString('fr-FR')}</p>
+              <p className="font-medium">{invoice.date ? new Date(invoice.date).toLocaleDateString('fr-FR') : '-'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Échéance</p>
-              <p className="font-medium">{new Date(invoice.dueDate).toLocaleDateString('fr-FR')}</p>
+              <p className="font-medium">{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('fr-FR') : '-'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Statut</p>
@@ -502,11 +502,11 @@ const InvoiceDetails: React.FC<{ invoice: Invoice; onClose: () => void; onPrint:
           </div>
 
           {/* Paiements */}
-          {invoice.payments.length > 0 && (
+          {(invoice.payments || []).length > 0 && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Paiements</h3>
               <div className="space-y-2">
-                {invoice.payments.map((payment) => (
+                {(invoice.payments || []).map((payment) => (
                   <div key={payment.id} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
                     <div>
                       <span className="font-medium text-green-800">{payment.amount.toFixed(2)} {currencySymbol}</span>

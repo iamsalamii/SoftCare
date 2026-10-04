@@ -4,7 +4,7 @@ import { Save, Building2, Upload, Image, Plus, Trash2, CreditCard as Edit2, X, C
 import { OrganizationSettings, QuickInvoiceItem } from '../../types';
 
 const OrganizationSettingsForm: React.FC = () => {
-  const { organizationSettings, setOrganizationSettings } = useApp();
+  const { organizationSettings, setOrganizationSettings, updateOrganizationSettings } = useApp();
   const [formData, setFormData] = useState<OrganizationSettings>(organizationSettings);
   const [logoPreview, setLogoPreview] = useState<string | null>(organizationSettings.logo || null);
   const [saved, setSaved] = useState(false);
@@ -87,8 +87,12 @@ const OrganizationSettingsForm: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
-    setOrganizationSettings({ ...formData, updatedAt: new Date().toISOString() });
+  const handleSave = async () => {
+    if (updateOrganizationSettings) {
+      await updateOrganizationSettings(formData);
+    } else {
+      setOrganizationSettings({ ...formData, updatedAt: new Date().toISOString() });
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

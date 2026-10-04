@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoftCare.Application.Common.Interfaces;
@@ -8,6 +9,7 @@ using SoftCare.Domain.Entities;
 
 namespace SoftCare.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class LabController : ControllerBase
