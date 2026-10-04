@@ -132,7 +132,9 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            className="w-9 h-9 inline-flex items-center justify-center text-white/80 hover:text-white bg-white/10 hover:bg-white/20 active:bg-white/25 rounded-xl border border-white/20 transition-all shrink-0 cursor-pointer"
+            title="Fermer"
+            aria-label="Fermer"
           >
             <X className="w-5 h-5" />
           </button>

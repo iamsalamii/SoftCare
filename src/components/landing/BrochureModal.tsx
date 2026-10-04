@@ -111,36 +111,40 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
     <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-3xl w-full my-auto overflow-hidden relative z-[10000] flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white p-5 sm:p-6 flex justify-between items-center flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+        <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white px-5 py-4 sm:px-6 sm:py-5 flex justify-between items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-3.5 min-w-0 flex-1">
+            <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner shrink-0">
               <Building2 className="w-6 h-6 text-cyan-100" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-white">Brochure Médicale — {organizationSettings.name || 'Système Hospitalier'}</h3>
-                <span className="px-2.5 py-0.5 text-[9px] font-bold bg-white/20 border border-white/30 text-cyan-50 rounded-full">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="font-bold text-base sm:text-lg text-white truncate">
+                  Brochure Médicale — {organizationSettings.name || 'Système Hospitalier'}
+                </h3>
+                <span className="inline-flex items-center justify-center h-5 px-2.5 text-[10px] font-bold bg-white/20 border border-white/30 text-white rounded-full whitespace-nowrap shrink-0">
                   Page {currentPage} / {totalPages}
                 </span>
               </div>
-              <p className="text-xs text-cyan-100/90 mt-0.5">
+              <p className="text-xs text-cyan-100/90 mt-0.5 truncate">
                 Dossier de présentation complet du Système d'Information Hospitalier
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={handleDownloadBrochure}
-              className="px-3.5 py-2 bg-white text-teal-800 hover:bg-cyan-50 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+              className="h-9 px-3.5 bg-white text-teal-800 hover:bg-cyan-50 active:bg-cyan-100 rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
               title="Télécharger la brochure PDF"
             >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Télécharger PDF</span>
+              <Download className="w-4 h-4 shrink-0 text-teal-700" />
+              <span className="leading-none whitespace-nowrap">Télécharger PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+              className="w-9 h-9 inline-flex items-center justify-center text-white/80 hover:text-white bg-white/10 hover:bg-white/20 active:bg-white/25 rounded-xl border border-white/20 transition-all shrink-0 cursor-pointer"
+              title="Fermer"
+              aria-label="Fermer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -343,25 +347,26 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* Footer Navigation */}
-        <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between flex-shrink-0">
+        <div className="px-5 py-3.5 sm:px-6 sm:py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-4 flex-shrink-0">
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 disabled:opacity-40 rounded-xl text-xs font-bold shadow-2xs hover:bg-gray-100 transition-all flex items-center gap-1.5"
+            className="h-9 px-4 bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-40 disabled:hover:bg-white rounded-xl text-xs font-bold shadow-2xs transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Page Précédente</span>
+            <ChevronLeft className="w-4 h-4 shrink-0" />
+            <span className="leading-none whitespace-nowrap">Page Précédente</span>
           </button>
 
           {/* Dots */}
-          <div className="flex gap-1.5">
+          <div className="flex items-center gap-1.5">
             {Array.from({ length: totalPages }).map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`h-2 rounded-full transition-all ${
-                  currentPage === i + 1 ? 'w-6 bg-teal-600' : 'w-2 bg-gray-300'
+                className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                  currentPage === i + 1 ? 'w-6 bg-teal-600' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
                 }`}
+                title={`Aller à la page ${i + 1}`}
               />
             ))}
           </div>
@@ -369,10 +374,10 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white disabled:opacity-40 rounded-xl text-xs font-bold shadow-md shadow-teal-600/20 transition-all flex items-center gap-1.5"
+            className="h-9 px-4 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 active:from-cyan-800 active:to-teal-800 text-white disabled:opacity-40 rounded-xl text-xs font-bold shadow-sm shadow-teal-600/20 transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer disabled:cursor-not-allowed"
           >
-            <span>Page Suivante</span>
-            <ChevronRight className="w-4 h-4" />
+            <span className="leading-none whitespace-nowrap">Page Suivante</span>
+            <ChevronRight className="w-4 h-4 shrink-0" />
           </button>
         </div>
       </div>
