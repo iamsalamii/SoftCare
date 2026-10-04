@@ -120,6 +120,7 @@ public class SettingsController : BaseApiController
         return Ok(settings);
     }
 
+    [Authorize(Roles = "admin")]
     [HttpPut("organization")]
     public async Task<ActionResult> UpdateOrganizationSettings([FromBody] OrganizationSetting updates)
     {

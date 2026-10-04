@@ -12,7 +12,7 @@ using SoftCare.Domain.Entities;
 
 namespace SoftCare.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = "admin")]
 public class AuditLogsController : BaseApiController
 {
     private readonly IApplicationDbContext _context;

@@ -130,6 +130,28 @@ public class MedicalRecordsController : BaseApiController
         return Ok(MapToDto(record));
     }
 
+    [Authorize(Roles = "admin,doctor")]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteMedicalRecord(string id)
+    {
+        var record = await _context.MedicalRecords.FirstOrDefaultAsync(m => m.Id == id);
+        if (record == null) return NotFound();
+
+        record.IsActive = false;
+        record.Status = "cancelled";
+        record.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        await LogAuditAsync(
+            _auditService,
+            "SUPPRESSION_DOSSIER_CLINIQUE",
+            "MedicalRecord",
+            record.Id,
+            record.PatientId);
+
+        return NoContent();
+    }
+
     private static object MapToDto(MedicalRecord r)
     {
         object symptoms = new string[] { };

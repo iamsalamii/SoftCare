@@ -136,6 +136,7 @@ public class PatientsController : BaseApiController
         return Ok(MapToDto(patient));
     }
 
+    [Authorize(Roles = "admin,doctor")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeletePatient(string id)
     {

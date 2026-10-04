@@ -54,6 +54,7 @@ public class BedsController : ControllerBase
         return Ok(bed);
     }
 
+    [Authorize(Roles = "admin")]
     [HttpPost]
     public async Task<ActionResult> CreateBed([FromBody] Bed payload)
     {
@@ -65,11 +66,17 @@ public class BedsController : ControllerBase
         return Ok(payload);
     }
 
+    [Authorize(Roles = "admin")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteBed(string id)
     {
         var bed = await _context.Beds.FirstOrDefaultAsync(b => b.Id == id);
         if (bed == null) return NotFound();
+
+        if (bed.Status == "occupied" || !string.IsNullOrEmpty(bed.CurrentPatientId))
+        {
+            return BadRequest(new { message = "Impossible de supprimer un lit actuellement occupé par un patient." });
+        }
 
         bed.IsActive = false;
         bed.UpdatedAt = DateTime.UtcNow;

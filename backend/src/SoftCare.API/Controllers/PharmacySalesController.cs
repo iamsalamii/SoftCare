@@ -55,6 +55,19 @@ public class PharmacySalesController : BaseApiController
     [HttpPost]
     public async Task<ActionResult<PharmacySale>> CreateSale(PharmacySale sale)
     {
+        if (sale.Items == null || !sale.Items.Any())
+        {
+            return BadRequest(new { message = "La vente doit contenir au moins un médicament." });
+        }
+
+        foreach (var item in sale.Items)
+        {
+            if (item.Quantity <= 0)
+            {
+                return BadRequest(new { message = "La quantité vendue doit être strictement supérieure à zéro." });
+            }
+        }
+
         sale.Id = Guid.NewGuid().ToString();
         sale.SaleDate = DateTime.UtcNow;
         sale.ReceiptNumber = $"RX-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(1000, 9999)}";
