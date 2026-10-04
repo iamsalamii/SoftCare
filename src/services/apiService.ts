@@ -151,6 +151,7 @@ export const apiService = {
   invoices: {
     getAll: () => apiClient.get<Invoice[]>('/invoices'),
     create: (invoice: Partial<Invoice>) => apiClient.post<Invoice>('/invoices', invoice),
+    delete: (id: string) => apiClient.delete(`/invoices/${id}`),
   },
 
   // === BEDS & ADMISSIONS ===

@@ -332,13 +332,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return next;
     });
   };
-  const [organizationSettings, setOrganizationSettingsState] = useState<OrganizationSettings>([]);
+  const [organizationSettings, setOrganizationSettingsState] = useState<OrganizationSettings>(defaultOrgSettings);
+
+  const setOrganizationSettings = (settings: OrganizationSettings | ((prev: OrganizationSettings) => OrganizationSettings)) => {
+    setOrganizationSettingsState(settings);
+  };
+
+  const [dropdownOptions, setDropdownOptionsState] = useState<DropdownOption[]>(defaultDropdownOptions);
+
+  const setDropdownOptions = (opts: DropdownOption[] | ((prev: DropdownOption[]) => DropdownOption[])) => {
+    setDropdownOptionsState(opts);
+  };
+
+  const [pharmacySales, setPharmacySalesState] = useState<PharmacySale[]>([]);
+  const setPharmacySales = setPharmacySalesState;
+
+  const [rooms] = useState<Room[]>([]);
+  const [insurances] = useState<Insurance[]>([]);
+  const [patientInsurances] = useState<PatientInsurance[]>([]);
+  const [vitalSigns] = useState<VitalSigns[]>([]);
+
+  const [carePlans, setCarePlansState] = useState<CarePlan[]>([]);
 
   const setCarePlans = (val: CarePlan[] | ((prev: CarePlan[]) => CarePlan[])) => {
     setCarePlansState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
-      try {
-      } catch {}
       return next;
     });
   };
@@ -696,6 +714,50 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const updateMedication = async (id: string, updates: Partial<Medication>) => {
+    try {
+      const updated = await apiService.medications.update(id, updates);
+      setMedications(prev => prev.map(m => m.id === id ? updated : m));
+      success('Médicament mis à jour');
+      return updated;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  const deleteMedication = async (id: string) => {
+    try {
+      await apiService.medications.delete(id);
+      setMedications(prev => prev.filter(m => m.id !== id));
+      success('Médicament supprimé');
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  const addMedicationMovement = async (movement: Partial<MedicationMovement>) => {
+    try {
+      const newMovement = await apiService.medications.addMovement(movement);
+      setMedicationMovements(prev => [newMovement, ...prev]);
+      if (movement.medicationId) {
+        setMedications(prev => prev.map(m => {
+          if (m.id === movement.medicationId) {
+            const stockChange = movement.type === 'in' ? (movement.quantity || 0) : movement.type === 'out' ? -(movement.quantity || 0) : (movement.quantity || 0);
+            return { ...m, stock: Math.max(0, m.stock + stockChange) };
+          }
+          return m;
+        }));
+      }
+      success('Mouvement de stock enregistré');
+      return newMovement;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
   // === ADMISSIONS ===
   const addAdmission = async (admission: Partial<Admission>) => {
     try {
@@ -739,6 +801,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const updateInvoice = async (id: string, updates: Partial<Invoice>) => {
+    setInvoicesState(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates } : inv));
+    success('Facture mise à jour');
+  };
+
   const deleteInvoice = async (id: string) => {
     try {
       await apiService.invoices.delete(id);
@@ -750,7 +817,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // === QUICK INVOICE ITEMS ===
-const updateQuickInvoiceItem = async (id: string, updates: Partial<QuickInvoiceItem>) => {
+  const addQuickInvoiceItem = async (item: Partial<QuickInvoiceItem>) => {
+    const newItem: QuickInvoiceItem = {
+      id: item.id || `QII-${Date.now()}`,
+      category: item.category || 'other',
+      label: item.label || '',
+      price: item.price || 0,
+      active: item.active ?? true,
+      order: item.order || 0,
+    };
+    setQuickInvoiceItems(prev => [...prev, newItem]);
+    success('Item ajouté');
+  };
+
+  const updateQuickInvoiceItem = async (id: string, updates: Partial<QuickInvoiceItem>) => {
     setQuickInvoiceItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     success('Item mis à jour');
   };
@@ -873,10 +953,149 @@ const updateQuickInvoiceItem = async (id: string, updates: Partial<QuickInvoiceI
     }
   };
 
-  // === OPERATING ROOMS ===
-  
+  // === MEDICAL RECORDS ===
+  const addMedicalRecord = async (record: Partial<MedicalRecord>) => {
+    try {
+      const newRecord = await apiService.medicalRecords.create(record);
+      setMedicalRecords(prev => [newRecord, ...prev]);
+      success('Dossier médical créé');
+      return newRecord;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
 
-  
+  const updateMedicalRecord = async (id: string, updates: Partial<MedicalRecord>) => {
+    try {
+      const updatedRecord = await apiService.medicalRecords.update(id, updates);
+      setMedicalRecords(prev => prev.map(r => r.id === id ? updatedRecord : r));
+      success('Dossier médical mis à jour');
+      return updatedRecord;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  // === LAB ORDERS ===
+  const addLabOrder = async (order: Partial<LabOrder>) => {
+    try {
+      const created = await apiService.lab.createOrder(order);
+      setLabOrders(prev => [created, ...prev]);
+      success('Prescription laboratoire créée');
+      return created;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  const updateLabOrder = async (id: string, updates: Partial<LabOrder>) => {
+    try {
+      const updated = await apiService.lab.updateOrder(id, updates);
+      setLabOrders(prev => prev.map(o => o.id === id ? { ...o, ...updated } : o));
+      success('Statut analyse mis à jour');
+      return updated;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  const deleteLabOrder = async (id: string) => {
+    try {
+      await apiService.lab.deleteOrder(id);
+      setLabOrders(prev => prev.filter(o => o.id !== id));
+      success('Analyse supprimée');
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  // === EMERGENCY VISITS ===
+  const addEmergencyVisit = async (visit: Partial<EmergencyVisit>) => {
+    try {
+      const created = await apiService.emergencies.create(visit);
+      setEmergencyVisits(prev => [created, ...prev]);
+      success('Admission urgences enregistrée');
+      return created;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  const updateEmergencyVisit = async (id: string, updates: Partial<EmergencyVisit>) => {
+    try {
+      const updated = await apiService.emergencies.update(id, updates);
+      setEmergencyVisits(prev => prev.map(v => v.id === id ? { ...v, ...updated } : v));
+      success('Dossier urgences mis à jour');
+      return updated;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  // === NOTIFICATIONS ===
+  const addNotification = (notification: Notification) =>
+    setNotificationsState(prev => [notification, ...prev]);
+
+  const markNotificationRead = (id: string) =>
+    setNotificationsState(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+
+  const markAllNotificationsRead = () => {
+    setNotificationsState(prev => prev.map(n => ({ ...n, read: true })));
+    success('Notifications', 'Toutes les notifications ont été marquées comme lues.');
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // === DROPDOWN OPTIONS ===
+  const getDropdownOptions = (category: string) =>
+    dropdownOptions.filter(o => o.category === category && o.active).sort((a, b) => a.order - b.order);
+
+  const addDropdownOption = (option: DropdownOption) =>
+    setDropdownOptionsState(prev => [...prev, option]);
+
+  const updateDropdownOption = (id: string, updates: Partial<DropdownOption>) =>
+    setDropdownOptionsState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+
+  const deleteDropdownOption = (id: string) =>
+    setDropdownOptionsState(prev => prev.filter(o => o.id !== id));
+
+  // === PHARMACY SALES ===
+  const addPharmacySale = async (sale: PharmacySale) => {
+    try {
+      const createdSale = await apiService.pharmacySales.create(sale);
+      setPharmacySalesState(prev => [createdSale, ...prev]);
+      success('Vente pharmacie enregistrée');
+      return createdSale;
+    } catch (err: any) {
+      showError(err);
+      throw err;
+    }
+  };
+
+  // === GENOMIC PROFILES ===
+  const addGenomicProfile = async (profile: Partial<GenomicProfile>) => {
+    try {
+      const created = await apiService.biotech.createGenomicProfile(profile);
+      setGenomicProfiles(prev => [created, ...prev]);
+      success('Profil génomique enregistré');
+      return created;
+    } catch (error: any) {
+      showError(error);
+      throw error;
+    }
+  };
+
+  const updateGenomicProfile = async (id: string, profile: Partial<GenomicProfile>) => {
+    setGenomicProfiles(prev => prev.map(p => p.id === id ? { ...p, ...profile } : p));
+    success('Profil génomique mis à jour');
+  };
 
   const addBioSample = async (sample: Partial<BioSample>) => {
     try {
