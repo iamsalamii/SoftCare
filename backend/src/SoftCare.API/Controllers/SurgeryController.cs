@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoftCare.Application.Common.Interfaces;
@@ -8,6 +9,7 @@ using SoftCare.Domain.Entities;
 
 namespace SoftCare.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SurgeryController : ControllerBase
@@ -97,15 +99,18 @@ public class SurgeryController : ControllerBase
     }
 }
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class SettingsController : ControllerBase
+public class SettingsController : BaseApiController
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public SettingsController(IApplicationDbContext context)
+    public SettingsController(IApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
     [HttpGet("organization")]
@@ -122,6 +127,7 @@ public class SettingsController : ControllerBase
         if (settings == null)
         {
             _context.OrganizationSettings.Add(updates);
+            settings = updates;
         }
         else
         {
@@ -136,6 +142,16 @@ public class SettingsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+
+        // Audit Trail
+        await LogAuditAsync(
+            _auditService,
+            "MODIFICATION_PARAMETRES_ETABLISSEMENT",
+            "OrganizationSettings",
+            "ORG-SETTINGS",
+            "Établissement Global",
+            $"{{\"name\":\"{settings.Name}\",\"currency\":\"{settings.Currency}\"}}");
+
         return Ok(settings);
     }
 }

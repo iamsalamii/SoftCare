@@ -11,15 +11,15 @@ using SoftCare.Domain.Entities;
 namespace SoftCare.API.Controllers;
 
 [Authorize]
-[ApiController]
-[Route("api/[controller]")]
-public class PharmacySalesController : ControllerBase
+public class PharmacySalesController : BaseApiController
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public PharmacySalesController(IApplicationDbContext context)
+    public PharmacySalesController(IApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
 
@@ -59,10 +59,18 @@ public class PharmacySalesController : ControllerBase
         sale.SaleDate = DateTime.UtcNow;
         sale.ReceiptNumber = $"RX-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(1000, 9999)}";
         
+        if (string.IsNullOrEmpty(sale.UserId))
+        {
+            sale.UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                          ?? User.FindFirst("sub")?.Value 
+                          ?? "";
+        }
+        
         foreach(var item in sale.Items)
         {
             item.Id = Guid.NewGuid().ToString();
             item.PharmacySaleId = sale.Id;
+            item.CreatedAt = DateTime.UtcNow;
             
             // Stock deduction
             var medication = await _context.Medications.FindAsync(item.MedicationId);
@@ -76,14 +84,27 @@ public class PharmacySalesController : ControllerBase
                     Type = "out",
                     Quantity = item.Quantity,
                     Date = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
                     Reason = "Vente pharmacie " + sale.ReceiptNumber,
                     PerformedBy = sale.UserId
                 });
             }
         }
 
+        sale.CreatedAt = DateTime.UtcNow;
         _context.PharmacySales.Add(sale);
         await _context.SaveChangesAsync();
+
+        // Audit Trail
+        var patient = !string.IsNullOrEmpty(sale.PatientId) ? await _context.Patients.FindAsync(sale.PatientId) : null;
+        var patientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : (sale.PatientId ?? "Vente Comptoir");
+        await LogAuditAsync(
+            _auditService,
+            "DELIVRANCE_POS",
+            "PharmacySale",
+            sale.Id,
+            patientName,
+            $"{{\"receiptNumber\":\"{sale.ReceiptNumber}\",\"totalAmount\":{sale.TotalAmount},\"itemsCount\":{sale.Items.Count}}}");
 
         return CreatedAtAction(nameof(GetSale), new { id = sale.Id }, sale);
     }

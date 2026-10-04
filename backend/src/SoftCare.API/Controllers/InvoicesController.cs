@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoftCare.Application.Common.Interfaces;
@@ -8,15 +10,16 @@ using SoftCare.Domain.Entities;
 
 namespace SoftCare.API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class InvoicesController : ControllerBase
+[Authorize]
+public class InvoicesController : BaseApiController
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public InvoicesController(IApplicationDbContext context)
+    public InvoicesController(IApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
     [HttpGet]
@@ -42,6 +45,9 @@ public class InvoicesController : ControllerBase
             total = i.Total,
             status = i.Status,
             notes = i.Notes,
+            payments = i.Status == "paid" 
+                ? new object[] { new { id = $"pay-{i.Id}", invoiceId = i.Id, amount = i.Total, method = "cash", date = i.Date.ToString("yyyy-MM-dd"), receivedBy = "Système" } }
+                : Array.Empty<object>(),
             items = i.Items.Select(item => new
             {
                 id = item.Id,
@@ -60,8 +66,36 @@ public class InvoicesController : ControllerBase
         invoice.Id = Guid.NewGuid().ToString();
         invoice.InvoiceNumber = string.IsNullOrEmpty(invoice.InvoiceNumber) ? $"FAC-{DateTime.UtcNow.Year}-{new Random().Next(1000, 9999)}" : invoice.InvoiceNumber;
         invoice.Date = DateTime.SpecifyKind(invoice.Date, DateTimeKind.Utc);
+        if (invoice.DueDate.HasValue)
+        {
+            invoice.DueDate = DateTime.SpecifyKind(invoice.DueDate.Value, DateTimeKind.Utc);
+        }
+        invoice.CreatedAt = DateTime.UtcNow;
+
+        if (invoice.Items != null)
+        {
+            foreach (var item in invoice.Items)
+            {
+                item.Id = Guid.NewGuid().ToString();
+                item.InvoiceId = invoice.Id;
+                item.CreatedAt = DateTime.UtcNow;
+            }
+        }
+
         _context.Invoices.Add(invoice);
         await _context.SaveChangesAsync();
+
+        // Audit Trail
+        var patient = !string.IsNullOrEmpty(invoice.PatientId) ? await _context.Patients.FindAsync(invoice.PatientId) : null;
+        var patientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : (invoice.PatientId ?? "Patient");
+        await LogAuditAsync(
+            _auditService,
+            "CREATION_FACTURE",
+            "Invoice",
+            invoice.Id,
+            patientName,
+            $"{{\"invoiceNumber\":\"{invoice.InvoiceNumber}\",\"total\":{invoice.Total},\"status\":\"{invoice.Status}\"}}");
+
         return Ok(invoice);
     }
     [HttpDelete("{id}")]

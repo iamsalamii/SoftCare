@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   ShieldCheck, Lock, FileText, Search, Download, Printer,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel } from '../../utils/exportUtils';
 import { useToast } from '../../context/ToastContext';
+import apiService from '../../services/apiService';
 
 interface AuditLogItem {
   id: string;
@@ -26,87 +27,40 @@ export const AuditTrailModule: React.FC = () => {
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState('all');
+  const [logs, setLogs] = useState<AuditLogItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [logs] = useState<AuditLogItem[]>([
-    {
-      id: 'AUD-9021',
-      timestamp: new Date(Date.now() - 1000 * 60 * 5).toLocaleString('fr-FR'),
-      userName: 'Dr. Marie Dubois',
-      userRole: 'Médecin (Cardiologie)',
-      action: 'CONSULTATION_DPI',
-      resourceType: 'Patient Record',
-      resourceId: 'PAT-001',
-      patientName: 'Jean Dupont',
-      ipAddress: '192.168.1.45',
-      securityHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-      status: 'valid'
-    },
-    {
-      id: 'AUD-9020',
-      timestamp: new Date(Date.now() - 1000 * 60 * 25).toLocaleString('fr-FR'),
-      userName: 'Dr. Marie Dubois',
-      userRole: 'Médecin (Cardiologie)',
-      action: 'ACCES_PHARMACOGENOMIQUE',
-      resourceType: 'Genomic Profile (CYP2C19)',
-      resourceId: 'PGX-001',
-      patientName: 'Jean Dupont',
-      ipAddress: '192.168.1.45',
-      securityHash: '8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4',
-      status: 'valid'
-    },
-    {
-      id: 'AUD-9019',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45).toLocaleString('fr-FR'),
-      userName: 'Pierre Leroy',
-      userRole: 'Pharmacien',
-      action: 'DELIVRANCE_POS',
-      resourceType: 'Medication (Plavix 75mg)',
-      resourceId: 'MED-001',
-      patientName: 'Jean Dupont',
-      ipAddress: '192.168.1.88',
-      securityHash: 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
-      status: 'valid'
-    },
-    {
-      id: 'AUD-9018',
-      timestamp: new Date(Date.now() - 1000 * 60 * 90).toLocaleString('fr-FR'),
-      userName: 'Dr. Marie Dubois',
-      userRole: 'Médecin (Cardiologie)',
-      action: 'TELECONSULTATION_WEBRTC',
-      resourceType: 'Video Room Room-102',
-      resourceId: 'ROOM-102',
-      patientName: 'Anne Bernard',
-      ipAddress: '192.168.1.45',
-      securityHash: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b',
-      status: 'valid'
-    },
-    {
-      id: 'AUD-9017',
-      timestamp: new Date(Date.now() - 1000 * 60 * 180).toLocaleString('fr-FR'),
-      userName: 'Sophie Martin',
-      userRole: 'Infirmier(e)',
-      action: 'SAISIE_CONSTANTES_OFFLINE',
-      resourceType: 'Vital Signs',
-      resourceId: 'VIT-808',
-      patientName: 'Michel Leroy',
-      ipAddress: '192.168.1.102',
-      securityHash: 'd4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35',
-      status: 'valid'
-    },
-    {
-      id: 'AUD-9016',
-      timestamp: new Date(Date.now() - 1000 * 60 * 320).toLocaleString('fr-FR'),
-      userName: 'Admin Système',
-      userRole: 'Administrateur',
-      action: 'EXPORT_REGISTRE_RGPD',
-      resourceType: 'Audit Trail',
-      resourceId: 'AUD-EXPORT',
-      patientName: 'Global',
-      ipAddress: '192.168.1.10',
-      securityHash: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce',
-      status: 'valid'
+  const fetchLogs = async () => {
+    setLoading(true);
+    try {
+      const res = await apiService.auditLogs.getAll(
+        filterAction !== 'all' ? { action: filterAction } : undefined
+      );
+      const mapped = (res || []).map((l: any) => ({
+        id: l.id ? (l.id.length > 12 ? `AUD-${l.id.slice(0, 8)}` : l.id) : 'AUD-SYS',
+        timestamp: l.createdAt ? new Date(l.createdAt).toLocaleString('fr-FR') : new Date().toLocaleString('fr-FR'),
+        userName: l.userName || 'Système',
+        userRole: l.userRole || 'admin',
+        action: l.action || 'OPERATION',
+        resourceType: l.resourceType || 'Resource',
+        resourceId: l.resourceId || '-',
+        patientName: l.patientName || 'Global',
+        ipAddress: l.ipAddress || '127.0.0.1',
+        securityHash: l.securityHash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        status: 'valid' as const
+      }));
+      setLogs(mapped);
+    } catch (err) {
+      console.error('Error fetching audit logs:', err);
+      toast.error('Erreur de chargement', 'Impossible de charger les journaux d\'audit.');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [filterAction]);
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch =
@@ -189,12 +143,20 @@ export const AuditTrailModule: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              Traçabilité cryptographique non répudiable de tous les accès aux dossiers médicaux et données génomiques.
+              Traçabilité cryptographique non répudiable de tous les accès aux dossiers médicaux et données cliniques.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <button
+            onClick={fetchLogs}
+            disabled={loading}
+            className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
+            title="Rafraîchir les journaux"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
           <button
             onClick={handleExportExcel}
             className="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
@@ -244,7 +206,7 @@ export const AuditTrailModule: React.FC = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Rechercher par praticien, patient, ID journal..."
+              placeholder="Rechercher par praticien, patient, action, ID..."
               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
             />
           </div>
@@ -255,54 +217,68 @@ export const AuditTrailModule: React.FC = () => {
             className="px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold w-full sm:w-auto"
           >
             <option value="all">Toutes les actions</option>
-            <option value="CONSULTATION_DPI">Consultations DPI</option>
-            <option value="ACCES_PHARMACOGENOMIQUE">Accès PGx</option>
-            <option value="DELIVRANCE_POS">Délivrances POS</option>
-            <option value="TELECONSULTATION_WEBRTC">Téléconsultations</option>
-            <option value="SAISIE_CONSTANTES_OFFLINE">Saisies Hors-Ligne</option>
-            <option value="EXPORT_REGISTRE_RGPD">Exports RGPD</option>
+            <option value="CREATION_PATIENT">Créations Patient</option>
+            <option value="MODIFICATION_PATIENT">Modifications Patient</option>
+            <option value="SUPPRESSION_PATIENT">Suppressions Patient</option>
+            <option value="ADMISSION_PATIENT">Admissions Patient</option>
+            <option value="DISCHARGE_PATIENT">Sorties Hospitalisation</option>
+            <option value="DELIVRANCE_POS">Délivrances POS (Pharmacie)</option>
+            <option value="CREATION_FACTURE">Facturation</option>
+            <option value="CREATION_DOSSIER_CLINIQUE">Dossiers Cliniques</option>
+            <option value="MODIFICATION_PARAMETRES_ETABLISSEMENT">Paramètres Hôpital</option>
           </select>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase">
-              <tr>
-                <th className="px-4 py-3">ID / Horodatage</th>
-                <th className="px-4 py-3">Praticien & Rôle</th>
-                <th className="px-4 py-3">Action Réalisée</th>
-                <th className="px-4 py-3">Dossier Patient</th>
-                <th className="px-4 py-3">Adresse IP</th>
-                <th className="px-4 py-3">Empreinte SHA-256</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-4 py-3.5">
-                    <span className="font-mono font-bold text-teal-900 block">{log.id}</span>
-                    <span className="text-[10px] text-gray-400">{log.timestamp}</span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <p className="font-bold text-gray-900">{log.userName}</p>
-                    <span className="text-[10px] text-gray-500">{log.userRole}</span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-100">
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 font-medium text-gray-900">{log.patientName}</td>
-                  <td className="px-4 py-3.5 font-mono text-[11px] text-gray-500">{log.ipAddress}</td>
-                  <td className="px-4 py-3.5">
-                    <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded" title={log.securityHash}>
-                      {log.securityHash.slice(0, 14)}...
-                    </span>
-                  </td>
+          {loading ? (
+            <div className="p-8 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
+              <RefreshCw className="w-4 h-4 animate-spin text-teal-600" />
+              <span>Chargement du registre d'audit HDS...</span>
+            </div>
+          ) : filteredLogs.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-xs">
+              Aucun événement d'audit enregistré pour ces critères.
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase">
+                <tr>
+                  <th className="px-4 py-3">ID / Horodatage</th>
+                  <th className="px-4 py-3">Praticien & Rôle</th>
+                  <th className="px-4 py-3">Action Réalisée</th>
+                  <th className="px-4 py-3">Dossier / Patient</th>
+                  <th className="px-4 py-3">Adresse IP</th>
+                  <th className="px-4 py-3">Empreinte SHA-256</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-4 py-3.5">
+                      <span className="font-mono font-bold text-teal-900 block">{log.id}</span>
+                      <span className="text-[10px] text-gray-400">{log.timestamp}</span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-bold text-gray-900">{log.userName}</p>
+                      <span className="text-[10px] text-gray-500">{log.userRole}</span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-100">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 font-medium text-gray-900">{log.patientName}</td>
+                    <td className="px-4 py-3.5 font-mono text-[11px] text-gray-500">{log.ipAddress}</td>
+                    <td className="px-4 py-3.5">
+                      <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded" title={log.securityHash}>
+                        {log.securityHash.slice(0, 14)}...
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

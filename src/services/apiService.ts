@@ -181,6 +181,12 @@ export const apiService = {
     create: (dept: any) => apiClient.post<any>('/departments', dept),
     update: (id: string, dept: any) => apiClient.put<any>(`/departments/${id}`, dept),
     delete: (id: string) => apiClient.delete(`/departments/${id}`),
+  },
+
+  // === AUDIT LOGS ===
+  auditLogs: {
+    getAll: (params?: { resourceType?: string; action?: string }) => apiClient.get<any[]>('/auditlogs', params),
+    create: (log: any) => apiClient.post<any>('/auditlogs', log),
   }
 };
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoftCare.Application.Common.Interfaces;
@@ -10,15 +11,16 @@ using SoftCare.Domain.Entities;
 
 namespace SoftCare.API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class PatientsController : ControllerBase
+[Authorize]
+public class PatientsController : BaseApiController
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public PatientsController(IApplicationDbContext context)
+    public PatientsController(IApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
     [HttpGet]
@@ -89,6 +91,14 @@ public class PatientsController : ControllerBase
         _context.Patients.Add(patient);
         await _context.SaveChangesAsync();
 
+        await LogAuditAsync(
+            _auditService,
+            "CREATION_PATIENT",
+            "Patient",
+            patient.Id,
+            $"{patient.FirstName} {patient.LastName}",
+            $"{{\"ssn\":\"{patient.SocialSecurityNumber}\",\"gender\":\"{patient.Gender}\"}}");
+
         return CreatedAtAction(nameof(GetPatient), new { id = patient.Id }, MapToDto(patient));
     }
 
@@ -115,6 +125,14 @@ public class PatientsController : ControllerBase
         patient.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
+        await LogAuditAsync(
+            _auditService,
+            "MODIFICATION_PATIENT",
+            "Patient",
+            patient.Id,
+            $"{patient.FirstName} {patient.LastName}",
+            $"{{\"phone\":\"{patient.Phone}\",\"city\":\"{patient.City}\"}}");
+
         return Ok(MapToDto(patient));
     }
 
@@ -128,6 +146,13 @@ public class PatientsController : ControllerBase
         patient.Status = "inactive";
         patient.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+
+        await LogAuditAsync(
+            _auditService,
+            "SUPPRESSION_PATIENT",
+            "Patient",
+            patient.Id,
+            $"{patient.FirstName} {patient.LastName}");
 
         return NoContent();
     }

@@ -19,5 +19,5 @@ public class PharmacySale : BaseEntity
     public string UserId { get; set; } = string.Empty;
     public User? User { get; set; }
 
-    public ICollection<PharmacySaleItem> Items { get; private set; } = new List<PharmacySaleItem>();
+    public ICollection<PharmacySaleItem> Items { get; set; } = new List<PharmacySaleItem>();
 }

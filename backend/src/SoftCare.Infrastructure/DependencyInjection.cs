@@ -44,6 +44,7 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IAuditService, Services.AuditService>();
 
         // JWT Authentication Setup
         var secret = configuration["Jwt:Secret"] ?? "SoftCareSecureMedicalHospitalKey2026!#SuperSecretKey";

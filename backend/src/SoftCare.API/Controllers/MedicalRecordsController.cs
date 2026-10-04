@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoftCare.Application.Common.Interfaces;
@@ -10,15 +11,16 @@ using SoftCare.Domain.Entities;
 
 namespace SoftCare.API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class MedicalRecordsController : ControllerBase
+[Authorize]
+public class MedicalRecordsController : BaseApiController
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public MedicalRecordsController(IApplicationDbContext context)
+    public MedicalRecordsController(IApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
     [HttpGet]
@@ -89,6 +91,17 @@ public class MedicalRecordsController : ControllerBase
 
         _context.MedicalRecords.Add(record);
         await _context.SaveChangesAsync();
+
+        // Audit Trail
+        var patient = !string.IsNullOrEmpty(record.PatientId) ? await _context.Patients.FindAsync(record.PatientId) : null;
+        var patientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : (record.PatientId ?? "Patient");
+        await LogAuditAsync(
+            _auditService,
+            "CREATION_DOSSIER_CLINIQUE",
+            "MedicalRecord",
+            record.Id,
+            patientName,
+            $"{{\"title\":\"{record.Title}\",\"diagnosis\":\"{record.Diagnosis}\",\"prescriptionsCount\":{record.Prescriptions.Count}}}");
 
         return CreatedAtAction(nameof(GetMedicalRecord), new { id = record.Id }, MapToDto(record));
     }
