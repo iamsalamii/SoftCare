@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SoftCare.Application.Common.Interfaces;
 
@@ -16,6 +17,7 @@ public class DiagnosticRequest
     public string? VitalsJson { get; set; }
 }
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AiAssistantController : ControllerBase
