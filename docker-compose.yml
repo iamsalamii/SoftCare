@@ -47,7 +47,7 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-softcare_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgrespassword}
+      - ConnectionStrings__DefaultConnection=Host=softcare-postgres;Port=5432;Database=${POSTGRES_DB:-softcare_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgrespassword}
       - Jwt__Secret=${JWT_SECRET:-SoftCareSecureMedicalHospitalKey2026!#SuperSecretKeyWithSufficientLengthForHS256SecurityStandard}
       - Database__UseInMemory=false
     ports:
