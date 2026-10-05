@@ -19,8 +19,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [initStep, setInitStep] = useState('Connexion au réseau sécurisé hospitalier...');
-  const [initProgress, setInitProgress] = useState(20);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [initStep, setInitStep] = useState("Initialisation du noyau clinique hospitalier...");
+  const [initProgress, setInitProgress] = useState(8);
 
   // Interactive PGx Simulation state
   const [selectedGene, setSelectedGene] = useState<'CYP2C19' | 'DPYD' | 'CYP2D6' | 'SLCO1B1'>('CYP2C19');
@@ -62,26 +63,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
   ];
 
   useEffect(() => {
-    // Hospital style initial loading progression
-    const timer1 = setTimeout(() => {
-      setInitStep('Vérification des protocoles de sécurité sanitaire & HDS...');
-      setInitProgress(60);
-    }, 400);
+    // Dynamic fluid progression with wow-factor micro-stages
+    let current = 12;
+    const interval = setInterval(() => {
+      current += Math.floor(Math.random() * 8) + 6;
+      if (current >= 100) {
+        current = 100;
+        clearInterval(interval);
+        setInitProgress(100);
+        setInitStep('Système hospitalier synchronisé • Bienvenue');
+        setTimeout(() => setIsFadingOut(true), 240);
+        setTimeout(() => setIsInitializing(false), 620);
+      } else {
+        setInitProgress(current);
+        if (current > 72) {
+          setInitStep("Calibration de l'espace de régulation des soins...");
+        } else if (current > 38) {
+          setInitStep('Synchronisation des flux DPI & pharmacie sécurisée...');
+        } else {
+          setInitStep('Initialisation du noyau clinique hospitalier...');
+        }
+      }
+    }, 65);
 
-    const timer2 = setTimeout(() => {
-      setInitStep('Initialisation du Système d\'Information SoftCare...');
-      setInitProgress(100);
-    }, 800);
-
-    const timer3 = setTimeout(() => {
-      setIsInitializing(false);
-    }, 1100);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -92,52 +97,113 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
     }
   };
 
-  // Hospital Loading Screen
+  // Full-Screen Immersive Medical Loading Experience
   if (isInitializing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 flex flex-col items-center justify-center p-6 text-white select-none animate-in fade-in duration-200">
-        <div className="max-w-md w-full text-center space-y-6">
-          {/* Pulsing Medical Icon */}
-          <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
-            <div className="absolute inset-0 bg-cyan-500/20 rounded-3xl blur-xl animate-pulse" />
-            <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-3xl border border-white/20 shadow-2xl flex items-center justify-center relative z-10 animate-bounce duration-1000">
-              <Activity className="w-10 h-10 text-white animate-pulse" />
+      <div 
+        role="status" 
+        aria-live="polite"
+        className={`fixed inset-0 z-50 bg-gradient-to-b from-slate-50 via-white to-teal-50/25 flex flex-col justify-between items-center py-8 sm:py-12 px-6 select-none transition-all duration-500 ease-out ${
+          isFadingOut ? 'opacity-0 scale-[1.01] pointer-events-none' : 'opacity-100 scale-100'
+        }`}
+      >
+        {/* Full-Screen Ambient Radiance */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-teal-500/10 rounded-full blur-[160px] pointer-events-none animate-pulse-ring" />
+        <div className="absolute inset-0 opacity-[0.035] pointer-events-none bg-[radial-gradient(#0d9488_1px,transparent_1px)] [background-size:32px_32px]" />
+
+        {/* Top Header Row of Full Page */}
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-between text-xs text-slate-400 font-medium relative z-10">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+            <span className="font-semibold text-slate-600">SoftCare Hospital System</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-3 text-[11px] font-mono text-slate-400">
+            <span>Environnement Haute Précision</span>
+            <span>•</span>
+            <span className="text-teal-700 font-semibold">Connexion Active</span>
+          </div>
+        </div>
+
+        {/* Centerpiece (Breathes freely on full screen without container) */}
+        <div className="w-full max-w-2xl mx-auto text-center space-y-7 relative z-10 py-6">
+          
+          {/* Central Rotating Orbital Ring & Radiant Medical Emblem */}
+          <div className="relative mx-auto w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
+            {/* Outer Orbital Dashed Ring with slow continuous rotation */}
+            <div className="absolute inset-0 rounded-full border border-dashed border-teal-500/40 animate-spin-slow">
+              <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-teal-500 rounded-full shadow-[0_0_14px_#0d9488] ring-4 ring-white" />
+            </div>
+
+            {/* Inner Concentric Breathing Pulse Aura */}
+            <div className="absolute inset-3 rounded-full bg-teal-500/15 animate-pulse-ring pointer-events-none" />
+
+            {/* Center Crystal Tile with Shimmer Sweep */}
+            <div className="relative w-18 h-18 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-600 via-cyan-600 to-teal-700 rounded-3xl shadow-2xl shadow-teal-700/35 flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent animate-shimmer-sweep pointer-events-none" />
+              <Activity className="w-9 h-9 sm:w-10 sm:h-10 text-white relative z-10" />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black tracking-tight text-white">SoftCare Hospital System</h2>
-            <p className="text-xs text-cyan-200/80 font-mono tracking-wider uppercase">Système d'Information Hospitalier (HIS)</p>
+          {/* SoftCare Title & Subtitle (Clean, no PRO badge) */}
+          <div className="space-y-1.5">
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 font-sans">
+              SoftCare
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 font-medium uppercase tracking-widest">
+              Système d'Information Hospitalier
+            </p>
           </div>
 
-          {/* Animated ECG Pulse Line */}
-          <div className="relative h-12 w-full bg-slate-900/60 border border-teal-500/30 rounded-2xl overflow-hidden p-2 flex items-center justify-center shadow-inner">
-            <div className="absolute left-0 right-0 h-0.5 bg-cyan-400/30" />
-            <svg className="w-full h-8 stroke-cyan-400 fill-none" viewBox="0 0 300 40">
+          {/* Dynamic Heartbeat ECG Waveform Spanning the Center Screen */}
+          <div className="relative h-14 w-full max-w-lg mx-auto overflow-hidden px-4 flex items-center justify-center">
+            <div className="absolute left-0 right-0 h-px bg-slate-200/80" />
+            <svg className="w-full h-10 stroke-teal-600 fill-none" viewBox="0 0 400 40">
               <path
-                d="M 0 20 L 70 20 L 80 5 L 90 35 L 100 10 L 110 25 L 120 20 L 300 20"
+                d="M 0 20 L 140 20 L 155 5 L 170 35 L 185 8 L 200 28 L 215 20 L 400 20"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="animate-pulse"
+                className="animate-ecg-draw"
               />
             </svg>
           </div>
 
-          {/* Progress bar */}
-          <div className="space-y-2">
-            <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/10">
+          {/* Big Percentage & Fluid Progress */}
+          <div className="space-y-3 max-w-md mx-auto">
+            <div className="flex items-center justify-between text-xs sm:text-sm font-semibold">
+              <span className="text-slate-600 flex items-center gap-2 truncate">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                <span className="truncate">{initStep}</span>
+              </span>
+              <span className="text-teal-700 font-mono text-base font-bold flex-shrink-0">
+                {initProgress}%
+              </span>
+            </div>
+
+            {/* Glowing Slender Progress Bar */}
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden p-0.5 border border-slate-200/70 shadow-inner">
               <div
-                className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 ease-out"
+                className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 h-full rounded-full transition-all duration-200 ease-out shadow-[0_0_14px_rgba(20,184,166,0.6)]"
                 style={{ width: `${initProgress}%` }}
               />
             </div>
-            <p className="text-xs text-cyan-200/90 font-medium flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>{initStep}</span>
-            </p>
+          </div>
+
+        </div>
+
+        {/* Bottom Institutional Telemetry Bar */}
+        <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-slate-400 border-t border-slate-200/60 pt-4 relative z-10">
+          <div className="flex items-center gap-3">
+            <span className="text-slate-600 font-semibold">SÉCURITÉ SANTÉ ACTIVE</span>
+            <span>•</span>
+            <span className="text-teal-700 font-semibold">LATENCE &lt; 4MS</span>
+          </div>
+          <div className="flex items-center gap-2 text-emerald-700 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>CONTINUITÉ DE SERVICE 100% GARANTIE</span>
           </div>
         </div>
+
       </div>
     );
   }
@@ -154,9 +220,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             <div>
               <span className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
                 SoftCare
-              </span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-cyan-50 text-cyan-700 rounded-full border border-cyan-100">
-                Hospital OS v2.4
               </span>
             </div>
           </div>
@@ -279,85 +342,79 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
         )}
       </header>
 
-      {/* Hero Section with Immersive High-Tech Hospital Backdrop */}
-      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-32 bg-slate-950 text-white">
-        {/* Real Medical Hero Photographic Background with Dark Cyan Gradient Blend */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 mix-blend-luminosity scale-105 pointer-events-none"
-          style={{ backgroundImage: "url('/images/hospital_modern_hero.jpg')" }}
-        />
-        {/* Radiant Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-teal-950/80 to-slate-950 pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-tr from-cyan-500/20 via-teal-500/15 to-emerald-500/10 blur-3xl -z-0 rounded-full pointer-events-none animate-pulse" />
+      {/* Hero Section — Premium Clinical & Institutional Experience */}
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-18 lg:pb-28 bg-gradient-to-b from-slate-50 via-white to-slate-50/80 text-slate-900 border-b border-slate-200/80">
+        {/* Subtle, soft clinical background accents */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#0f172a_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-teal-500/5 blur-[120px] rounded-full pointer-events-none -z-0" />
 
-        {/* Ambient Medical Grid Pattern */}
-        <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:32px_32px]" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-cyan-400/40 shadow-lg shadow-cyan-500/10">
-            <span className="text-xs font-bold text-cyan-200 uppercase tracking-wider">
-              Système d'Information Hospitalier (HIS) & Médecine de Précision
-            </span>
-          </div>
-
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-sm">
-            L'excellence des soins alliée aux{' '}
-            <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-              biotechnologies avancées
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10">
+          {/* Master Headline */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12]">
+            Toute la puissance de votre hôpital.{' '}
+            <span className="block mt-1 sm:mt-2 text-teal-700">
+              Un seul espace.
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Une plateforme médicale complète unifiant dossier patient informatisé, pharmacie robotisée avec traçabilité par code-barres, pharmacogénomique (PGx) et aide au diagnostic clinique par IA.
+          {/* Description */}
+          <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-normal">
+            SoftCare centralise les opérations hospitalières, les équipes soignantes et les données essentielles pour offrir une vision claire, fluide et coordonnée de votre établissement.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
             <button
               onClick={() => setShowDemoModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-2xl font-bold text-base shadow-xl shadow-teal-500/30 transition-all hover:scale-[1.03]"
+              className="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 active:scale-[0.98] text-white rounded-xl font-bold text-sm shadow-md shadow-teal-700/20 motion-fast hover:scale-[1.02] flex items-center justify-center gap-2"
             >
-              <span>Demander une Démo</span>
+              <span>Découvrir SoftCare</span>
+              <ArrowRight className="w-4 h-4 text-teal-100" />
             </button>
 
             <button
               onClick={onGoToLogin}
-              className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md rounded-2xl font-bold text-base shadow-sm transition-all hover:scale-[1.02] flex items-center justify-center gap-2.5"
+              className="w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-800 border border-slate-200/90 rounded-xl font-bold text-sm shadow-2xs motion-fast hover:scale-[1.02] flex items-center justify-center gap-2"
             >
-              <Stethoscope className="w-5 h-5 text-cyan-300" />
-              <span>Accéder à l'Espace Pro</span>
+              <Stethoscope className="w-4 h-4 text-teal-600" />
+              <span>Accéder à l'espace</span>
             </button>
 
             <button
               onClick={() => setShowBrochureModal(true)}
-              className="w-full sm:w-auto px-6 py-4 bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-2xl font-semibold text-sm shadow-2xs transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-3.5 text-slate-600 hover:text-slate-900 font-semibold text-xs sm:text-sm motion-fast flex items-center justify-center gap-1.5"
             >
-              <BookOpen className="w-4 h-4 text-teal-400" />
-              <span>Brochure PDF</span>
+              <BookOpen className="w-4 h-4 text-slate-500" />
+              <span>Brochure médicale PDF</span>
             </button>
           </div>
 
-          {/* Interactive Hospital Simulation */}
-          <div className="pt-8 pb-4">
+          {/* Visual Showcase: SoftCare Hospital Product UI Composition */}
+          <div className="pt-6 sm:pt-8 pb-2">
             <InteractiveHospitalMap />
           </div>
 
-          {/* Quick Metrics */}
-          <div className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
-              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">100%</p>
-              <p className="text-xs text-slate-400 mt-1">Traçabilité GS1 / CIP</p>
+          {/* Core Institutional Metrics */}
+          <div className="pt-4 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-left transition-all hover:border-slate-300">
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">100%</p>
+              <p className="text-xs text-slate-700 font-semibold mt-1">Traçabilité clinique</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Dossier patient et pharmacie unifiés</p>
             </div>
-            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-teal-500/50 transition-all">
-              <p className="text-2xl sm:text-3xl font-extrabold text-teal-400">-40%</p>
-              <p className="text-xs text-slate-400 mt-1">Temps de Triage Urgences</p>
+            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-left transition-all hover:border-slate-300">
+              <p className="text-2xl sm:text-3xl font-extrabold text-teal-700">-35%</p>
+              <p className="text-xs text-slate-700 font-semibold mt-1">Délais de transmission</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Coordination directe inter-services</p>
             </div>
-            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-cyan-500/50 transition-all">
-              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">CPIC & DPWG</p>
-              <p className="text-xs text-slate-400 mt-1">Normes PGx Intégrées</p>
+            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-left transition-all hover:border-slate-300">
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">18k+</p>
+              <p className="text-xs text-slate-700 font-semibold mt-1">Séjours coordonnés</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Gestion continue des lits et soins</p>
             </div>
-            <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-sm hover:border-emerald-500/50 transition-all">
-              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400">99.9%</p>
-              <p className="text-xs text-slate-400 mt-1">Disponibilité H24</p>
+            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-left transition-all hover:border-slate-300">
+              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600">99.9%</p>
+              <p className="text-xs text-slate-700 font-semibold mt-1">Disponibilité garantie</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Continuité opérationnelle 24h/24</p>
             </div>
           </div>
         </div>
@@ -1125,36 +1182,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-xl flex items-center justify-center text-white">
+      <footer className="bg-slate-900 text-white py-10 sm:py-12 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
+            <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-md">
               <Activity className="w-5 h-5" />
             </div>
-            <span className="text-xl font-bold">SoftCare Hospital System</span>
+            <div className="flex items-center gap-2.5 whitespace-nowrap">
+              <span className="text-xl font-bold whitespace-nowrap">SoftCare Hospital System</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 bg-slate-800 text-teal-300 rounded-full border border-slate-700 whitespace-nowrap flex-shrink-0">
+                Hospital OS v2.4
+              </span>
+            </div>
           </div>
 
-          <p className="text-xs text-slate-400 text-center sm:text-left">
+          <p className="text-xs text-slate-400 text-center lg:text-left max-w-md leading-relaxed">
             Plateforme médicale conforme aux standards de sécurité sanitaire et de traçabilité biomédicale.
           </p>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
             <button
               onClick={() => setShowDemoModal(true)}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition-all shadow-md"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition-all shadow-md whitespace-nowrap flex-shrink-0"
             >
               <span>Demander une Démo</span>
             </button>
             <button
               onClick={() => setShowBrochureModal(true)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap flex-shrink-0"
             >
-              <FileText className="w-4 h-4 text-cyan-400" />
+              <FileText className="w-4 h-4 text-cyan-400 flex-shrink-0" />
               <span>Brochure Médicale</span>
             </button>
             <button
               onClick={onGoToLogin}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold transition-all"
+              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold transition-all whitespace-nowrap flex-shrink-0"
             >
               Se Connecter
             </button>

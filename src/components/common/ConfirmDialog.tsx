@@ -4,11 +4,13 @@ import { AlertTriangle, X } from 'lucide-react';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
+  onCancel?: () => void;
   onConfirm: () => void;
   title: string;
   message: string;
   confirmText?: string;
+  confirmLabel?: string;
   cancelText?: string;
   variant?: 'danger' | 'warning' | 'info';
   loading?: boolean;
@@ -17,14 +19,19 @@ export interface ConfirmDialogProps {
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   onClose,
+  onCancel,
   onConfirm,
   title,
   message,
-  confirmText = 'Confirmer',
+  confirmText,
+  confirmLabel,
   cancelText = 'Annuler',
   variant = 'danger',
   loading = false
 }) => {
+  const handleClose = onCancel || onClose || (() => {});
+  const buttonConfirmText = confirmLabel || confirmText || 'Confirmer';
+
   if (!isOpen) return null;
 
   const variantConfig = {
@@ -52,14 +59,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Dialog Shell */}
       <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150 space-y-5">
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
         >
           <X className="w-5 h-5" />
@@ -80,7 +87,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="flex justify-end gap-2.5 pt-2 border-t border-gray-100">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={loading}
             className="px-4 py-2.5 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors text-xs font-semibold disabled:opacity-50"
           >
@@ -98,7 +105,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 <span>Traitement...</span>
               </span>
             ) : (
-              confirmText
+              buttonConfirmText
             )}
           </button>
         </div>

@@ -63,6 +63,16 @@ public class InvoicesController : BaseApiController
     [HttpPost]
     public async Task<ActionResult> CreateInvoice([FromBody] Invoice invoice)
     {
+        if (invoice == null)
+        {
+            return BadRequest(new { message = "Le corps de la requête de facturation ne peut pas être vide." });
+        }
+
+        if (invoice.Total < 0 || invoice.Subtotal < 0)
+        {
+            return BadRequest(new { message = "Les montants de la facture ne peuvent pas être négatifs." });
+        }
+
         invoice.Id = Guid.NewGuid().ToString();
         invoice.InvoiceNumber = string.IsNullOrEmpty(invoice.InvoiceNumber) ? $"FAC-{DateTime.UtcNow.Year}-{new Random().Next(1000, 9999)}" : invoice.InvoiceNumber;
         invoice.Date = DateTime.SpecifyKind(invoice.Date, DateTimeKind.Utc);

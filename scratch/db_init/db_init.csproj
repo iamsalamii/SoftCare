@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="10.0.3" />
+    <ProjectReference Include="..\..\backend\src\SoftCare.Infrastructure\SoftCare.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

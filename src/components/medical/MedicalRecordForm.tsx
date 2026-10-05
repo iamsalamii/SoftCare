@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Save, Plus, Trash2, Stethoscope, User, Calendar, Pill, AlertTriangle, FileText } from 'lucide-react';
+import { X, Save, Plus, Trash2, Stethoscope, User, Pill, FileText } from 'lucide-react';
 import { MedicalRecord, Prescription } from '../../types';
 import CustomSelect from '../common/CustomSelect';
 import FormField from '../common/FormField';
@@ -145,7 +145,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({ patientId,
       frequency: newPrescription.frequency || 'Matin et soir',
       duration: newPrescription.duration || '5 jours',
       instructions: newPrescription.instructions || '',
-      status: 'active'
+      status: 'pending'
     };
 
     setFormData(prev => ({

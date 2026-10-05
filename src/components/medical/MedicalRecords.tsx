@@ -6,7 +6,7 @@ import { MedicalRecord } from '../../types';
 import { printDocument, generateDocumentHeader, generateDocumentFooter, exportToExcel } from '../../utils/exportUtils';
 
 const MedicalRecordsList: React.FC = () => {
-  const { medicalRecords, patients, users, medications, organizationSettings } = useApp();
+  const { medicalRecords, patients, users, organizationSettings } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editRecordId, setEditRecordId] = useState<string | null>(null);
@@ -60,12 +60,6 @@ const MedicalRecordsList: React.FC = () => {
 
   const handleNewRecord = () => {
     setSelectedPatientId(null);
-    setEditRecordId(null);
-    setShowForm(true);
-  };
-
-  const handleNewRecordForPatient = (patientId: string) => {
-    setSelectedPatientId(patientId);
     setEditRecordId(null);
     setShowForm(true);
   };

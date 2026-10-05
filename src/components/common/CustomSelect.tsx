@@ -13,6 +13,8 @@ interface CustomSelectProps {
   options: SelectOption[] | string[];
   value: string;
   onChange: (value: string) => void;
+  label?: string;
+  category?: string;
   placeholder?: string;
   disabled?: boolean;
   searchable?: boolean;
@@ -25,6 +27,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   options,
   value,
   onChange,
+  label,
+  category: _category,
   placeholder = 'Sélectionner...',
   disabled = false,
   searchable = false,
@@ -64,6 +68,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
   return (
     <div ref={containerRef} className={`relative ${className}`} id={id}>
+      {label && <label className="block text-xs font-semibold text-gray-700 mb-1">{label}</label>}
       <button
         type="button"
         disabled={disabled}

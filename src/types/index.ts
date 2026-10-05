@@ -238,8 +238,12 @@ export interface InsuranceClaim {
 
 export interface Bed {
   id: string;
+  name?: string;
   roomNumber: string;
   bedNumber: string;
+  number?: string;
+  roomId?: string;
+  admissionId?: string;
   department?: string;
   departmentId?: string;
   type?: 'standard' | 'icu' | 'pediatric' | 'maternity' | 'emergency';
@@ -682,15 +686,19 @@ export interface PharmacySale {
   tax: number;
   discount: number;
   total: number;
+  totalAmount?: number;
   paymentMethod: 'cash' | 'card' | 'transfer' | 'check' | 'insurance';
   amountReceived?: number;
   change?: number;
   customerId?: string;
   customerName?: string;
   customerPhone?: string;
+  patientId?: string;
+  patient?: Patient;
   cashierId: string;
   cashierName: string;
   createdAt: string;
+  saleDate?: string;
   receiptNumber: string;
   notes?: string;
 }
@@ -699,9 +707,11 @@ export interface PharmacySaleItem {
   id: string;
   medicationId: string;
   medicationName: string;
+  medication?: Medication;
   barcode?: string;
   quantity: number;
   unitPrice: number;
+  subtotal?: number;
   total: number;
 }
 

@@ -120,12 +120,20 @@ Accessible via le bouton **Assistant IA (CDS)** du header :
 Située dans `backend/tests/SoftCare.UnitTests` :
 ```bash
 dotnet test backend/SoftCare.Backend.sln
-# Résultat : 9/9 tests réussis (durée : 25 ms)
+# Résultat validé : 31/31 tests réussis (durée : 95 ms, 100% vert)
 ```
 - Validation des règles de blocage pharmacogénétique *CYP2C19* / *Clopidogrel*.
 - Validation de l'intégrité de la chaîne du froid biobanque (seuils 2-8°C, -80°C).
 - Validation des calculs de facturation et taxes.
 - Détection des seuils de réapprovisionnement de stock.
+- Validation des contrôles d'accès RBAC et de la traçabilité infalsifiable HMAC-SHA256.
+
+### Banc d'Essai Physique d'Intégration & Performance (E2E) :
+- **Tests d'Intégration & RBAC** : 44/44 tests validés en continu.
+- **Persistance PostgreSQL physique** : Écriture et relecture confirmées après vidage des pools Npgsql.
+- **Latence API REST (/api/patients)** : 7,94 ms (Moyenne sur 20 requêtes, Min: 3,46 ms, Max: 23,66 ms).
+- **Latence Requête PostgreSQL directe** : 0,76 ms (Moyenne sur 20 requêtes, Min: 0,47 ms, Max: 1,98 ms).
+- **SignalR WebSocket Handshake** : 1,97 ms (Moyenne sur 10 runs, Min: 0,51 ms, Max: 5,29 ms).
 
 ---
 

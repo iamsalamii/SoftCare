@@ -19,6 +19,15 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection") 
             ?? "Host=localhost;Port=5432;Database=softcare_db;Username=postgres;Password=postgres";
 
+        var envPass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+        if (!string.IsNullOrEmpty(envPass))
+        {
+            connectionString = System.Text.RegularExpressions.Regex.Replace(
+                connectionString, 
+                @"Password=[^;]*", 
+                $"Password={envPass}");
+        }
+
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             if (useInMemory)

@@ -13,6 +13,31 @@ using Microsoft.OpenApi.Models;
 using SoftCare.Infrastructure;
 using SoftCare.Infrastructure.Persistence;
 
+// 0. Automatically discover and load local unversioned .env file if present
+var currentDir = Directory.GetCurrentDirectory();
+var envPath = Path.Combine(currentDir, ".env");
+if (!File.Exists(envPath))
+{
+    var parent = Directory.GetParent(currentDir)?.Parent?.Parent?.FullName;
+    if (parent != null && File.Exists(Path.Combine(parent, ".env")))
+    {
+        envPath = Path.Combine(parent, ".env");
+    }
+}
+if (File.Exists(envPath))
+{
+    foreach (var line in File.ReadAllLines(envPath))
+    {
+        var trimmed = line.Trim();
+        if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#")) continue;
+        var parts = trimmed.Split('=', 2);
+        if (parts.Length == 2 && Environment.GetEnvironmentVariable(parts[0].Trim()) == null)
+        {
+            Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
+        }
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Add Infrastructure Services (PostgreSQL / EF Core, JWT)
@@ -38,7 +63,22 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(corsOrigins)
+        policy.SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin)) return false;
+                try
+                {
+                    var uri = new Uri(origin);
+                    return uri.Host == "localhost" 
+                        || uri.Host == "127.0.0.1" 
+                        || uri.Host.EndsWith(".vercel.app") 
+                        || Array.Exists(corsOrigins, o => o.TrimEnd('/') == origin.TrimEnd('/'));
+                }
+                catch
+                {
+                    return false;
+                }
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

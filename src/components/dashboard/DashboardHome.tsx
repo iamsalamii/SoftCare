@@ -2,8 +2,8 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   Users, Calendar, Pill, FileText, AlertTriangle, BedDouble,
-  FlaskConical, Heart, AlertCircle, Scissors, CreditCard,
-  TrendingUp, ArrowRight, Bed, Activity, Clock
+  FlaskConical, AlertCircle, Scissors, CreditCard,
+  ArrowRight, Bed, Clock
 } from 'lucide-react';
 
 const DashboardHome: React.FC = () => {

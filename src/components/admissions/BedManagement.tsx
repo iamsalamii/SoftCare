@@ -7,7 +7,7 @@ import { printDocument, generateDocumentHeader, generateDocumentFooter, exportTo
 import CustomSelect from '../common/CustomSelect';
 
 const BedManagement: React.FC = () => {
-  const { beds, admissions, patients, departments, users, organizationSettings, rooms, addBed } = useApp();
+  const { beds, admissions, patients, departments, organizationSettings, rooms, addBed } = useApp();
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAdmissionModal, setShowAdmissionModal] = useState(false);
@@ -15,14 +15,10 @@ const BedManagement: React.FC = () => {
   const [selectedBed, setSelectedBed] = useState<Bed | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
-  const getDepartmentName = (id: string) => {
+  const getDepartmentName = (id?: string) => {
+    if (!id) return 'Inconnu';
     const dept = departments.find(d => d.id === id);
     return dept?.name || 'Inconnu';
-  };
-
-  const getPatientName = (id: string) => {
-    const patient = patients.find(p => p.id === id);
-    return patient ? `${patient.firstName} ${patient.lastName}` : 'Inconnu';
   };
 
   const getAdmission = (id: string) => {
@@ -63,7 +59,7 @@ const BedManagement: React.FC = () => {
 
       return `
         <tr>
-          <td style="padding: 10px; border: 1px solid #ddd;">${bed.number}</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">${bed.bedNumber || bed.number || bed.name || bed.id}</td>
           <td style="padding: 10px; border: 1px solid #ddd;">${room?.number || 'N/A'}</td>
           <td style="padding: 10px; border: 1px solid #ddd;">${getDepartmentName(bed.departmentId)}</td>
           <td style="padding: 10px; border: 1px solid #ddd;">${bed.type}</td>
@@ -106,7 +102,7 @@ const BedManagement: React.FC = () => {
       const patient = admission ? patients.find(p => p.id === admission.patientId) : null;
 
       return {
-        lit: bed.number,
+        lit: bed.bedNumber || bed.number || bed.name || bed.id,
         chambre: room?.number || 'N/A',
         departement: getDepartmentName(bed.departmentId),
         type: bed.type,
@@ -133,7 +129,8 @@ const BedManagement: React.FC = () => {
     return colors[status] || 'bg-gray-500';
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type?: string) => {
+    if (!type) return 'border-gray-300';
     const colors: Record<string, string> = {
       standard: 'border-gray-300',
       icu: 'border-blue-500',
@@ -407,7 +404,7 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
             </div>
           </div>
 
-          {bed.features.length > 0 && (
+          {bed.features && bed.features.length > 0 && (
             <div>
               <p className="text-sm text-gray-500 mb-1">Équipements</p>
               <div className="flex flex-wrap gap-2">
@@ -471,7 +468,7 @@ const BedDetailsModal: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onC
 
 // Composant Formulaire d'admission
 const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClose }) => {
-  const { patients, users, addAdmission, updateBed, beds } = useApp();
+  const { patients, users, addAdmission } = useApp();
   const toast = useToast();
   const [searchPatient, setSearchPatient] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<string>('');
@@ -512,9 +509,9 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
       patientName: patientObj ? `${patientObj.firstName} ${patientObj.lastName}` : '',
       bedId: bed.id,
       bedNumber: `${bed.roomNumber}-${bed.bedNumber}`,
-      roomId: bed.roomId,
+      roomId: bed.roomId || '',
       roomNumber: bed.roomNumber,
-      departmentId: bed.departmentId,
+      departmentId: bed.departmentId || '',
       attendingDoctorId: formData.doctorId,
       attendingDoctorName: doctorObj?.name || 'Dr. Marie Dubois',
       type: formData.type,
@@ -567,8 +564,7 @@ const AdmissionForm: React.FC<{ bed: Bed; onClose: () => void }> = ({ bed, onClo
                 />
                 {searchPatient && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto z-10">
-                    {patients
-                      .filter(p => `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchPatient.toLowerCase()))
+                    {filteredPatients
                       .slice(0, 5)
                       .map(p => (
                         <button
@@ -682,7 +678,7 @@ const NewBedModal: React.FC<{
   onClose: () => void;
   onSave: (bedData: Partial<Bed>) => Promise<void>;
 }> = ({ onClose, onSave }) => {
-  const { departments, rooms, organizationSettings } = useApp();
+  const { departments, organizationSettings } = useApp();
   const currencySymbol = organizationSettings?.currencySymbol || 'FCFA';
   const [roomNumber, setRoomNumber] = useState('101');
   const [bedNumber, setBedNumber] = useState('A');

@@ -507,9 +507,13 @@ const PharmacyManagement: React.FC = () => {
         isOpen={!!showDeleteConfirm}
         title="Supprimer le médicament"
         message="Êtes-vous sûr de vouloir supprimer cette référence du catalogue ? Cette action est irréversible."
-        confirmLabel={deleting ? 'Suppression...' : 'Supprimer'}
-        onConfirm={() => showDeleteConfirm && handleDeleteConfirm(showDeleteConfirm)}
-        onCancel={() => setShowDeleteConfirm(null)}
+        confirmText={deleting ? 'Suppression...' : 'Supprimer'}
+        onConfirm={() => {
+          if (showDeleteConfirm) {
+            handleDeleteConfirm(showDeleteConfirm);
+          }
+        }}
+        onClose={() => setShowDeleteConfirm(null)}
         variant="danger"
         loading={deleting}
       />

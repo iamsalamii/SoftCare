@@ -7,16 +7,16 @@ services:
     container_name: softcare-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: softcare_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: ${POSTGRES_DB:-softcare_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./supabase/migrations:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,10 +29,10 @@ services:
     container_name: softcare-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@softcare.fr
-      PGADMIN_DEFAULT_PASSWORD: adminpassword
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@softcare.fr}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-adminpassword}
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     depends_on:
       - postgres
     networks:
@@ -47,8 +47,8 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=softcare_db;Username=postgres;Password=postgrespassword
-      - Jwt__Secret=SoftCareSecureMedicalHospitalKey2026!#SuperSecretKeyWithSufficientLengthForHS256SecurityStandard
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-softcare_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgrespassword}
+      - Jwt__Secret=${JWT_SECRET:-SoftCareSecureMedicalHospitalKey2026!#SuperSecretKeyWithSufficientLengthForHS256SecurityStandard}
       - Database__UseInMemory=false
     ports:
       - "5000:5000"

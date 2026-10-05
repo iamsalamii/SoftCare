@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import {
-  Search, Plus, Minus, Trash2, ShoppingCart, CreditCard, Banknote,
-  Receipt, Printer, ScanLine, X, CheckCircle, AlertTriangle, Package,
-  Dna, ShieldAlert, UserCheck, Sparkles, FileText
+  Search, Plus, Minus, ShoppingCart, CreditCard, Banknote,
+  Receipt, Printer, ScanLine, X, CheckCircle, Package,
+  Dna, ShieldAlert, UserCheck, FileText
 } from 'lucide-react';
 import { PharmacySaleItem, PharmacySale, Medication } from '../../types';
 import { formatCurrency, generateReceiptHTML, printDocument } from '../../utils/exportUtils';
@@ -13,7 +13,7 @@ import BarcodeScannerModal from '../common/BarcodeScannerModal';
 const PharmacyPOS: React.FC = () => {
   const {
     medications, organizationSettings, addPharmacySale, addMedicationMovement,
-    currentUser, patients, genomicProfiles, pgxInteractions, addInvoice
+    currentUser, patients, genomicProfiles, addInvoice
   } = useApp();
   const toast = useToast();
 
@@ -226,7 +226,8 @@ const PharmacyPOS: React.FC = () => {
           status: 'paid',
           notes: `Vente Pharmacie ${sale.receiptNumber} (${paymentMethod.toUpperCase()})`
         },
-        cart.map(i => ({
+        cart.map((i, idx) => ({
+          id: `ITEM-${Date.now()}-${idx}`,
           description: i.medicationName,
           category: 'medication',
           quantity: i.quantity,
@@ -312,10 +313,10 @@ const PharmacyPOS: React.FC = () => {
               <span className="font-bold text-gray-800">Total Payé :</span>
               <span className="font-bold text-cyan-600">{formatCurrency(completed.total)}</span>
             </div>
-            {completed.change > 0 && (
+            {(completed.change ?? 0) > 0 && (
               <div className="flex justify-between text-emerald-600 font-bold">
                 <span>Monnaie rendue :</span>
-                <span>{formatCurrency(completed.change)}</span>
+                <span>{formatCurrency(completed.change || 0, organizationSettings)}</span>
               </div>
             )}
           </div>

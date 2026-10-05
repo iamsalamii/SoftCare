@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import {
-  Patient, Medication, MedicalRecord, Appointment, Invoice, Bed,
+  Patient, Medication, MedicalRecord, Appointment, Invoice, Bed, Admission,
   GenomicProfile, BioSample, BiobankFreezer, ClinicalTrial, User, OrganizationSettings
 } from '../types';
 

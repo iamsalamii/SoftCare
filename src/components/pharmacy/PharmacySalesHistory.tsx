@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Printer, Calendar, User, Eye, X } from 'lucide-react';
+import { Search, Printer, Calendar, User } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { apiService } from '../../services/apiService';
 import { PharmacySale } from '../../types';
@@ -35,12 +35,13 @@ export const PharmacySalesHistory: React.FC = () => {
 
   const handlePrintReceipt = async (sale: PharmacySale) => {
     try {
+      const receiptDate = sale.saleDate || sale.createdAt;
       const receiptContent = `
         <div style="font-family: monospace; width: 80mm; margin: 0 auto; text-align: center;">
           <h2 style="margin-bottom: 5px;">${organizationSettings.name}</h2>
           <p style="font-size: 12px; margin: 0 0 10px 0;">Ticket de Caisse: ${sale.receiptNumber}</p>
           <hr style="border-top: 1px dashed #333;" />
-          <p style="text-align: left; font-size: 12px;">Date: ${new Date(sale.saleDate).toLocaleString('fr-FR')}</p>
+          <p style="text-align: left; font-size: 12px;">Date: ${receiptDate ? new Date(receiptDate).toLocaleString('fr-FR') : 'N/A'}</p>
           ${sale.patient ? `<p style="text-align: left; font-size: 12px;">Patient: ${sale.patient.firstName} ${sale.patient.lastName}</p>` : ''}
           ${sale.customerName ? `<p style="text-align: left; font-size: 12px;">Client: ${sale.customerName}</p>` : ''}
           <hr style="border-top: 1px dashed #333;" />
@@ -52,14 +53,14 @@ export const PharmacySalesHistory: React.FC = () => {
               ${sale.items.map(item => `
                 <tr>
                   <td>${item.quantity}</td>
-                  <td>${item.medication?.name || 'Inconnu'}</td>
-                  <td style="text-align: right;">${formatCurrency(item.subtotal, organizationSettings.currency)}</td>
+                  <td>${item.medicationName || item.medication?.name || 'Inconnu'}</td>
+                  <td style="text-align: right;">${formatCurrency(item.subtotal || item.total, organizationSettings)}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
           <hr style="border-top: 1px dashed #333;" />
-          <h3 style="text-align: right;">Total: ${formatCurrency(sale.totalAmount, organizationSettings.currency)}</h3>
+          <h3 style="text-align: right;">Total: ${formatCurrency(sale.totalAmount ?? sale.total, organizationSettings)}</h3>
           <p style="text-align: left; font-size: 12px;">Paiement: ${sale.paymentMethod}</p>
           <p style="text-align: center; font-size: 10px; margin-top: 20px;">Merci de votre visite !</p>
         </div>
@@ -74,9 +75,10 @@ export const PharmacySalesHistory: React.FC = () => {
   const filteredSales = sales.filter(s => {
     const matchesSearch = s.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (s.customerName && s.customerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                          (s.patient && s.patient.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
+                          (s.patient?.lastName && s.patient.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesDate = dateFilter ? new Date(s.saleDate).toISOString().split('T')[0] === dateFilter : true;
+    const saleDateStr = s.saleDate || s.createdAt;
+    const matchesDate = dateFilter && saleDateStr ? new Date(saleDateStr).toISOString().split('T')[0] === dateFilter : true;
     
     return matchesSearch && matchesDate;
   });
@@ -127,7 +129,7 @@ export const PharmacySalesHistory: React.FC = () => {
             {filteredSales.map(sale => (
               <tr key={sale.id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-5 py-3">
-                  <div className="font-medium text-gray-900">{new Date(sale.saleDate).toLocaleString('fr-FR')}</div>
+                  <div className="font-medium text-gray-900">{new Date(sale.saleDate || sale.createdAt).toLocaleString('fr-FR')}</div>
                   <div className="text-xs text-gray-500 font-mono">{sale.receiptNumber}</div>
                 </td>
                 <td className="px-5 py-3">
@@ -139,7 +141,7 @@ export const PharmacySalesHistory: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-5 py-3">
-                  <span className="font-bold text-gray-900">{formatCurrency(sale.totalAmount, organizationSettings.currency)}</span>
+                  <span className="font-bold text-gray-900">{formatCurrency(sale.totalAmount ?? sale.total, organizationSettings)}</span>
                 </td>
                 <td className="px-5 py-3">
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700">

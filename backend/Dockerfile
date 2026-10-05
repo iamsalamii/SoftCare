@@ -8,6 +8,7 @@ COPY backend/src/SoftCare.Domain/*.csproj ./backend/src/SoftCare.Domain/
 COPY backend/src/SoftCare.Application/*.csproj ./backend/src/SoftCare.Application/
 COPY backend/src/SoftCare.Infrastructure/*.csproj ./backend/src/SoftCare.Infrastructure/
 COPY backend/src/SoftCare.API/*.csproj ./backend/src/SoftCare.API/
+COPY backend/tests/SoftCare.UnitTests/*.csproj ./backend/tests/SoftCare.UnitTests/
 
 # Restore dependencies
 RUN dotnet restore backend/SoftCare.Backend.sln
