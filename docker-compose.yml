@@ -57,8 +57,20 @@ services:
         condition: service_healthy
     networks:
       - softcare-network
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.softcare-api.entrypoints=https"
+      - "traefik.http.routers.softcare-api.rule=Host(`api.2.28.63.25.sslip.io`)"
+      - "traefik.http.routers.softcare-api.tls=true"
+      - "traefik.http.routers.softcare-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.softcare-api.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.softcare-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.softcare-api-http.entrypoints=http"
+      - "traefik.http.routers.softcare-api-http.rule=Host(`api.2.28.63.25.sslip.io`)"
+      - "traefik.http.routers.softcare-api-http.middlewares=softcare-redirect"
 
-  # 4. Frontend React 18 / Nginx
+  # 4. Frontend React 18 / Nginx (optionnel si hébergé sur Vercel)
   frontend:
     build:
       context: .
@@ -72,31 +84,12 @@ services:
     networks:
       - softcare-network
 
-  # 5. Reverse Proxy HTTPS automatique (Let's Encrypt SSL)
-  caddy:
-    image: caddy:2-alpine
-    container_name: softcare-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - backend
-    networks:
-      - softcare-network
-
 volumes:
   postgres_data:
-    driver: local
-  caddy_data:
-    driver: local
-  caddy_config:
     driver: local
 
 networks:
   softcare-network:
     driver: bridge
+  coolify:
+    external: true
