@@ -105,17 +105,17 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
     <div className="relative">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 active:scale-[0.98] transition-all duration-150 text-sm font-medium shadow-xs"
       >
-        <FileDown className="w-4 h-4" />
+        <FileDown className="w-4 h-4 text-cyan-700" />
         Exporter
-        <ChevronDown className="w-3 h-3" />
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${showMenu ? 'rotate-180' : ''}`} />
       </button>
 
       {showMenu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden sc-dropdown-menu">
             <button
               onClick={handleExportPDF}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"

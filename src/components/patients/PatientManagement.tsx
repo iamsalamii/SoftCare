@@ -136,7 +136,7 @@ const PatientManagement: React.FC = () => {
             {showExportMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden sc-dropdown-menu">
                   <button
                     onClick={handleExportPDF}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
@@ -165,7 +165,7 @@ const PatientManagement: React.FC = () => {
 
           <button
             onClick={handleNewPatient}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-[0.98] transition-all duration-150 flex items-center space-x-2 shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span>Nouveau Patient</span>
@@ -173,7 +173,7 @@ const PatientManagement: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 animate-card-enter">
         <div className="p-6 border-b border-gray-200">
           <div className="relative max-w-3xl">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -210,7 +210,7 @@ const PatientManagement: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="hover:bg-gray-50">
+                <tr key={patient.id} className="hover:bg-gray-50/80 transition-colors duration-150 animate-row-enter">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">

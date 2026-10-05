@@ -27,9 +27,17 @@ const MainApp: React.FC = () => {
   // Not logged in: Show Landing Page or Login screen
   if (!currentUser) {
     if (!showLogin) {
-      return <LandingPage onGoToLogin={() => setShowLogin(true)} />;
+      return (
+        <div key="landing" className="animate-page-enter">
+          <LandingPage onGoToLogin={() => setShowLogin(true)} />
+        </div>
+      );
     }
-    return <Login onBackToLanding={() => setShowLogin(false)} />;
+    return (
+      <div key="login" className="animate-page-enter">
+        <Login onBackToLanding={() => setShowLogin(false)} />
+      </div>
+    );
   }
 
   if (currentView === 'settings') {

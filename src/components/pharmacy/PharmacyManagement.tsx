@@ -197,7 +197,7 @@ const PharmacyManagement: React.FC = () => {
             {showExportMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden py-1">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden py-1 sc-dropdown-menu">
                   <button
                     onClick={handleExportPDF}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-medium text-gray-700 text-left transition-colors"
@@ -370,7 +370,7 @@ const PharmacyManagement: React.FC = () => {
                 const isExpiringSoon = expiryDate && expiryDate < new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
 
                 return (
-                  <tr key={medication.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={medication.id} className="hover:bg-slate-50/80 transition-colors duration-150 animate-row-enter">
                     {/* Name */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

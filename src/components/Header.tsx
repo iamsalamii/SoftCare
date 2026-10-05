@@ -149,7 +149,7 @@ const Header: React.FC = () => {
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-[480px] overflow-hidden">
+              <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-[480px] overflow-hidden sc-dropdown-menu">
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
                   <h3 className="font-semibold text-gray-900">Notifications</h3>
                   {effectiveUnreadCount > 0 && (
@@ -233,7 +233,7 @@ const Header: React.FC = () => {
             </button>
 
             {showProfile && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden sc-dropdown-menu">
                 <div className={`px-5 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white`}>
                   <p className="font-semibold">{currentUser.name}</p>
                   <p className="text-sm text-white/80">{currentUser.email}</p>

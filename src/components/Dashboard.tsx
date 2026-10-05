@@ -87,7 +87,9 @@ const Dashboard: React.FC = () => {
         <OfflineBanner />
         <Header />
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
-          {renderContent()}
+          <div key={currentView} className="animate-page-enter">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </div>

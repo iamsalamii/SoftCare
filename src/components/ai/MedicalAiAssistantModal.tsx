@@ -180,8 +180,8 @@ export const MedicalAiAssistantModal: React.FC<MedicalAiAssistantModalProps> = (
   ];
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-3xl w-full my-auto overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-3xl w-full my-auto overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white p-6 flex justify-between items-center">
           <div className="flex items-center gap-3.5">

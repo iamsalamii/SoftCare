@@ -131,14 +131,14 @@ const Sidebar: React.FC = () => {
                     }}
                     className={`w-full flex items-center ${
                       sidebarCollapsed ? 'lg:justify-center gap-3' : 'gap-3'
-                    } px-3.5 py-2.5 rounded-xl text-left transition-all duration-200 ${
+                    } px-3.5 py-2.5 rounded-xl text-left transition-all duration-150 active:scale-[0.98] ${
                       isActive
-                        ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-lg shadow-teal-500/25 font-bold'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium'
+                        ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md shadow-teal-500/25 font-bold'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-0.5 font-medium'
                     }`}
                     title={sidebarCollapsed ? item.label : undefined}
                   >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    <Icon className={`w-5 h-5 flex-shrink-0 transition-colors duration-150 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                     {(!sidebarCollapsed || window.innerWidth < 1024) && (
                       <span className="text-xs truncate">{item.label}</span>
                     )}

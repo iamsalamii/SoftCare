@@ -448,8 +448,8 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
 
       {/* MODAL 1 : MOT DE PASSE OUBLIÉ */}
       {showForgotPasswordModal && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 max-w-md w-full overflow-hidden flex flex-col text-gray-900">
+        <div className="fixed inset-0 z-[9999] bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 max-w-md w-full overflow-hidden flex flex-col text-gray-900 animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/70">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
@@ -518,8 +518,8 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
 
       {/* MODAL 2 : DEMANDE D'ACCÈS / CONTACT DSI */}
       {showContactAdminModal && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 max-w-md w-full overflow-hidden flex flex-col text-gray-900">
+        <div className="fixed inset-0 z-[9999] bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 max-w-md w-full overflow-hidden flex flex-col text-gray-900 animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/70">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">

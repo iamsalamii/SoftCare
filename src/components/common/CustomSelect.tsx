@@ -101,7 +101,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl border border-teal-100 shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl border border-teal-100 shadow-xl z-50 overflow-hidden sc-dropdown-menu">
           {searchable && (
             <div className="p-2 border-b border-gray-100 bg-slate-50/50">
               <div className="relative">

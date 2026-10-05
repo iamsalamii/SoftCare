@@ -106,7 +106,7 @@ const DashboardHome: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 p-8 text-white">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 p-8 text-white animate-card-enter shadow-lg shadow-teal-500/10">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="relative flex items-center justify-between">
@@ -148,9 +148,9 @@ const DashboardHome: React.FC = () => {
           <button
             key={index}
             onClick={stat.onClick}
-            className={`${stat.color} ${stat.shadow} rounded-2xl p-5 text-white transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 shadow-lg relative overflow-hidden group`}
+            className={`${stat.color} ${stat.shadow} rounded-2xl p-5 text-white transform transition-all duration-200 hover:-translate-y-1 active:scale-[0.98] shadow-lg relative overflow-hidden group animate-card-enter stagger-${(index % 8) + 1} text-left`}
           >
-            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-300" />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
                 <stat.icon className="w-8 h-8 opacity-80" />
@@ -170,7 +170,7 @@ const DashboardHome: React.FC = () => {
 
       {/* Critical Alerts Section */}
       {(lowStockMeds.length > 0 || activeEmergencies.length > 0) && (
-        <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 rounded-2xl p-6">
+        <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 rounded-2xl p-6 animate-card-enter stagger-2">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/30">
               <AlertTriangle className="w-5 h-5 text-white" />
@@ -231,7 +231,7 @@ const DashboardHome: React.FC = () => {
       )}
 
       {/* Today's Schedule */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-card-enter stagger-3">
         {/* Appointments Today */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-5">
@@ -332,7 +332,7 @@ const DashboardHome: React.FC = () => {
 
       {/* Department Overview */}
       {clinicalDepts.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-card-enter stagger-4">
           <h3 className="text-lg font-semibold text-gray-900 mb-5">Occupation par departement</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {clinicalDepts.map(dept => {
@@ -367,7 +367,7 @@ const DashboardHome: React.FC = () => {
 
       {/* Today's Surgeries */}
       {todaySurgeries.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-card-enter stagger-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Programme operateur</h3>

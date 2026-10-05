@@ -109,7 +109,7 @@ export const BrochureModal: React.FC<BrochureModalProps> = ({ isOpen, onClose })
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-3xl w-full my-auto overflow-hidden relative z-[10000] flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-3xl shadow-2xl border border-cyan-100 max-w-3xl w-full my-auto overflow-hidden relative z-[10000] flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 text-white px-5 py-4 sm:px-6 sm:py-5 flex justify-between items-center gap-4 flex-shrink-0">
           <div className="flex items-center gap-3.5 min-w-0 flex-1">

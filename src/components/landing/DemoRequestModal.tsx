@@ -114,7 +114,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-teal-100 flex flex-col">
+      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-teal-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-gradient-to-r from-slate-900 via-teal-950 to-cyan-950 text-white p-6 rounded-t-3xl flex items-start justify-between">
           <div className="space-y-1">

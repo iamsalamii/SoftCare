@@ -152,21 +152,232 @@ button:focus {
 }
 
 /* ======================================================
-   SoftCare Motion System & Accessibility
-   Fast (180ms), Normal (300ms), Slow (600ms / ambient)
+   SoftCare Motion Design System — Tokens & Engine
+   Clinical, subtle, performant & accessible
    ====================================================== */
+:root {
+  /* Micro-interactions: 120-180ms */
+  --motion-duration-micro: 140ms;
+  --motion-duration-fast: 180ms;
+
+  /* Standard UI transitions: 200-300ms */
+  --motion-duration-normal: 240ms;
+  --motion-duration-modal: 220ms;
+  --motion-duration-page: 260ms;
+
+  /* Content entrances: 300-400ms */
+  --motion-duration-slow: 360ms;
+
+  /* Clinical Deceleration Curves (Natural, responsive, no bounce) */
+  --motion-ease-natural: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-subtle: cubic-bezier(0.25, 1, 0.5, 1);
+  --motion-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ======================================================
+   Core Animation Classes (Utility Engine)
+   ====================================================== */
+.motion-micro {
+  transition: all var(--motion-duration-micro) var(--motion-ease-natural);
+}
+
 .motion-fast {
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--motion-duration-fast) var(--motion-ease-natural);
 }
 
 .motion-normal {
-  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--motion-duration-normal) var(--motion-ease-natural);
 }
 
 .motion-slow {
-  transition: all 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--motion-duration-slow) var(--motion-ease-natural);
 }
 
+/* Page Transition Wrapper */
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnter var(--motion-duration-page) var(--motion-ease-natural) both;
+  will-change: opacity, transform;
+}
+
+/* Card / Section Entrance */
+@keyframes cardEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card-enter {
+  animation: cardEnter 280ms var(--motion-ease-natural) both;
+  will-change: opacity, transform;
+}
+
+/* Table Row Subtle Entrance */
+@keyframes tableRowEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-row-enter {
+  animation: tableRowEnter 200ms var(--motion-ease-natural) both;
+}
+
+/* Intelligent Stagger Delays */
+.stagger-1  { animation-delay: 25ms; }
+.stagger-2  { animation-delay: 50ms; }
+.stagger-3  { animation-delay: 75ms; }
+.stagger-4  { animation-delay: 100ms; }
+.stagger-5  { animation-delay: 125ms; }
+.stagger-6  { animation-delay: 150ms; }
+.stagger-7  { animation-delay: 175ms; }
+.stagger-8  { animation-delay: 200ms; }
+.stagger-9  { animation-delay: 225ms; }
+.stagger-10 { animation-delay: 250ms; }
+.stagger-11 { animation-delay: 275ms; }
+.stagger-12 { animation-delay: 300ms; }
+
+/* ======================================================
+   Modern Animate-in Engine (Modals, Dialogs, Popovers)
+   ====================================================== */
+.animate-in {
+  animation-duration: var(--motion-duration-normal);
+  animation-timing-function: var(--motion-ease-natural);
+  animation-fill-mode: both;
+}
+
+.fade-in { animation-name: animFadeIn; }
+.fade-out { animation-name: animFadeOut; }
+.zoom-in-95 { animation-name: animZoomIn95; }
+.zoom-in-98 { animation-name: animZoomIn98; }
+.slide-in-from-top-2 { animation-name: animSlideInTop2; }
+.slide-in-from-bottom-2 { animation-name: animSlideInBottom2; }
+.slide-in-from-left-2 { animation-name: animSlideInLeft2; }
+.slide-in-from-right-2 { animation-name: animSlideInRight2; }
+
+/* Combined Modal / Dialog Entrance */
+.animate-in.fade-in.zoom-in-95 {
+  animation-name: animModalEnter;
+}
+
+@keyframes animFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes animFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes animZoomIn95 {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes animZoomIn98 {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes animSlideInTop2 {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes animSlideInBottom2 {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes animSlideInLeft2 {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes animSlideInRight2 {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes animModalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.975) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Durations */
+.duration-150 { animation-duration: 150ms; }
+.duration-200 { animation-duration: 200ms; }
+.duration-250 { animation-duration: 250ms; }
+.duration-300 { animation-duration: 300ms; }
+.duration-400 { animation-duration: 400ms; }
+.duration-500 { animation-duration: 500ms; }
+
+/* Interactive Clinical Components */
+.sc-card-interactive {
+  transition: transform var(--motion-duration-fast) var(--motion-ease-natural),
+              box-shadow var(--motion-duration-fast) var(--motion-ease-natural),
+              border-color var(--motion-duration-fast) var(--motion-ease-natural);
+}
+.sc-card-interactive:hover {
+  transform: translateY(-2px);
+}
+
+.sc-btn {
+  transition: transform var(--motion-duration-micro) var(--motion-ease-natural),
+              box-shadow var(--motion-duration-micro) var(--motion-ease-natural),
+              background-color var(--motion-duration-micro) var(--motion-ease-natural),
+              border-color var(--motion-duration-micro) var(--motion-ease-natural),
+              color var(--motion-duration-micro) var(--motion-ease-natural);
+}
+.sc-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dropdown Menu Entrance */
+.sc-dropdown-menu {
+  animation: animDropdown 180ms var(--motion-ease-natural) both;
+  transform-origin: top right;
+}
+
+@keyframes animDropdown {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Ambient Hero & Biotech Animations */
 @keyframes ambient-breathe {
   0%, 100% {
     opacity: 0.22;
@@ -258,12 +469,15 @@ button:focus {
   animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Respect user's system accessibility preference for reduced motion */
+/* ======================================================
+   Strict Accessibility: System prefers-reduced-motion
+   ====================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+    transform: none !important;
   }
 }
