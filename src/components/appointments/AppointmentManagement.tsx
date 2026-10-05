@@ -149,7 +149,7 @@ const AppointmentManagement: React.FC = () => {
             {showExportMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden sc-dropdown-menu">
                   <button
                     onClick={handleExportPDF}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
@@ -215,7 +215,7 @@ const AppointmentManagement: React.FC = () => {
                 .map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200 animate-row-enter hover:-translate-y-0.5"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
