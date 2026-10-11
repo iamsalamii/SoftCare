@@ -138,13 +138,13 @@ export const SurgeryModule: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-1">
           <span className="text-xs text-gray-400 font-medium">Interventions au Programme</span>
           <p className="text-2xl font-black text-gray-900">{surgeries.length}</p>
           <span className="text-[10px] text-teal-600 font-semibold">Toutes spécialités confondues</span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-2">
           <span className="text-xs text-gray-400 font-medium">En Cours au Bloc</span>
           <p className="text-2xl font-black text-purple-700">
             {surgeries.filter(s => s.status === 'in-progress').length}
@@ -152,7 +152,7 @@ export const SurgeryModule: React.FC = () => {
           <span className="text-[10px] text-purple-600 font-semibold">Surveillance anesthésique active</span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-3">
           <span className="text-xs text-gray-400 font-medium">Salles d'Opération</span>
           <p className="text-2xl font-black text-emerald-700">
             {operatingRooms.length > 0 ? operatingRooms.length : 4} salles
@@ -160,7 +160,7 @@ export const SurgeryModule: React.FC = () => {
           <span className="text-[10px] text-emerald-600 font-semibold">Flux laminaires opérationnels</span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-4">
           <span className="text-xs text-gray-400 font-medium">Terminées avec Succès</span>
           <p className="text-2xl font-black text-cyan-700">
             {surgeries.filter(s => s.status === 'completed').length}
@@ -209,7 +209,7 @@ export const SurgeryModule: React.FC = () => {
             <div
               key={surgery.id}
               onClick={() => setSelectedSurgery(surgery)}
-              className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs"
+              className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs animate-card-enter"
             >
               <div className="space-y-1.5 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

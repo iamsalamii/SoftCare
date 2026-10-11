@@ -176,7 +176,7 @@ export const AuditTrailModule: React.FC = () => {
 
       {/* Security Metrics Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-1">
           <span className="text-[11px] font-bold text-gray-500 uppercase">Événements Tracés</span>
           <p className="text-2xl font-black text-gray-900">{logs.length} requêtes</p>
           <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
@@ -184,13 +184,13 @@ export const AuditTrailModule: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-2">
           <span className="text-[11px] font-bold text-gray-500 uppercase">Chiffrement & Signature</span>
           <p className="text-2xl font-black text-teal-700">HMAC-SHA256</p>
           <p className="text-[10px] text-gray-400">Empreinte numérique par transaction</p>
         </div>
 
-        <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1">
+        <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-3">
           <span className="text-[11px] font-bold text-gray-500 uppercase">Statut Conformité</span>
           <p className="text-2xl font-black text-emerald-700">Conforme HDS</p>
           <p className="text-[10px] text-gray-400">CNIL • RGPD Art. 30 • Certifications Santé</p>
@@ -198,7 +198,7 @@ export const AuditTrailModule: React.FC = () => {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4 animate-card-enter stagger-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -253,7 +253,7 @@ export const AuditTrailModule: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={log.id} className="hover:bg-slate-50/80 transition-colors duration-150 animate-row-enter">
                     <td className="px-4 py-3.5">
                       <span className="font-mono font-bold text-teal-900 block">{log.id}</span>
                       <span className="text-[10px] text-gray-400">{log.timestamp}</span>

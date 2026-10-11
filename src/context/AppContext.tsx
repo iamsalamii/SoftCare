@@ -577,8 +577,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Load data on mount
   useEffect(() => {
-    refreshData();
-  }, []);
+    if (currentUser) {
+      refreshData();
+    }
+  }, [currentUser]);
 
   // Inactivity timeout (30 min auto-logout for medical session security)
   useEffect(() => {

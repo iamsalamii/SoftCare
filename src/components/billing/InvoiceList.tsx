@@ -212,7 +212,7 @@ const InvoiceList: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Total Factures</p>
@@ -221,7 +221,7 @@ const InvoiceList: React.FC = () => {
             <FileText className="w-8 h-8 text-blue-500" />
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-2">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Revenus</p>
@@ -230,7 +230,7 @@ const InvoiceList: React.FC = () => {
             <CreditCard className="w-8 h-8 text-green-500" />
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-3">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">En attente</p>
@@ -239,7 +239,7 @@ const InvoiceList: React.FC = () => {
             <CreditCard className="w-8 h-8 text-yellow-500" />
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">En retard</p>
@@ -252,7 +252,7 @@ const InvoiceList: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 animate-card-enter stagger-5">
         <div className="p-6 border-b border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="relative flex-1">
@@ -321,7 +321,7 @@ const InvoiceList: React.FC = () => {
                 {filteredInvoices.map((invoice) => {
                   const paidAmount = (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0);
                   return (
-                    <tr key={invoice.id} className="hover:bg-gray-50">
+                    <tr key={invoice.id} className="hover:bg-gray-50/80 transition-colors duration-150 animate-row-enter">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-medium text-gray-900">#{invoice.id}</span>
                       </td>

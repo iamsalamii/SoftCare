@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 /* Custom sleek inset scrollbars */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
@@ -256,6 +261,29 @@ button:focus {
 .stagger-10 { animation-delay: 250ms; }
 .stagger-11 { animation-delay: 275ms; }
 .stagger-12 { animation-delay: 300ms; }
+
+/* Genova-inspired Hero Progressive Cascade */
+@keyframes heroCascade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-cascade {
+  animation: heroCascade 400ms var(--motion-ease-natural) both;
+}
+
+.hero-stagger-1 { animation-delay: 30ms; }
+.hero-stagger-2 { animation-delay: 90ms; }
+.hero-stagger-3 { animation-delay: 160ms; }
+.hero-stagger-4 { animation-delay: 240ms; }
+.hero-stagger-5 { animation-delay: 320ms; }
+.hero-stagger-6 { animation-delay: 400ms; }
 
 /* ======================================================
    Modern Animate-in Engine (Modals, Dialogs, Popovers)

@@ -237,7 +237,7 @@ const PharmacyManagement: React.FC = () => {
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between animate-card-enter stagger-1">
           <div>
             <p className="text-xs font-medium text-gray-500">Total Références</p>
             <h3 className="text-2xl font-bold text-gray-900 mt-1">{medications.length}</h3>
@@ -247,7 +247,7 @@ const PharmacyManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between animate-card-enter stagger-2">
           <div>
             <p className="text-xs font-medium text-gray-500">Stock Faible / Alerte</p>
             <h3 className={`text-2xl font-bold mt-1 ${lowStockMedications.length > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
@@ -259,7 +259,7 @@ const PharmacyManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between animate-card-enter stagger-3">
           <div>
             <p className="text-xs font-medium text-gray-500">Biomédicaments / PGx</p>
             <h3 className="text-2xl font-bold text-purple-700 mt-1">{biotechMedications.length}</h3>
@@ -269,7 +269,7 @@ const PharmacyManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between animate-card-enter stagger-4">
           <div>
             <p className="text-xs font-medium text-gray-500">Chaîne du Froid (2-8°C)</p>
             <h3 className="text-2xl font-bold text-blue-700 mt-1">{coldChainMedications.length}</h3>
@@ -282,7 +282,7 @@ const PharmacyManagement: React.FC = () => {
 
       {/* Critical Stock Alerts Banner */}
       {lowStockMedications.length > 0 && (
-        <div className="bg-rose-50 border border-rose-200/80 rounded-2xl p-4">
+        <div className="bg-rose-50 border border-rose-200/80 rounded-2xl p-4 animate-card-enter stagger-5">
           <div className="flex items-center gap-2 mb-3">
             <ShieldAlert className="w-5 h-5 text-rose-600" />
             <h3 className="text-sm font-bold text-rose-900">
@@ -306,7 +306,7 @@ const PharmacyManagement: React.FC = () => {
       )}
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-card-enter stagger-6">
         {/* Search & Filters */}
         <div className="p-5 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">

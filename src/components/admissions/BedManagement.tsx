@@ -196,31 +196,31 @@ const BedManagement: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-1">
           <p className="text-sm text-gray-500">Total Lits</p>
           <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-2">
           <p className="text-sm text-gray-500">Disponibles</p>
           <p className="text-3xl font-bold text-green-600">{stats.available}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-3">
           <p className="text-sm text-gray-500">Occupés</p>
           <p className="text-3xl font-bold text-red-600">{stats.occupied}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-4">
           <p className="text-sm text-gray-500">Maintenance</p>
           <p className="text-3xl font-bold text-yellow-600">{stats.maintenance}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-5">
           <p className="text-sm text-gray-500">Taux d'occupation</p>
           <p className="text-3xl font-bold text-blue-600">{stats.occupancyRate}%</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-card-enter stagger-2">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CustomSelect
             label="Département"
@@ -247,16 +247,16 @@ const BedManagement: React.FC = () => {
       </div>
 
       {/* Bed Grid */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-card-enter stagger-3">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {filteredBeds.map((bed) => {
+          {filteredBeds.map((bed, index) => {
             const admission = bed.currentAdmissionId ? getAdmission(bed.currentAdmissionId) : null;
             const patient = bed.currentPatientId ? patients.find(p => p.id === bed.currentPatientId) : null;
 
             return (
               <div
                 key={bed.id}
-                className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] animate-card-enter ${getTypeColor(bed.type)} ${
+                className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] animate-card-enter stagger-${(index % 6) + 1} ${getTypeColor(bed.type)} ${
                   bed.status === 'available' ? 'bg-green-50' :
                   bed.status === 'occupied' ? 'bg-red-50' :
                   bed.status === 'maintenance' ? 'bg-yellow-50' : 'bg-blue-50'
