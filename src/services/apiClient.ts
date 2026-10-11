@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5291/api';
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5291/api';
+const API_BASE_URL = rawApiUrl.replace(/^[\uFEFF\xA0\s]+|[\s]+$/g, '').trim();
 
 class ApiClient {
   private baseUrl: string;
