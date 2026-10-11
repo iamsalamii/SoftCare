@@ -228,7 +228,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           </div>
 
           {/* Desktop Navigation Links — Strictly Single Line (whitespace-nowrap) */}
-          <nav className="hidden lg:flex items-center gap-4 xl:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">
+          <nav className="hidden lg:flex items-center gap-3 xl:gap-5 text-[11px] xl:text-xs font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">
             <a
               href="#modules"
               onClick={(e) => scrollToSection(e, 'modules')}
