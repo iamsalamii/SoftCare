@@ -55,19 +55,19 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
     {
       title: "Système d'Information Hospitalier Unifié",
       description: "DPI en temps réel, coordination des soins, admissions et régulation des flux d'urgences.",
-      badge: "Hospital OS v2.4",
+      badge: "Système Clinique v2.4",
       icon: Activity
     },
     {
       title: "Biotechnologies & Pharmacogénomique",
-      description: "Interception automatique des contre-indications génétiques (CPIC/DPWG) et biobanque cryogénique.",
+      description: "Interception automatique des contre-indications génétiques et biobanque cryogénique.",
       badge: "Médecine de Précision",
       icon: Dna
     },
     {
       title: "Traçabilité & Pharmacie Sécurisée",
       description: "Scanner GS1 DataMatrix < 5ms, gestion des lots, chaîne du froid et sécurisation de la délivrance.",
-      badge: "Normes Sanitaires HDS",
+      badge: "Haute Sécurité",
       icon: ShieldCheck
     }
   ];
@@ -278,16 +278,16 @@ export const Login: React.FC<LoginProps> = ({ onBackToLanding }) => {
               <span className="text-gray-700 font-mono font-semibold">Système Hospitalier Actif</span>
             </div>
             <span className="text-teal-800 font-bold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/60">
-              Chiffrement AES-256 &middot; Protocole HDS
+              Chiffrement AES-256 &middot; Protection Avancée
             </span>
           </div>
         </div>
 
-        {/* Footer certifications */}
+        {/* Footer */}
         <div className="relative z-10 border-t border-gray-200/80 pt-6 flex justify-between items-center text-xs text-gray-500">
           <span className="flex items-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Hébergement Données de Santé (HDS) &amp; RGPD</span>
+            <span>Données Sécurisées &middot; Confidentialité Médicale</span>
           </span>
           <span className="font-mono text-[11px] text-teal-800 font-bold">Édition Clinique 2026</span>
         </div>

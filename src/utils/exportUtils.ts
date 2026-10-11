@@ -74,7 +74,7 @@ export const generateDocumentFooter = (organization: OrganizationSettings): stri
       ${organization.taxId ? `<p style="margin: 2px 0;">NIF / TVA : ${organization.taxId}</p>` : ''}
       ${organization.bankName ? `<p style="margin: 4px 0 0;">Banque : ${organization.bankName} &bull; IBAN : ${organization.bankIban || organization.bankAccount}</p>` : ''}
       <div style="margin-top: 10px; font-size: 8.5px; color: #94a3b8; letter-spacing: 0.5px;">
-        &copy; ${new Date().getFullYear()} SoftCare Hospital OS &bull; Système d'Information Hospitalier (HIS) &bull; Tous droits réservés
+        &copy; ${new Date().getFullYear()} SoftCare &bull; Système d'Information Hospitalier (HIS) &bull; Tous droits réservés
       </div>
     </div>
   `;

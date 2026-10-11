@@ -44,16 +44,6 @@ const MainApp: React.FC = () => {
     return <SettingsModule onBack={handleBackToHome} />;
   }
 
-  if (dataLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500 text-sm font-medium">Chargement des dossiers patients...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (dataError) {
     return (

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   X, Sparkles, Building2, Calendar, Clock, User, Mail, Phone,
   CheckCircle2, ArrowRight, ShieldCheck, HeartPulse, Stethoscope, Dna,
-  Send, Layers, BedDouble, Check, Briefcase
+  Send, Layers, BedDouble, Check, Briefcase, AlertCircle, Download
 } from 'lucide-react';
 import CustomSelect, { SelectOption } from '../common/CustomSelect';
 
@@ -26,8 +26,10 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
     notes: ''
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [confirmationNumber, setConfirmationNumber] = useState('');
 
   if (!isOpen) return null;
 
@@ -72,44 +74,73 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
         ? prev.selectedModules.filter(m => m !== module)
         : [...prev.selectedModules, module]
     }));
+    if (errors.modules) {
+      setErrors(prev => ({ ...prev, modules: '' }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 3) {
+      newErrors.fullName = 'Veuillez saisir votre nom et prénom (au moins 3 caractères).';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.workEmail.trim() || !emailRegex.test(formData.workEmail.trim())) {
+      newErrors.workEmail = 'Veuillez renseigner une adresse email professionnelle valide.';
+    }
+    if (!formData.facilityName.trim()) {
+      newErrors.facilityName = 'Le nom de votre établissement est obligatoire.';
+    }
+    if (!formData.phone.trim() || formData.phone.trim().length < 8) {
+      newErrors.phone = 'Veuillez indiquer un numéro de téléphone joignable.';
+    }
+    if (formData.selectedModules.length === 0) {
+      newErrors.modules = 'Veuillez sélectionner au moins un module d\'intérêt.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const recipientEmail = 'contact@softcare.io';
-    const emailSubject = encodeURIComponent(`[Demande de Démo SoftCare] ${formData.facilityName || 'Établissement'} - ${formData.fullName}`);
-    const emailBody = encodeURIComponent(
-      `Bonjour l'équipe SoftCare,\n\n` +
-      `Une nouvelle demande de démonstration a été effectuée :\n\n` +
-      `• Nom : ${formData.fullName}\n` +
-      `• Email professionnel : ${formData.workEmail}\n` +
-      `• Téléphone : ${formData.phone || 'Non précisé'}\n` +
-      `• Établissement : ${formData.facilityName} (${formData.facilityType})\n` +
-      `• Rôle : ${formData.role}\n` +
-      `• Date souhaitée : ${formData.preferredDate || 'Dès que possible'}\n` +
-      `• Créneau : ${formData.preferredTime}\n` +
-      `• Modules d'intérêt : ${formData.selectedModules.join(', ')}\n` +
-      `• Notes / Besoins : ${formData.notes || 'Aucun message spécifique'}\n\n` +
-      `Cordialement,\n${formData.fullName}`
-    );
+    const generatedRef = `DEMO-${Date.now().toString().slice(-6)}`;
+    setConfirmationNumber(generatedRef);
 
-    // Trigger email client with mailto
+    // Save to local storage for persistence & verification
     try {
-      const mailtoLink = `mailto:${recipientEmail}?subject=${emailSubject}&body=${emailBody}`;
-      const win = window.open(mailtoLink, '_blank');
-      if (!win) {
-        window.location.href = mailtoLink;
-      }
+      const existing = JSON.parse(localStorage.getItem('softcare_demo_requests') || '[]');
+      existing.unshift({
+        ref: generatedRef,
+        date: new Date().toISOString(),
+        ...formData
+      });
+      localStorage.setItem('softcare_demo_requests', JSON.stringify(existing));
     } catch {
-      // Fallback
+      // Ignored
     }
 
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
     }, 700);
+  };
+
+  const downloadCalendarInvite = () => {
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SoftCare//Démonstration Médicale//FR\nBEGIN:VEVENT\nSUMMARY:Démonstration Plateforme SoftCare - ${formData.facilityName}\nDESCRIPTION:Démonstration personnalisée SoftCare pour ${formData.fullName}\\nModules: ${formData.selectedModules.join(', ')}\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR`;
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Demonstration_SoftCare_${confirmationNumber}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -140,47 +171,77 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
+        {/* Content Body */}
+        <div className="p-6 sm:p-8 space-y-6">
           {isSubmitted ? (
-            <div className="text-center py-10 space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="text-center py-8 space-y-5 animate-in zoom-in-95 duration-200">
               <div className="w-20 h-20 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200 shadow-inner">
                 <CheckCircle2 className="w-10 h-10 animate-pulse" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">Demande de Démo Transmise avec Succès !</h3>
+                <div className="inline-block px-3 py-1 bg-teal-50 border border-teal-200 rounded-full text-xs font-mono font-bold text-teal-800">
+                  Réf. {confirmationNumber}
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Demande de Démonstration Confirmée !</h3>
                 <p className="text-sm text-gray-600 max-w-md mx-auto">
-                  Merci <strong>{formData.fullName}</strong>. Votre demande a été envoyée à l'équipe SoftCare. Un récapitulatif a été transmis à <strong>{formData.workEmail}</strong> pour le créneau du <strong>{formData.preferredDate || 'prochain créneau disponible'}</strong> ({formData.preferredTime}).
+                  Merci <strong>{formData.fullName}</strong>. Votre demande a été enregistrée avec succès. Un conseiller médical vous contactera à l'adresse <strong>{formData.workEmail}</strong> pour confirmer le créneau du <strong>{formData.preferredDate || 'prochain créneau disponible'}</strong> ({formData.preferredTime}).
                 </p>
               </div>
 
               <div className="p-4 bg-slate-50 rounded-2xl border border-gray-200 max-w-md mx-auto text-left space-y-2 text-xs text-gray-600">
                 <div className="flex justify-between font-semibold text-gray-800">
                   <span>Établissement :</span>
-                  <span>{formData.facilityName || 'Établissement'}</span>
+                  <span>{formData.facilityName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Profil :</span>
+                  <span>Profil & Fonction :</span>
                   <span>{formData.role}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span>Téléphone :</span>
+                  <span>{formData.phone}</span>
+                </div>
+                <div className="flex justify-between">
                   <span>Modules ciblés :</span>
-                  <span className="text-cyan-700 font-bold">{formData.selectedModules.length} sélectionné(s)</span>
+                  <span className="text-teal-700 font-bold">{formData.selectedModules.length} sélectionné(s)</span>
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setIsSubmitted(false);
-                  onClose();
-                }}
-                className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-600/20 hover:scale-[1.02] transition-transform"
-              >
-                Fermer la fenêtre
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={downloadCalendarInvite}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Download className="w-4 h-4 text-slate-600" />
+                  <span>Ajouter au calendrier (.ics)</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    onClose();
+                  }}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md hover:from-teal-700 hover:to-cyan-800 transition-all"
+                >
+                  Fermer la fenêtre
+                </button>
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              {Object.keys(errors).length > 0 && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-xs text-rose-800">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Veuillez corriger les champs indiqués :</span>
+                    <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[11px]">
+                      {Object.values(errors).map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
               {/* Form Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Nom complet */}
@@ -192,16 +253,20 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="text"
-                      required
-                      placeholder="Alexandre Martin"
+                      placeholder="Dr. Alexandre Martin"
                       value={formData.fullName}
-                      onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                      onChange={e => {
+                        setFormData({ ...formData, fullName: e.target.value });
+                        if (errors.fullName) setErrors({ ...errors, fullName: '' });
+                      }}
+                      className={`w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all ${
+                        errors.fullName ? 'border-rose-400 bg-rose-50/30' : 'border-gray-200'
+                      }`}
                     />
                   </div>
                 </div>
 
-                {/* Email professionnel */}
+                {/* Email Pro */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
                     Email Professionnel *
@@ -210,11 +275,15 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="email"
-                      required
-                      placeholder="a.martin@etablissement.fr"
+                      placeholder="alexandre.martin@chu-hopital.fr"
                       value={formData.workEmail}
-                      onChange={e => setFormData({ ...formData, workEmail: e.target.value })}
-                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                      onChange={e => {
+                        setFormData({ ...formData, workEmail: e.target.value });
+                        if (errors.workEmail) setErrors({ ...errors, workEmail: '' });
+                      }}
+                      className={`w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all ${
+                        errors.workEmail ? 'border-rose-400 bg-rose-50/30' : 'border-gray-200'
+                      }`}
                     />
                   </div>
                 </div>
@@ -222,21 +291,26 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                 {/* Téléphone */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    Téléphone
+                    Téléphone Professionnel *
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="tel"
-                      placeholder="+33 1 42 68 00 00"
+                      placeholder="01 42 68 00 00"
                       value={formData.phone}
-                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                      onChange={e => {
+                        setFormData({ ...formData, phone: e.target.value });
+                        if (errors.phone) setErrors({ ...errors, phone: '' });
+                      }}
+                      className={`w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all ${
+                        errors.phone ? 'border-rose-400 bg-rose-50/30' : 'border-gray-200'
+                      }`}
                     />
                   </div>
                 </div>
 
-                {/* Nom de l'établissement */}
+                {/* Nom établissement */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
                     Nom de l'Établissement / Structure *
@@ -245,11 +319,15 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     <input
                       type="text"
-                      required
-                      placeholder="Centre Hospitalier / Clinique"
+                      placeholder="Centre Hospitalier Universitaire"
                       value={formData.facilityName}
-                      onChange={e => setFormData({ ...formData, facilityName: e.target.value })}
-                      className="w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                      onChange={e => {
+                        setFormData({ ...formData, facilityName: e.target.value });
+                        if (errors.facilityName) setErrors({ ...errors, facilityName: '' });
+                      }}
+                      className={`w-full pl-10 pr-3.5 py-2.5 bg-gray-50/80 border rounded-2xl text-xs font-semibold text-gray-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all ${
+                        errors.facilityName ? 'border-rose-400 bg-rose-50/30' : 'border-gray-200'
+                      }`}
                     />
                   </div>
                 </div>
@@ -313,28 +391,31 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
               {/* Modules d'intérêt */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-gray-700">
-                  Modules Spécifiques à Aborder
+                  Modules Spécifiques à Aborder *
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {modulesList.map(mod => {
                     const isSelected = formData.selectedModules.includes(mod);
                     return (
                       <button
-                        type="button"
                         key={mod}
+                        type="button"
                         onClick={() => handleModuleToggle(mod)}
-                        className={`px-3.5 py-2.5 rounded-2xl text-xs font-semibold text-left border flex items-center justify-between transition-all ${
+                        className={`p-3 rounded-2xl border text-left text-xs font-semibold transition-all flex items-center justify-between cursor-pointer ${
                           isSelected
-                            ? 'bg-cyan-50/90 border-cyan-400 text-cyan-950 shadow-2xs'
-                            : 'bg-gray-50/80 border-gray-200 text-gray-600 hover:bg-gray-100/80'
+                            ? 'bg-teal-50/90 border-teal-500 text-teal-900 shadow-xs'
+                            : 'bg-gray-50/60 border-gray-200 text-gray-600 hover:bg-gray-100/80'
                         }`}
                       >
                         <span className="truncate pr-2">{mod}</span>
-                        {isSelected && <Check className="w-4 h-4 text-cyan-600 shrink-0" />}
+                        {isSelected && <Check className="w-4 h-4 text-teal-600 shrink-0" />}
                       </button>
                     );
                   })}
                 </div>
+                {errors.modules && (
+                  <p className="text-[11px] text-rose-600 font-medium">{errors.modules}</p>
+                )}
               </div>
 
               {/* Note / Message */}
@@ -361,12 +442,12 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 active:scale-[0.98] text-white rounded-2xl text-xs sm:text-sm font-bold shadow-lg shadow-teal-700/25 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Envoi en cours...</span>
+                      <span>Enregistrement en cours...</span>
                     </>
                   ) : (
                     <>

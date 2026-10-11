@@ -107,7 +107,7 @@ export const InteractiveHospitalMap: React.FC = () => {
             <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-slate-300" />
             <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-slate-300" />
             <span className="hidden sm:inline-block ml-3 text-xs font-semibold text-slate-600 font-sans">
-              SoftCare Hospital OS • Centre Hospitalier Universitaire
+              SoftCare • Plateforme Clinique Hospitalière
             </span>
           </div>
 

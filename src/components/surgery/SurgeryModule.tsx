@@ -21,6 +21,14 @@ export const SurgeryModule: React.FC = () => {
     organizationSettings
   } = useApp();
 
+  // Salles d'opération du plateau technique
+  const [operatingRooms] = useState([
+    { id: '1', name: "Salle d'Opération 1 - Cardiovasculaire & Thoracique", status: 'available' },
+    { id: '2', name: "Salle d'Opération 2 - Orthopédie & Traumatologie", status: 'available' },
+    { id: '3', name: "Salle d'Opération 3 - Viscérale & Ambulatoire", status: 'available' },
+    { id: '4', name: "Salle d'Opération 4 - Neurochirurgie & Urgences", status: 'available' }
+  ]);
+
   const toast = useToast();
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);

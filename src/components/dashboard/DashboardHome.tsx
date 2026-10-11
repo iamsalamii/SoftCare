@@ -21,16 +21,6 @@ const DashboardHome: React.FC = () => {
   const todaySurgeries = surgeries?.filter(s => s.scheduledDate === today) || [];
   const pendingInvoices = invoices?.filter(i => i.status === 'sent' || i.status === 'overdue') || [];
 
-  if (dataLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Chargement des donnees...</p>
-        </div>
-      </div>
-    );
-  }
 
   const stats = [
     {

@@ -141,7 +141,7 @@ export const TeleconsultationModule: React.FC = () => {
               Prêt pour la téléconsultation avec {selectedPatient?.firstName} {selectedPatient?.lastName}
             </h3>
             <p className="text-xs text-gray-500 max-w-md mx-auto">
-              Le flux audio/vidéo est chiffré de bout en bout conformément aux normes de sécurité sanitaire HDS.
+              Le flux audio/vidéo est chiffré de bout en bout conformément aux normes de sécurité hospitalière.
             </p>
           </div>
 

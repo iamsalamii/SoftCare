@@ -338,12 +338,12 @@ export const HeroVideoDemo: React.FC<HeroVideoDemoProps> = ({ onRequestDemo, onG
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleAskDoctor(
-                    "Sécurité HDS",
-                    "Toutes les données de santé traitées par SoftCare sont chiffrées de bout en bout et hébergées conformément aux normes HDS et RGPD Santé."
+                    "Chiffrement & Sécurité",
+                    "Toutes les données de santé traitées par SoftCare sont chiffrées de bout en bout avec contrôle d'accès strict et traçabilité complète."
                   )}
                   className="px-2.5 py-1 bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 rounded-xl text-[11px] text-gray-300 hover:text-cyan-200 transition-all text-left"
                 >
-                  🔒 Sécurité HDS & RGPD
+                  🔒 Chiffrement & Sécurité
                 </button>
                 <button
                   onClick={() => handleAskDoctor(
