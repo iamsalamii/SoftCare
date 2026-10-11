@@ -7,7 +7,15 @@ import LandingPage from './landing/LandingPage';
 
 const MainApp: React.FC = () => {
   const { currentUser, currentView, setCurrentView, dataLoading, dataError, authLoading } = useApp();
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(() => typeof window !== 'undefined' && window.location.hash === '#login');
+
+  React.useEffect(() => {
+    const handleHash = () => {
+      setShowLogin(window.location.hash === '#login');
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   const handleBackToHome = () => {
     setCurrentView('dashboard');
@@ -29,13 +37,19 @@ const MainApp: React.FC = () => {
     if (!showLogin) {
       return (
         <div key="landing" className="animate-page-enter">
-          <LandingPage onGoToLogin={() => setShowLogin(true)} />
+          <LandingPage onGoToLogin={() => {
+            window.location.hash = '#login';
+            setShowLogin(true);
+          }} />
         </div>
       );
     }
     return (
       <div key="login" className="animate-page-enter">
-        <Login onBackToLanding={() => setShowLogin(false)} />
+        <Login onBackToLanding={() => {
+          window.location.hash = '';
+          setShowLogin(false);
+        }} />
       </div>
     );
   }
