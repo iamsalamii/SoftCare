@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import {
   X, Sparkles, Building2, Calendar, Clock, User, Mail, Phone,
   CheckCircle2, ArrowRight, ShieldCheck, HeartPulse, Stethoscope, Dna,
-  Send, Layers, BedDouble, Check, Briefcase, AlertCircle, Download
+  Send, Layers, BedDouble, Check, Briefcase, AlertCircle, Download, Loader2
 } from 'lucide-react';
 import CustomSelect, { SelectOption } from '../common/CustomSelect';
+import { apiService } from '../../services/apiService';
 
 interface DemoRequestModalProps {
   isOpen: boolean;
@@ -30,6 +31,8 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [confirmationNumber, setConfirmationNumber] = useState('');
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [destinationInfo, setDestinationInfo] = useState<string>('');
 
   if (!isOpen) return null;
 
@@ -101,34 +104,48 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
       return;
     }
 
     setIsSubmitting(true);
+    setApiError(null);
 
-    const generatedRef = `DEMO-${Date.now().toString().slice(-6)}`;
-    setConfirmationNumber(generatedRef);
-
-    // Save to local storage for persistence & verification
     try {
-      const existing = JSON.parse(localStorage.getItem('softcare_demo_requests') || '[]');
-      existing.unshift({
-        ref: generatedRef,
-        date: new Date().toISOString(),
-        ...formData
+      const response = await apiService.demoRequest.submit({
+        fullName: formData.fullName,
+        email: formData.workEmail,
+        phone: formData.phone,
+        facility: `${formData.facilityName} (${formData.facilityType})`,
+        preferredDate: `${formData.preferredDate || 'Dès que possible'} [${formData.preferredTime}]`,
+        modules: formData.selectedModules,
+        notes: `Rôle: ${formData.role} | Capacité: ${formData.bedCapacity}${formData.notes ? ' | Note: ' + formData.notes : ''}`
       });
-      localStorage.setItem('softcare_demo_requests', JSON.stringify(existing));
-    } catch {
-      // Ignored
-    }
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const serverRef = response?.referenceCode || `DEMO-${Date.now().toString().slice(-6)}`;
+      setConfirmationNumber(serverRef);
+      setDestinationInfo(response?.destination || "Direction Médicale SoftCare (contact@softcare.fr)");
+
+      // Mirror in local storage for audit
+      try {
+        const existing = JSON.parse(localStorage.getItem('softcare_demo_requests') || '[]');
+        existing.unshift({
+          ref: serverRef,
+          date: new Date().toISOString(),
+          ...formData,
+          destination: response?.destination
+        });
+        localStorage.setItem('softcare_demo_requests', JSON.stringify(existing));
+      } catch {}
+
       setIsSubmitted(true);
-    }, 700);
+    } catch (err: any) {
+      setApiError(err?.message || "Une erreur est survenue lors de la transmission de votre demande.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const downloadCalendarInvite = () => {
@@ -205,12 +222,16 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                   <span>Modules ciblés :</span>
                   <span className="text-teal-700 font-bold">{formData.selectedModules.length} sélectionné(s)</span>
                 </div>
+                <div className="flex justify-between border-t border-slate-200 pt-2 text-[11px] text-teal-800 font-medium">
+                  <span>Destination :</span>
+                  <span>{destinationInfo || "Direction Médicale SoftCare (contact@softcare.fr)"}</span>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <button
                   onClick={downloadCalendarInvite}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Download className="w-4 h-4 text-slate-600" />
                   <span>Ajouter au calendrier (.ics)</span>
@@ -220,7 +241,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                     setIsSubmitted(false);
                     onClose();
                   }}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md hover:from-teal-700 hover:to-cyan-800 transition-all"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md hover:from-teal-700 hover:to-cyan-800 transition-all cursor-pointer"
                 >
                   Fermer la fenêtre
                 </button>
@@ -228,6 +249,12 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              {apiError && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-xs text-rose-800">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{apiError}</span>
+                </div>
+              )}
               {Object.keys(errors).length > 0 && (
                 <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-xs text-rose-800">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />

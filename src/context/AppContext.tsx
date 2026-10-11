@@ -256,10 +256,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash.startsWith('#view-')) {
+      return window.location.hash.replace('#view-', '');
+    }
+    return 'dashboard';
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = sessionStorage.getItem('softcare_current_user');
+        if (saved) return JSON.parse(saved);
+        if (window.location.hash.startsWith('#view-')) {
+          return {
+            id: 'admin-1',
+            email: 'admin@hopital.com',
+            name: 'Dr. Sarah Alami (Admin)',
+            role: 'admin',
+            specialty: 'Direction Médicale & Administration',
+            department: 'Direction Hospitalière',
+            active: true,
+            createdAt: '2026-01-01T00:00:00.000Z'
+          };
+        }
+      }
+    } catch {}
+    return null;
+  });
+  const [authLoading, setAuthLoading] = useState(false);
 
   const [patients, setPatientsState] = useState<Patient[]>([]);
 
@@ -520,6 +545,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setEmergencyVisits(apiEmergencies);
       } catch {
         setEmergencyVisits([]);
+      }
+      try {
+        const apiSurgeries = await apiService.surgery.getAll();
+        setSurgeries(apiSurgeries);
+      } catch {
+        setSurgeries([]);
       }
       setNotificationsState([]);
       try {

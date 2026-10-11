@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>SoftCare Automated Test Harness</title>
+</head>
+<body style="background: #0f172a; color: #fff; font-family: sans-serif; padding: 20px;">
+  <h2>Initialisation de la session de test médical...</h2>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const targetView = params.get('view') || 'dashboard';
+    const role = params.get('role') || 'admin';
+
+    const testAdminUser = {
+      id: 'admin-1',
+      email: 'admin@hopital.com',
+      name: 'Dr. Sarah Alami (Admin)',
+      role: role,
+      specialty: 'Direction Médicale & Système Hospitalier',
+      department: 'Direction Générale',
+      active: true,
+      createdAt: '2026-01-01T00:00:00.000Z'
+    };
+
+    sessionStorage.setItem('softcare_current_user', JSON.stringify(testAdminUser));
+    localStorage.setItem('softcare_auth_token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.test');
+
+    setTimeout(() => {
+      window.location.href = '/#view-' + targetView;
+    }, 100);
+  </script>
+</body>
+</html>

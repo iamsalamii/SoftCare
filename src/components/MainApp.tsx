@@ -12,10 +12,15 @@ const MainApp: React.FC = () => {
   React.useEffect(() => {
     const handleHash = () => {
       setShowLogin(window.location.hash === '#login');
+      if (window.location.hash.startsWith('#view-')) {
+        const view = window.location.hash.replace('#view-', '');
+        setCurrentView(view);
+      }
     };
+    handleHash();
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
-  }, []);
+  }, [setCurrentView]);
 
   const handleBackToHome = () => {
     setCurrentView('dashboard');

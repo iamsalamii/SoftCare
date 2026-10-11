@@ -11,6 +11,7 @@ import {
 import BrochureModal from './BrochureModal';
 import DemoRequestModal from './DemoRequestModal';
 import { InteractiveHospitalMap } from './InteractiveHospitalMap';
+import { motionTokens } from '../../styles/motionTokens';
 
 interface LandingPageProps {
   onGoToLogin: () => void;
@@ -91,6 +92,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Scroll reveal observer adhering strictly to motionTokens & prefers-reduced-motion
+  useEffect(() => {
+    if (isInitializing) return;
+    const isReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) {
+      document.querySelectorAll('.sc-reveal-on-scroll').forEach(el => {
+        el.classList.add('opacity-100', 'translate-y-0');
+        el.classList.remove('opacity-0', 'translate-y-8');
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          entry.target.classList.remove('opacity-0', 'translate-y-8');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    const targets = document.querySelectorAll('.sc-reveal-on-scroll');
+    targets.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [isInitializing]);
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -448,7 +477,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             <span className="text-slate-600 hidden sm:inline">•</span>
             <div className="hidden sm:block">
               <span>Sécurité : </span>
-              <span className="text-white font-semibold">Chiffrement AES-256</span>
+              <span className="text-white font-semibold">Contrôle d'accès & Traçabilité</span>
             </div>
             <span className="text-slate-600 hidden md:inline">•</span>
             <div className="hidden md:block">
@@ -480,9 +509,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
               <p className="text-[11px] text-slate-400 mt-0.5">Gestion fluide des lits, transferts et sorties</p>
             </div>
             <div className="p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 text-left transition-all hover:border-slate-700">
-              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">99.9%</p>
-              <p className="text-xs text-slate-300 font-bold mt-1">Disponibilité garantie</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Architecture haute résilience pour services d'urgences</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">0 rupture</p>
+              <p className="text-xs text-slate-300 font-bold mt-1">Continuité des soins</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Coordination fluide DPI, bloc, pharmacie et lits</p>
             </div>
           </div>
 
@@ -493,7 +522,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           3. MODULES CLINIQUES — Visual Cards with Real Photography & Badges
           ========================================================================= */}
       <section id="modules" className="py-20 bg-slate-50 border-b border-slate-200 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sc-reveal-on-scroll opacity-0 translate-y-8 transition-all duration-500 ease-out">
           
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-teal-700 uppercase tracking-wider bg-teal-50 border border-teal-200 px-3.5 py-1 rounded-full">
@@ -510,7 +539,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Card 1: DPI */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group">
+            <div 
+              style={{ transition: motionTokens.transitions.cardHover }}
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1.5 overflow-hidden flex flex-col group"
+            >
               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/medical_doctor_care.jpg"
@@ -539,7 +571,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </div>
 
             {/* Card 2: Pharmacie */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group">
+            <div 
+              style={{ transition: motionTokens.transitions.cardHover }}
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1.5 overflow-hidden flex flex-col group"
+            >
               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/hospital_smart_pharmacy.jpg"
@@ -568,7 +603,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </div>
 
             {/* Card 3: Biotech & PGx */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group">
+            <div 
+              style={{ transition: motionTokens.transitions.cardHover }}
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1.5 overflow-hidden flex flex-col group"
+            >
               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/hospital_genetics_biotech.jpg"
@@ -597,7 +635,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </div>
 
             {/* Card 4: AI CDS */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group">
+            <div 
+              style={{ transition: motionTokens.transitions.cardHover }}
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1.5 overflow-hidden flex flex-col group"
+            >
               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/precision_medicine_banner.jpg"
@@ -626,7 +667,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </div>
 
             {/* Card 5: Admissions & Lits */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group">
+            <div 
+              style={{ transition: motionTokens.transitions.cardHover }}
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1.5 overflow-hidden flex flex-col group"
+            >
               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/hospital_emergency_icu.jpg"
@@ -655,7 +699,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             </div>
 
             {/* Card 6: Lab & Facturation */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 overflow-hidden flex flex-col group">
+            <div 
+              style={{ transition: motionTokens.transitions.cardHover }}
+              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1.5 overflow-hidden flex flex-col group"
+            >
               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/medical_lab_tubes.jpg"
@@ -693,7 +740,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
              WITH REAL PHOTOGRAPHIC ILLUSTRATIONS
           ========================================================================= */}
       <section id="workflow" className="py-20 bg-white border-b border-slate-200 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14 sc-reveal-on-scroll opacity-0 translate-y-8 transition-all duration-500 ease-out">
           
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-teal-800 uppercase tracking-wider bg-teal-50 border border-teal-200 px-3.5 py-1 rounded-full">
@@ -828,7 +875,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           5. BIOTECH & PHARMACOGÉNOMIQUE (PGx) — Interactive Simulator
           ========================================================================= */}
       <section id="biotech" className="py-20 bg-slate-50 border-b border-slate-200 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sc-reveal-on-scroll opacity-0 translate-y-8 transition-all duration-500 ease-out">
           
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-teal-800 uppercase tracking-wider bg-teal-50 border border-teal-200 px-3.5 py-1 rounded-full">
@@ -916,7 +963,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           6. INTELLIGENCE CLINIQUE (CDS HOOKS) — Simulation & Hypothèses
           ========================================================================= */}
       <section id="ai" className="py-20 bg-white border-b border-slate-200 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sc-reveal-on-scroll opacity-0 translate-y-8 transition-all duration-500 ease-out">
           
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-cyan-800 uppercase tracking-wider bg-cyan-50 border border-cyan-200 px-3.5 py-1 rounded-full">
@@ -1005,7 +1052,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           7. CTA SECTION — Planification de Démo
           ========================================================================= */}
       <section className="py-16 sm:py-20 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-white relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10 sc-reveal-on-scroll opacity-0 translate-y-8 transition-all duration-500 ease-out">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-teal-400/30 text-teal-200 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-teal-300" />
             <span>Déploiement Hospitalier Simplifié</span>
@@ -1081,7 +1128,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
                 <li><a href="#biotech" onClick={(e) => scrollToSection(e, 'biotech')} className="hover:text-white transition-colors">Intercepteur PGx en direct</a></li>
                 <li><a href="#ai" onClick={(e) => scrollToSection(e, 'ai')} className="hover:text-white transition-colors">Aide au Diagnostic CDS Hooks</a></li>
                 <li><a href="#workflow" onClick={(e) => scrollToSection(e, 'workflow')} className="hover:text-white transition-colors">Workflow Hospitalier Unifié</a></li>
-                <li><span className="text-slate-500">Chiffrement Avancé AES-256</span></li>
+                <li><span className="text-slate-500">Protection & Confidentialité des Données</span></li>
               </ul>
             </div>
 
@@ -1116,7 +1163,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
           <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>© 2026 SoftCare Hospital System. Tous droits réservés.</p>
             <div className="flex items-center gap-6 text-[11px]">
-              <span>Haute Disponibilité H24</span>
+              <span>Continuité de Service</span>
               <span>•</span>
               <span>Confidentialité Médicale Assurée</span>
             </div>

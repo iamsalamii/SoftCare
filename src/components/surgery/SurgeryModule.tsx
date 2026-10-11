@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import {
   Scissors, Plus, Search, Calendar, Clock, User, CheckCircle2,
-  AlertCircle, Activity, Download, FileSpreadsheet, Printer, X, Sparkles, Bed
+  AlertCircle, Activity, Download, FileSpreadsheet, Printer, X, Sparkles, Bed, RefreshCw
 } from 'lucide-react';
 import { Surgery } from '../../types';
 import CustomSelect from '../common/CustomSelect';
@@ -13,6 +13,7 @@ import { printDocument, generateDocumentHeader, generateDocumentFooter } from '.
 export const SurgeryModule: React.FC = () => {
   const {
     surgeries,
+    setSurgeries,
     patients,
     users,
     addSurgery,
@@ -21,13 +22,34 @@ export const SurgeryModule: React.FC = () => {
     organizationSettings
   } = useApp();
 
-  // Salles d'opération du plateau technique
-  const [operatingRooms] = useState([
-    { id: '1', name: "Salle d'Opération 1 - Cardiovasculaire & Thoracique", status: 'available' },
-    { id: '2', name: "Salle d'Opération 2 - Orthopédie & Traumatologie", status: 'available' },
-    { id: '3', name: "Salle d'Opération 3 - Viscérale & Ambulatoire", status: 'available' },
-    { id: '4', name: "Salle d'Opération 4 - Neurochirurgie & Urgences", status: 'available' }
-  ]);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  // Salles d'opération du plateau technique hospitalier
+  const operatingRooms = React.useMemo(() => [
+    { id: '1', name: "Salle 1 - Bloc Polyvalent & Urgences", status: 'available' },
+    { id: '2', name: "Salle 2 - Chirurgie Ambulatoire", status: 'available' },
+    { id: '3', name: "Salle 3 - Endoscopie & Interventionnel", status: 'available' },
+  ], []);
+
+  const getORName = (roomId?: string) => {
+    if (!roomId) return 'Bloc Opératoire';
+    const room = operatingRooms.find(r => r.id === roomId);
+    return room ? room.name : `Salle ${roomId}`;
+  };
+
+  const reloadSurgeries = async () => {
+    setLocalLoading(true);
+    setLocalError(null);
+    try {
+      const data = await apiService.surgery.getAll();
+      setSurgeries(data || []);
+    } catch (err: any) {
+      setLocalError(err?.message || "Erreur de synchronisation du bloc");
+    } finally {
+      setLocalLoading(false);
+    }
+  };
 
   const toast = useToast();
   const [filterStatus, setFilterStatus] = useState('all');
@@ -127,8 +149,16 @@ export const SurgeryModule: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={reloadSurgeries}
+            title="Actualiser le bloc opératoire"
+            className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
+          >
+            <RefreshCw className={`w-4 h-4 ${localLoading ? 'animate-spin text-teal-600' : ''}`} />
+          </button>
+
+          <button
             onClick={handlePrintProgram}
-            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Imprimer Programme</span>
@@ -136,7 +166,7 @@ export const SurgeryModule: React.FC = () => {
 
           <button
             onClick={() => setShowNewSurgery(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-teal-600/25 transition-all flex items-center gap-1.5"
+            className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-teal-600/25 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Programmer une Intervention</span>
@@ -207,10 +237,38 @@ export const SurgeryModule: React.FC = () => {
 
       {/* Surgery Cards List */}
       <div className="space-y-3">
-        {filteredSurgeries.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center text-gray-400 border border-gray-100 space-y-2">
+        {localLoading ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 space-y-3">
+            <div className="w-10 h-10 border-3 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-gray-500 font-medium">Synchronisation des interventions au bloc...</p>
+          </div>
+        ) : localError ? (
+          <div className="bg-rose-50 border border-rose-200 rounded-3xl p-8 text-center space-y-3">
+            <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
+            <p className="text-xs font-bold text-rose-800">{localError}</p>
+            <button
+              onClick={reloadSurgeries}
+              className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 transition-colors"
+            >
+              Réessayer la synchronisation
+            </button>
+          </div>
+        ) : filteredSurgeries.length === 0 ? (
+          <div className="bg-white rounded-3xl p-12 text-center text-gray-400 border border-gray-100 space-y-3">
             <Scissors className="w-12 h-12 mx-auto text-gray-300" />
-            <p className="text-xs font-semibold">Aucune intervention chirurgicale programmée</p>
+            <div className="space-y-1">
+              <p className="text-sm font-bold text-gray-700">Aucune intervention chirurgicale programmée</p>
+              <p className="text-xs text-gray-400 max-w-md mx-auto">
+                Le plateau technique est disponible. Cliquez sur « Programmer une intervention » pour planifier un acte opératoire.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowNewSurgery(true)}
+              className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-600 to-cyan-700 text-white rounded-xl font-bold text-xs shadow-md shadow-teal-700/20 hover:from-teal-700 hover:to-cyan-800 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Programmer une intervention</span>
+            </button>
           </div>
         ) : (
           filteredSurgeries.map((surgery) => (

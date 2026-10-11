@@ -15,6 +15,25 @@ export const apiService = {
     delete: (id: string) => apiClient.delete(`/surgery/${id}`),
   },
 
+  // === DEMO REQUEST ===
+  demoRequest: {
+    submit: (payload: {
+      fullName: string;
+      email: string;
+      phone: string;
+      facility: string;
+      preferredDate?: string;
+      notes?: string;
+      modules?: string[];
+    }) => apiClient.post<{
+      success: boolean;
+      referenceCode: string;
+      receivedAt: string;
+      destination: string;
+      message: string;
+    }>('/demo-request', payload),
+  },
+
 
   // === EMERGENCIES ===
   emergencies: {
