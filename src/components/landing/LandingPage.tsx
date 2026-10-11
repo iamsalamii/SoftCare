@@ -205,23 +205,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-teal-600 selection:text-white animate-in fade-in duration-300 scroll-smooth">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-teal-600 selection:text-white animate-in fade-in duration-300 scroll-smooth overflow-x-hidden">
       {/* =========================================================================
           1. NAVIGATION HEADER — Strict Single-Line Alignment
           ========================================================================= */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo brand */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-600 to-cyan-700 rounded-2xl flex items-center justify-center shadow-md shadow-teal-700/20 text-white flex-shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-600 to-cyan-700 rounded-2xl flex items-center justify-center shadow-md shadow-teal-700/20 text-white flex-shrink-0">
               <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 block leading-none">
+              <span className="text-lg sm:text-2xl font-black tracking-tight text-slate-900 block leading-none">
                 SoftCare
               </span>
-              <span className="text-[10px] text-teal-700 font-bold tracking-widest uppercase mt-1 block">
+              <span className="text-[10px] text-teal-700 font-bold tracking-widest uppercase mt-0.5 sm:mt-1 hidden sm:block">
                 Système Hospitalier
               </span>
             </div>
@@ -281,7 +281,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
 
             <button
               onClick={onGoToLogin}
-              className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-teal-700/20 active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer"
+              className="hidden sm:flex px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-teal-700/20 active:scale-[0.98] transition-all items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer"
             >
               <Stethoscope className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-100" />
               <span className="hidden md:inline">Espace Soignant</span>
@@ -333,25 +333,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin }) => {
             >
               Workflow de Soins Unifié
             </a>
-            <div className="pt-2 border-t border-slate-100 flex gap-2">
+            <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
               <button
                 onClick={() => {
-                  setShowBrochureModal(true);
+                  onGoToLogin();
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 text-center"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-teal-600 to-cyan-700 text-center flex items-center justify-center gap-2 shadow-md shadow-teal-700/20"
               >
-                Brochure PDF
+                <Stethoscope className="w-4 h-4 text-teal-100" />
+                <span>Accéder à l'espace soignant</span>
+                <ArrowRight className="w-3.5 h-3.5 text-white/80" />
               </button>
-              <button
-                onClick={() => {
-                  setShowDemoModal(true);
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 text-center"
-              >
-                Demander Démo
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setShowBrochureModal(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 text-center"
+                >
+                  Brochure PDF
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDemoModal(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 text-center"
+                >
+                  Demander Démo
+                </button>
+              </div>
             </div>
           </div>
         )}
