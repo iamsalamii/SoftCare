@@ -10,6 +10,7 @@ export const apiService = {
   surgery: {
     getAll: () => apiClient.get<any[]>('/surgery'),
     getById: (id: string) => apiClient.get<any>(`/surgery/${id}`),
+    getRooms: () => apiClient.get<any[]>('/surgery/rooms'),
     create: (surgery: any) => apiClient.post<any>('/surgery', surgery),
     update: (id: string, surgery: any) => apiClient.put<any>(`/surgery/${id}`, surgery),
     delete: (id: string) => apiClient.delete(`/surgery/${id}`),
@@ -25,13 +26,17 @@ export const apiService = {
       preferredDate?: string;
       notes?: string;
       modules?: string[];
+      honeypot?: string;
+      website?: string;
     }) => apiClient.post<{
       success: boolean;
       referenceCode: string;
       receivedAt: string;
+      storage?: string;
       destination: string;
       message: string;
     }>('/demo-request', payload),
+    getLeads: (limit = 50) => apiClient.get<any[]>('/demo-request/leads', { limit }),
   },
 
 

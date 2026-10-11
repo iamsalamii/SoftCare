@@ -1,7 +1,7 @@
 /**
  * File validation utilities for SoftCare Medical Information System.
  * Ensures strict security checks against malicious uploads, oversized documents,
- * and invalid MIME types according to HDS/OWASP standards.
+ * and invalid MIME types according to OWASP standards.
  */
 
 export interface FileValidationResult {

@@ -88,7 +88,7 @@ export const AuditTrailModule: React.FC = () => {
     const html = `
       ${generateDocumentHeader(organizationSettings, 'report', `RGPD-AUDIT-${Date.now().toString().slice(-8)}`)}
       <div style="margin: 20px 0; padding: 15px; background: #ecfeff; border-left: 4px solid #0891b2; border-radius: 6px;">
-        <h2 style="margin: 0 0 4px 0; color: #0e7490;">🔒 Registre d'Audit des Accès aux Données de Santé (RGPD Art. 30 & HDS)</h2>
+        <h2 style="margin: 0 0 4px 0; color: #0e7490;">🔒 Registre d'Audit des Accès aux Données de Santé (RGPD Art. 30)</h2>
         <p style="margin: 0; color: #0891b2; font-size: 12px;">Journalisation légale infalsifiable avec empreintes cryptographiques SHA-256 non répudiables.</p>
       </div>
 
@@ -108,7 +108,7 @@ export const AuditTrailModule: React.FC = () => {
       ${generateDocumentFooter(organizationSettings)}
     `;
 
-    await printDocument(html, organizationSettings, 'Registre-Audit-RGPD-HDS');
+    await printDocument(html, organizationSettings, 'Registre-Audit-RGPD');
     toast.success('Registre RGPD généré', 'Document certifié conforme prêt pour impression / archivage.');
   };
 
@@ -137,9 +137,9 @@ export const AuditTrailModule: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900">Audit Trail & Conformité RGPD / HDS</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Audit Trail & Conformité RGPD</h1>
               <span className="px-2.5 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
-                SHA-256 Certifié
+                SHA-256 Intégrité
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -186,14 +186,14 @@ export const AuditTrailModule: React.FC = () => {
 
         <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-2">
           <span className="text-[11px] font-bold text-gray-500 uppercase">Chiffrement & Signature</span>
-          <p className="text-2xl font-black text-teal-700">HMAC-SHA256</p>
+          <p className="text-2xl font-black text-teal-700">SHA-256</p>
           <p className="text-[10px] text-gray-400">Empreinte numérique par transaction</p>
         </div>
 
         <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-1 animate-card-enter stagger-3">
           <span className="text-[11px] font-bold text-gray-500 uppercase">Statut Conformité</span>
-          <p className="text-2xl font-black text-emerald-700">Conforme HDS</p>
-          <p className="text-[10px] text-gray-400">CNIL • RGPD Art. 30 • Certifications Santé</p>
+          <p className="text-2xl font-black text-emerald-700">Conforme RGPD</p>
+          <p className="text-[10px] text-gray-400">CNIL • RGPD Art. 30 • Traçabilité Système</p>
         </div>
       </div>
 
@@ -233,7 +233,7 @@ export const AuditTrailModule: React.FC = () => {
           {loading ? (
             <div className="p-8 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
               <RefreshCw className="w-4 h-4 animate-spin text-teal-600" />
-              <span>Chargement du registre d'audit HDS...</span>
+              <span>Chargement du registre d'audit...</span>
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-xs">

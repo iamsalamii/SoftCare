@@ -72,6 +72,8 @@ builder.Services.AddCors(options =>
                     return uri.Host == "localhost" 
                         || uri.Host == "127.0.0.1" 
                         || uri.Host.EndsWith(".vercel.app") 
+                        || uri.Host.EndsWith(".sslip.io")
+                        || uri.Host == "2.28.63.25"
                         || Array.Exists(corsOrigins, o => o.TrimEnd('/') == origin.TrimEnd('/'));
                 }
                 catch

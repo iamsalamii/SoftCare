@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { apiService } from '../../services/apiService';
 import {
   Scissors, Plus, Search, Calendar, Clock, User, CheckCircle2,
   AlertCircle, Activity, Download, FileSpreadsheet, Printer, X, Sparkles, Bed, RefreshCw
@@ -26,11 +27,25 @@ export const SurgeryModule: React.FC = () => {
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Salles d'opération du plateau technique hospitalier
-  const operatingRooms = React.useMemo(() => [
+  const [operatingRooms, setOperatingRooms] = useState<Array<{ id: string; name: string; status: string }>>([
     { id: '1', name: "Salle 1 - Bloc Polyvalent & Urgences", status: 'available' },
     { id: '2', name: "Salle 2 - Chirurgie Ambulatoire", status: 'available' },
     { id: '3', name: "Salle 3 - Endoscopie & Interventionnel", status: 'available' },
-  ], []);
+  ]);
+
+  useEffect(() => {
+    let mounted = true;
+    apiService.surgery.getRooms()
+      .then((rooms) => {
+        if (mounted && Array.isArray(rooms) && rooms.length > 0) {
+          setOperatingRooms(rooms.map(r => ({ id: String(r.id || r.Id), name: String(r.name || r.Name), status: String(r.status || r.Status || 'available') })));
+        }
+      })
+      .catch(() => {
+        // En cas d'erreur ou d'absence réseau, conserve les salles standards du plateau technique
+      });
+    return () => { mounted = false; };
+  }, []);
 
   const getORName = (roomId?: string) => {
     if (!roomId) return 'Bloc Opératoire';

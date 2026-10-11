@@ -16,7 +16,7 @@ export const TeleconsultationModule: React.FC = () => {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [messages, setMessages] = useState<{ sender: string; text: string; time: string }[]>([
-    { sender: 'Système', text: 'Connexion WebRTC sécurisée établie (Chiffrement DTLS-SRTP).', time: '10:00' },
+    { sender: 'Système', text: 'Connexion WebRTC sécurisée établie.', time: '10:00' },
     { sender: 'Patient', text: 'Bonjour Docteur, je vous entends très bien.', time: '10:01' }
   ]);
   const [newMessage, setNewMessage] = useState('');
@@ -148,7 +148,7 @@ export const TeleconsultationModule: React.FC = () => {
           <div className="p-4 bg-slate-50 rounded-2xl border border-gray-100 flex items-center justify-center gap-6 text-xs text-gray-700">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-teal-600" />
-              <span>Chiffrement DTLS-SRTP</span>
+              <span>WebRTC Sécurisé</span>
             </div>
             <div className="flex items-center gap-2">
               <Stethoscope className="w-4 h-4 text-cyan-600" />

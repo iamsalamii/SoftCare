@@ -31,6 +31,18 @@ public class SurgeryController : ControllerBase
         return Ok(surgeries);
     }
 
+    [HttpGet("rooms")]
+    public ActionResult GetOperatingRooms()
+    {
+        var rooms = new[]
+        {
+            new { Id = "1", Name = "Salle 1 - Bloc Polyvalent & Urgences", Status = "available", Capacity = 1, Floor = "Aile Chirurgicale - RDC" },
+            new { Id = "2", Name = "Salle 2 - Chirurgie Ambulatoire", Status = "available", Capacity = 1, Floor = "Aile Chirurgicale - RDC" },
+            new { Id = "3", Name = "Salle 3 - Endoscopie & Interventionnel", Status = "available", Capacity = 1, Floor = "Aile Chirurgicale - RDC" }
+        };
+        return Ok(rooms);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult> GetSurgery(string id)
     {

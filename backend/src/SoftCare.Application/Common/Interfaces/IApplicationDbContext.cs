@@ -35,7 +35,7 @@ public interface IApplicationDbContext
     DbSet<VitalRecord> VitalRecords { get; }
     DbSet<CarePlan> CarePlans { get; }
     DbSet<NursingNote> NursingNotes { get; }
-
+    DbSet<DemoLead> DemoLeads { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

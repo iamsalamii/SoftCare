@@ -237,3 +237,22 @@ CREATE INDEX IF NOT EXISTS "IX_Prescriptions_MedicalRecordId" ON "Prescriptions"
 CREATE INDEX IF NOT EXISTS "IX_GenomicProfiles_PatientId" ON "GenomicProfiles" ("PatientId");
 CREATE INDEX IF NOT EXISTS "IX_BioSamples_FreezerId" ON "BioSamples" ("FreezerId");
 
+-- 9. Table DemoLeads (Demandes de démonstration)
+CREATE TABLE IF NOT EXISTS "DemoLeads" (
+    "Id" TEXT PRIMARY KEY,
+    "ReferenceCode" VARCHAR(50) UNIQUE NOT NULL,
+    "FullName" VARCHAR(255) NOT NULL,
+    "Email" VARCHAR(255) NOT NULL,
+    "Phone" VARCHAR(50),
+    "Facility" VARCHAR(255) NOT NULL,
+    "PreferredDate" VARCHAR(50),
+    "ModulesJson" JSONB DEFAULT '[]',
+    "Notes" TEXT,
+    "IpAddress" VARCHAR(50),
+    "Status" VARCHAR(50) DEFAULT 'pending',
+    "IsActive" BOOLEAN DEFAULT TRUE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt" TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS "IX_DemoLeads_CreatedAt" ON "DemoLeads" ("CreatedAt");
+

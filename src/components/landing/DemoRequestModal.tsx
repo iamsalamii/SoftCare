@@ -33,6 +33,7 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
   const [confirmationNumber, setConfirmationNumber] = useState('');
   const [apiError, setApiError] = useState<string | null>(null);
   const [destinationInfo, setDestinationInfo] = useState<string>('');
+  const [honeypot, setHoneypot] = useState<string>('');
 
   if (!isOpen) return null;
 
@@ -121,7 +122,8 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
         facility: `${formData.facilityName} (${formData.facilityType})`,
         preferredDate: `${formData.preferredDate || 'Dès que possible'} [${formData.preferredTime}]`,
         modules: formData.selectedModules,
-        notes: `Rôle: ${formData.role} | Capacité: ${formData.bedCapacity}${formData.notes ? ' | Note: ' + formData.notes : ''}`
+        notes: `Rôle: ${formData.role} | Capacité: ${formData.bedCapacity}${formData.notes ? ' | Note: ' + formData.notes : ''}`,
+        honeypot
       });
 
       const serverRef = response?.referenceCode || `DEMO-${Date.now().toString().slice(-6)}`;
@@ -223,8 +225,8 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
                   <span className="text-teal-700 font-bold">{formData.selectedModules.length} sélectionné(s)</span>
                 </div>
                 <div className="flex justify-between border-t border-slate-200 pt-2 text-[11px] text-teal-800 font-medium">
-                  <span>Destination :</span>
-                  <span>{destinationInfo || "Direction Médicale SoftCare (contact@softcare.fr)"}</span>
+                  <span>Prise en charge :</span>
+                  <span>Enregistrée en base de données (Table DemoLead)</span>
                 </div>
               </div>
 
@@ -249,6 +251,18 @@ export const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onCl
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              {/* Piège anti-robot Honeypot (masqué pour les utilisateurs humains) */}
+              <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', height: 0, overflow: 'hidden' }} aria-hidden="true">
+                <input
+                  type="text"
+                  name="bot_field_hp"
+                  value={honeypot}
+                  onChange={e => setHoneypot(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
+
               {apiError && (
                 <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-xs text-rose-800">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />

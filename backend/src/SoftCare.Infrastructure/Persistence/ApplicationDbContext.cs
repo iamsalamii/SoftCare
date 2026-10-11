@@ -40,6 +40,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<VitalRecord> VitalRecords => Set<VitalRecord>();
     public DbSet<CarePlan> CarePlans => Set<CarePlan>();
     public DbSet<NursingNote> NursingNotes => Set<NursingNote>();
+    public DbSet<DemoLead> DemoLeads => Set<DemoLead>();
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

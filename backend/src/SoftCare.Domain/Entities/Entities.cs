@@ -382,3 +382,17 @@ public class NursingNote : BaseEntity
     public string Category { get; set; } = "observation"; // observation, transmission, incident
     public string Content { get; set; } = string.Empty;
 }
+
+public class DemoLead : BaseEntity
+{
+    public string ReferenceCode { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string Facility { get; set; } = string.Empty;
+    public string? PreferredDate { get; set; }
+    public string? ModulesJson { get; set; } = "[]";
+    public string? Notes { get; set; }
+    public string IpAddress { get; set; } = string.Empty;
+    public string Status { get; set; } = "pending"; // pending, contacted, qualified, archived
+}
