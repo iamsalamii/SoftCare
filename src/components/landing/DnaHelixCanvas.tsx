@@ -36,12 +36,12 @@ export const DnaHelixCanvas: React.FC<DnaHelixCanvasProps> = ({ className = '' }
 
     // Geometry & Materials
     const sphereGeo = new THREE.SphereGeometry(0.38, 16, 16);
-    const strand1Mat = new THREE.MeshBasicMaterial({ color: 0x00dc82 });
-    const strand2Mat = new THREE.MeshBasicMaterial({ color: 0x45f99c });
+    const strand1Mat = new THREE.MeshBasicMaterial({ color: 0x059669 });
+    const strand2Mat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
     const rungMat = new THREE.MeshBasicMaterial({
-      color: 0x3fd0c9,
+      color: 0x0d9488,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.65,
     });
 
     const numPoints = 36;

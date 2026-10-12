@@ -98,7 +98,7 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
       role="status"
       aria-label="Chargement du système d'information hospitalier"
     >
-      {/* Rideau supérieur */}
+      {/* Rideau supérieur (Blanc jour clinique) */}
       <div
         style={{
           position: 'absolute',
@@ -106,8 +106,8 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
           left: 0,
           width: '100%',
           height: '50%',
-          backgroundColor: '#010e0b',
-          borderBottom: '1px solid rgba(0, 220, 130, 0.3)',
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid rgba(16, 185, 129, 0.25)',
           transform: isSplitting ? 'translateY(-100%)' : 'translateY(0%)',
           transition: 'transform 0.9s cubic-bezier(0.76, 0, 0.24, 1)',
           willChange: 'transform',
@@ -117,7 +117,7 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(circle at center, rgba(0, 220, 130, 0.12), transparent 70%)',
+            background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.05), transparent 70%)',
           }}
         />
         {/* Logo & Version dans le volet supérieur */}
@@ -138,28 +138,28 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
             style={{
               width: '44px',
               height: '44px',
-              borderRadius: '6px',
-              border: '1px solid rgba(0, 220, 130, 0.4)',
+              borderRadius: '8px',
+              border: '1px solid #a7f3d0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'rgba(4, 31, 26, 0.8)',
-              boxShadow: '0 0 15px rgba(0, 220, 130, 0.3)',
+              backgroundColor: '#ecfdf5',
+              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.15)',
             }}
           >
-            <svg style={{ width: '24px', height: '24px', color: '#00dc82' }} fill="none" viewBox="0 0 40 40">
+            <svg style={{ width: '24px', height: '24px', color: '#059669' }} fill="none" viewBox="0 0 40 40">
               <path
                 d="M4 20h8l3-10 6 22 5-16 4 9h6"
-                stroke="#00dc82"
+                stroke="#059669"
                 strokeWidth="2.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <circle cx="12" cy="20" r="2.5" fill="#45f99c" />
-              <circle cx="30" cy="20" r="2.5" fill="#45f99c" />
+              <circle cx="12" cy="20" r="2.5" fill="#10b981" />
+              <circle cx="30" cy="20" r="2.5" fill="#10b981" />
             </svg>
           </div>
-          <span style={{ fontFamily: 'Fraunces, serif', fontSize: '28px', color: '#ffffff', fontWeight: 500, letterSpacing: '-0.02em' }}>
+          <span style={{ fontFamily: 'Fraunces, serif', fontSize: '28px', color: '#0f172a', fontWeight: 500, letterSpacing: '-0.02em' }}>
             SoftCare
           </span>
           <span
@@ -167,11 +167,12 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
               fontSize: '10px',
               fontFamily: 'Space Grotesk, monospace',
               textTransform: 'uppercase',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              border: '1px solid rgba(0, 220, 130, 0.4)',
-              color: '#00dc82',
-              backgroundColor: 'rgba(0, 220, 130, 0.1)',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              border: '1px solid #a7f3d0',
+              color: '#047857',
+              backgroundColor: '#ecfdf5',
+              fontWeight: 600,
             }}
           >
             Clinique v4.8
@@ -179,7 +180,7 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
         </div>
       </div>
 
-      {/* Rideau inférieur */}
+      {/* Rideau inférieur (Blanc jour clinique) */}
       <div
         style={{
           position: 'absolute',
@@ -187,8 +188,8 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
           left: 0,
           width: '100%',
           height: '50%',
-          backgroundColor: '#010e0b',
-          borderTop: '1px solid rgba(0, 220, 130, 0.3)',
+          backgroundColor: '#ffffff',
+          borderTop: '1px solid rgba(16, 185, 129, 0.25)',
           transform: isSplitting ? 'translateY(100%)' : 'translateY(0%)',
           transition: 'transform 0.9s cubic-bezier(0.76, 0, 0.24, 1)',
           willChange: 'transform',
@@ -198,7 +199,7 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(circle at bottom, rgba(0, 220, 130, 0.08), transparent 70%)',
+            background: 'radial-gradient(circle at bottom, rgba(16, 185, 129, 0.04), transparent 70%)',
           }}
         />
         {/* Compteur 0-100% en bas à gauche */}
@@ -209,10 +210,9 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
             left: '36px',
             fontFamily: 'Fraunces, serif',
             fontSize: 'clamp(48px, 6vw, 76px)',
-            color: '#00dc82',
+            color: '#059669',
             fontWeight: 400,
             lineHeight: 1,
-            filter: 'drop-shadow(0 0 20px rgba(0, 220, 130, 0.6))',
             opacity: isSplitting ? 0 : 1,
             transition: 'opacity 0.4s ease-out',
           }}
@@ -236,8 +236,9 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
               fontSize: '11px',
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
-              color: '#45f99c',
+              color: '#047857',
               fontFamily: 'Space Grotesk, monospace',
+              fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
@@ -249,8 +250,8 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: '#00dc82',
-                boxShadow: '0 0 8px #00dc82',
+                backgroundColor: '#10b981',
+                boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)',
               }}
             />
             {statusText}
@@ -258,7 +259,7 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
           <div
             style={{
               fontSize: '11px',
-              color: '#859587',
+              color: '#64748b',
               fontFamily: 'Space Grotesk, monospace',
               marginTop: '4px',
             }}
@@ -268,7 +269,7 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
         </div>
       </div>
 
-      {/* Ligne ECG centrale en cours de tracé */}
+      {/* Ligne ECG centrale en cours de tracé (Vert doux médical) */}
       <div
         style={{
           position: 'absolute',
@@ -290,20 +291,20 @@ export const EcgScreenLoader: React.FC<EcgScreenLoaderProps> = ({ onComplete, on
           {/* Ligne de fond subtile */}
           <path
             d="M0 30 H1200"
-            stroke="rgba(0, 220, 130, 0.15)"
+            stroke="rgba(16, 185, 129, 0.15)"
             strokeWidth="1.5"
           />
           {/* Ligne ECG animée */}
           <path
             d="M0 30 H320 L345 8 L370 52 L395 14 L420 40 L440 30 H740 L765 6 L790 54 L815 12 L840 44 L860 30 H1200"
-            stroke="#00dc82"
+            stroke="#10b981"
             strokeWidth="3.2"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray="1200"
             strokeDashoffset={1200 - (1200 * (progress / 100))}
             style={{
-              filter: 'drop-shadow(0 0 10px rgba(0, 220, 130, 0.8))',
+              filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.4))',
               transition: 'stroke-dashoffset 0.05s linear',
             }}
           />
