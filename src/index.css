@@ -3,33 +3,38 @@
 @tailwind utilities;
 
 /* Custom sleek inset scrollbars */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
 html {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #08372f #021411;
+  scroll-behavior: smooth;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 4px 0;
+  background: #021411;
+  border-left: 1px solid rgba(0, 220, 130, 0.08);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 20px;
+  background: #08372f;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 220, 130, 0.25);
+  transition: all 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background: #00dc82;
+  box-shadow: 0 0 12px rgba(0, 220, 130, 0.7);
+  border-color: #45f99c;
 }
 
 /* Modal Content Scroll helper to contain scrollbars cleanly inside rounded corners */
@@ -39,10 +44,7 @@ html {
   padding-right: 2px;
 }
 
-/* Smooth transitions */
-* {
-  scroll-behavior: smooth;
-}
+
 
 /* Custom animations */
 @keyframes fadeIn {
@@ -512,6 +514,74 @@ button:focus {
   animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Laser scan sweep animation */
+@keyframes laser-sweep {
+  0% { top: -20%; opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { top: 120%; opacity: 0; }
+}
+.laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00dc82, #45f99c, transparent);
+  box-shadow: 0 0 16px #00dc82, 0 0 30px #00dc82;
+  animation: laser-sweep 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+/* ECG Animation with glowing stroke */
+@keyframes pulse-ecg {
+  0% { stroke-dashoffset: 1200; filter: drop-shadow(0 0 2px #00dc82); }
+  50% { filter: drop-shadow(0 0 8px #00dc82); }
+  100% { stroke-dashoffset: 0; filter: drop-shadow(0 0 3px #00dc82); }
+}
+.ecg-line {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: pulse-ecg 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.ecg-pulse-loop {
+  stroke-dasharray: 700;
+  animation: loop-ecg 3.8s linear infinite;
+  filter: drop-shadow(0 0 6px #00dc82);
+}
+@keyframes loop-ecg {
+  0% { stroke-dashoffset: 700; }
+  100% { stroke-dashoffset: -700; }
+}
+
+/* Holographic radar glow */
+@keyframes emerald-glow {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.08); }
+}
+.animate-glow-pulse {
+  animation: emerald-glow 4s ease-in-out infinite;
+}
+
+/* Modules Marquee */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 32s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Image duotone effect overlay */
+.duotone-emerald {
+  filter: contrast(115%) brightness(85%);
+  mix-blend-mode: luminosity;
+}
+
 /* ======================================================
    Strict Accessibility: System prefers-reduced-motion
    ====================================================== */
@@ -522,5 +592,8 @@ button:focus {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
     transform: none !important;
+  }
+  .laser-line, .ecg-line, .ecg-pulse-loop, .animate-marquee, .animate-glow-pulse {
+    animation: none !important;
   }
 }

@@ -41,12 +41,10 @@ const MainApp: React.FC = () => {
   if (!currentUser) {
     if (!showLogin) {
       return (
-        <div key="landing" className="animate-page-enter">
-          <LandingPage onGoToLogin={() => {
-            window.location.hash = '#login';
-            setShowLogin(true);
-          }} />
-        </div>
+        <LandingPage onGoToLogin={() => {
+          window.location.hash = '#login';
+          setShowLogin(true);
+        }} />
       );
     }
     return (
